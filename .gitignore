@@ -19,3 +19,5 @@ youtube-longitudinal/config/config.yaml
 *.db
 data/
 logs/
+*.dta
+data/

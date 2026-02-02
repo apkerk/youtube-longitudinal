@@ -1,52 +1,43 @@
 # My Cursor Workflow — Quick Reference
 
-**Your daily workflow for [Project Name]**  
-**Updated:** [Date]
+---
+
+## 🌅 START OF SESSION (Morning)
+
+### 1️⃣ Pull Latest from Git
+
+**In Cursor:**
+**Just tell your agent:**
+```
+Pull from Git
+```
+**OR:**
+```
+Pull the latest changes from git
+```
+
+**The agent will handle:** Pulling latest changes, then automatically reading documentation files (`.cursorrules` is auto-read at session start).
 
 ---
 
-## 🚀 FIRST TIME SETUP COMMAND
+**In Anti-gravity:**
+**Tell your agent:**
+1. "Read ANTIGRAVITY_RULES.md"
+2. "Pull from Git" (or "Pull the latest changes from git")
 
-**When starting a new project or onboarding a new AI agent, use this command:**
-
-```
-Read MY_WORKFLOW.md, PROJECT_MASTER_PLAN.md, PROGRESS_LOG.md, and .cursorrules to understand this project's workflow, context, and documentation system. Then check if all required documentation files exist and help set up any missing ones.
-```
-
-**What this does:**
-- ✅ Reads the workflow (this file)
-- ✅ Understands project context and roadmap
-- ✅ Sees recent activity and current status
-- ✅ Learns all safety rules and protocols
-- ✅ Verifies documentation system is complete
-- ✅ Helps set up any missing files
-
-**After running this command, the agent will:**
-- Know your daily workflow
-- Understand project priorities
-- Know what to document at session end
-- Follow all safety constraints
-- Be ready to help with your work
-
----
-
-## 🌅 START OF SESSION
-
-### 1️⃣ (Optional) Pull Latest from Git
-```bash
-git pull origin main
-```
+**The agent will handle:** Reading rules, pulling latest changes, then reading documentation files.
 
 **First time setting up this project?** See "Initial Git Setup" section below.
 
 ---
 
-### 2️⃣ Start Working in Cursor
+### 2️⃣ Start Working
+
 **You do:** Just start chatting with Cursor. No special prompt needed.
 
 **Cursor automatically:**
 - ✅ Reads `.cursorrules` (knows all protocols)
-- ✅ Reads `PROGRESS_LOG.md` (sees recent work)
+- ✅ Reads `PROGRESS_LOG.md` or `task.md` (sees recent work)
 - ✅ Reads `PROJECT_MASTER_PLAN.md` (knows context)
 
 **You don't need to:**
@@ -56,69 +47,149 @@ git pull origin main
 
 ---
 
-## 💻 DURING SESSION
+## 💻 DURING SESSION (Working)
 
-**You:** Work normally — ask questions, run analyses, write, make decisions
+**You:** Work normally—ask questions, run analyses, write code, make decisions
 
 **Cursor:** Helps you work and mentally notes what to document at the end
 
 ---
 
-## 🌙 END OF SESSION
+## 🌙 END OF SESSION (Evening)
 
-### 1️⃣ Update All Documentation
-**Prompt Cursor with ONE sentence:**
+### 1️⃣ Push to Git
 
+**Just tell your agent:**
 ```
-Update the logs with this session's work
+Push to Git
+```
+**OR:**
+```
+Push my work to git
 ```
 
-**OR the full version:**
+**The agent will handle:** Staging changes, committing with appropriate message, pushing to remote
+
+**OR with custom message:**
 ```
-Update the progress log, project master plan, and decision log with this session's work
-```
-
-**Cursor will automatically:**
-- ✅ Update `PROGRESS_LOG.md` (what, why, insights, next steps)
-- ✅ Update `PROJECT_MASTER_PLAN.md` (if roadmap progress)
-- ✅ Update `DECISION_LOG.md` (if decisions made)
-- ✅ Update `TECHNICAL_SPECS.md` (if specs changed)
-- ✅ Update "Current Status" section
-
----
-
-### 2️⃣ (Optional) Push to Git
-```bash
-git add -A
-git commit -m "Session: [brief description]"
-git push origin main
+Push to Git with message: "your commit message here"
 ```
 
 ---
 
+## 📊 VISUAL WORKFLOW
+
+```
+Session Start (Cursor):
+┌─────────────────────────────────────────┐
+│  "Pull from Git"                        │  ← Simple prompt
+└────────┬────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────┐
+│  Agent automatically:                   │
+│  • Pulls from git                       │
+│  • Reads .cursorrules (auto), then      │
+│    MY_WORKFLOW.md, PROGRESS_LOG.md,     │
+│    PROJECT_MASTER_PLAN.md               │
+└────────┬────────────────────────────────┘
+
+Session Start (Anti-gravity):
+┌─────────────────────────────────────────┐
+│  1. "Read ANTIGRAVITY_RULES.md"         │
+│  2. "Pull from Git"                     │
+└────────┬────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────┐
+│  Agent automatically:                   │
+│  • Pulls from git                       │
+│  • Reads MY_WORKFLOW.md, PROGRESS_LOG.md│
+│    PROJECT_MASTER_PLAN.md               │
+└────────┬────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────┐
+│  Work normally                          │  ← Ask, analyze, write, decide
+│  (Ask questions, run analyses, etc.)    │
+└────────┬────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────┐
+│  "Push to Git"                          │  ← Simple prompt
+└─────────────────────────────────────────┘
+
+Session complete!
+```
+
 ---
 
-## 🔧 GIT IN ANTIGRAVITY
+## ⏱️ TIME PER SESSION
 
-### Is it always connected?
-**YES.** You only need to initialize once (which is already done). Antigravity has persistent access to the repository.
+| Task | Time | What You Do |
+|------|------|-------------|
+| **Pull from Git** | 2 seconds | "Pull from Git" |
+| **Start working** | 0 seconds | Just start chatting |
+| **Working** | Variable | Normal work |
+| **Push to Git** | 2 seconds | "Push to Git" |
 
-### Daily Routine in Antigravity
+**Total overhead:** ~4 seconds per session
 
-**1. Start of Session (Optional)**
-If you worked on another computer, ask the agent:
-> "Pull the latest changes from git"
+---
 
-**2. End of Session**
-Ask the agent:
-> "Push my work to git"
+## 🎯 KEY REMINDERS
 
-The agent will run:
-```bash
-git add .
-git commit -m "Update work"
-git push
-```
+### What's AUTOMATIC (Agent does without asking):
+- ✅ Reads `.cursorrules` at session start (Cursor)
+- ✅ Reads documentation files after pulling
+- ✅ Handles all git operations (staging, committing, pushing)
+
+### What YOU need to do:
+- ☑️ **In Cursor:** "Pull from Git" at beginning (2 sec)
+- ☑️ **In Anti-gravity:** "Read ANTIGRAVITY_RULES.md" then "Pull from Git" at beginning
+- ☑️ Work normally during session
+- ☑️ "Push to Git" at end (2 sec)
+- ☑️ Optional: Use "Push to Git with message: 'your message'" for custom commit messages
+
+---
+
+## 🆘 TROUBLESHOOTING
+
+**Agent seems to have forgotten context**  
+→ Just say "Pull from Git" again - it will re-read all documentation
+
+**Not sure what to work on next**  
+→ Look at `PROGRESS_LOG.md` or `task.md` "Next Steps" section (top of file)
+
+**Need to understand a past decision**  
+→ Check `DECISION_LOG.md`
+
+**Git issues**  
+→ Just tell the agent: "Pull from Git" or "Push to Git" and let it handle the details
+
+---
+
+## 📚 DETAILED REFERENCES (Optional Reading)
+
+If you need more details, see:
+- **`.cursorrules`** or **`AI_RULES.md`** — Full protocols that agents follow
+- **`PROJECT_MASTER_PLAN.md`** — Big picture roadmap and context
+- **`DECISION_LOG.md`** — History of analytical decisions
+- **`TECHNICAL_SPECS.md`** — All technical specifications
+
+But for daily work, **this one file is all you need**.
+
+---
+
+## 📝 GIT WORKFLOW
+
+**Just tell your agent what you want:**
+
+- **"Pull from Git"** or **"Pull the latest changes from git"** → Agent pulls latest changes
+- **"Push to Git"** or **"Push my work to git"** → Agent commits and pushes with default message
+- **"Push to Git with message: 'your message'"** → Agent commits with your custom message
+
+**The agent handles all the details** (staging, committing, pushing, conflict resolution, etc.)
 
 ---
 
@@ -171,102 +242,4 @@ git remote -v
 
 ---
 
-## 📊 VISUAL WORKFLOW
-
-```
-Session Start:
-┌─────────────────────────────────────────┐
-│  Start chatting with Cursor             │  ← No special prompt needed
-│  (Cursor auto-reads .cursorrules)       │
-└────────┬────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────┐
-│  Work normally                          │  ← Ask, analyze, write, decide
-└────────┬────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────┐
-│  "Update the logs with this             │  ← One sentence prompt
-│   session's work"                       │
-└────────┬────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────┐
-│  Cursor updates 2-4 files automatically │  ← Documentation complete
-└─────────────────────────────────────────┘
-
-Session complete!
-```
-
----
-
-## ⏱️ TIME PER SESSION
-
-| Task | Time | What You Do |
-|------|------|-------------|
-| **Start working** | 0 seconds | Just start chatting |
-| **Working** | Variable | Normal work |
-| **Documentation** | 5 seconds | "Update the logs" |
-
-**Total overhead:** ~5 seconds per session
-
----
-
-## 🎯 KEY REMINDERS
-
-### What's AUTOMATIC (Cursor does without asking):
-- ✅ Reads `.cursorrules` at session start
-- ✅ Reads `PROGRESS_LOG.md` and `PROJECT_MASTER_PLAN.md`
-- ✅ Knows the documentation protocol
-- ✅ Updates all relevant files when you prompt at end
-
-### What YOU need to do:
-- ☑️ Work normally during session
-- ☑️ "Update the logs" at end (5 sec)
-
----
-
-## 🆘 TROUBLESHOOTING
-
-**Cursor seems to have forgotten context**  
-→ Prompt: "Read the progress log and project master plan"
-
-**Not sure what to work on next**  
-→ Look at `PROGRESS_LOG.md` "Next Steps" section (top of file)
-
-**Need to understand a past decision**  
-→ Check `DECISION_LOG.md`
-
----
-
-## 💡 ALTERNATE END-OF-SESSION PROMPTS
-
-Any of these will trigger the full update:
-
-- "Update the logs with this session's work" ✅ **Shortest**
-- "Update the progress log, project master plan, and decision log with this session's work" ✅ Most explicit
-- "Document this session" ✅ Alternative
-- "Follow the session completion protocol" ✅ Formal
-
-**Pick whichever feels natural!**
-
----
-
-## 📝 GIT COMMANDS QUICK REFERENCE
-
-| Task | Command |
-|------|---------|
-| **Check status** | `git status` |
-| **See what changed** | `git diff` |
-| **Stage all changes** | `git add -A` |
-| **Commit changes** | `git commit -m "Your message"` |
-| **Push to GitHub** | `git push origin main` |
-| **Pull from GitHub** | `git pull origin main` |
-| **Check remote** | `git remote -v` |
-| **View commit history** | `git log --oneline` |
-
----
-
 *This is your ONE workflow reference. Everything else is for the AI or detailed reference.*
-

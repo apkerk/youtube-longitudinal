@@ -6,6 +6,8 @@
 
 > **🔴 CRITICAL:** `.cursorrules`, `AI_RULES.md`, and `ANTIGRAVITY_RULES.md` MUST remain identical (except for headers). When updating one, ALWAYS update the others.
 
+> **📋 QUICK START:** When the user says "Pull the latest changes from git", see **Section 2: Session Protocols** below for the exact steps to follow (pull from git, then read documentation files).
+
 ---
 
 # CRITICAL RULES (THE TEN COMMANDMENTS)
@@ -20,7 +22,13 @@
 - **ALWAYS** check `config.yaml` for safety limits before running large jobs.
 
 ## 2. Session Protocols
-- **Start:** Read `AI_RULES.md` and `task.md`.
+- **Start:** After user says "Pull the latest changes from git":
+  1. Run `git pull origin main`
+  2. Automatically read these files in order:
+     - `AI_RULES.md` (or `.cursorrules`) - safety rules and protocols
+     - `MY_WORKFLOW.md` - workflow and session structure
+     - `PROGRESS_LOG.md` or `task.md` - recent activity and current status
+     - `PROJECT_MASTER_PLAN.md` - project context and roadmap (if exists)
 - **End:** Update `task.md` with progress and next steps.
 - **Logs:** Maintain `task.md` as the single source of truth for progress (replaces `PROGRESS_LOG.md` for this project).
 
