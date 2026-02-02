@@ -7,21 +7,56 @@
 
 ---
 
+## 🚀 FIRST COMMAND FOR NEW AI AGENTS
+
+**When you first open a new project workspace, give your AI agent this command:**
+
+**For Cursor:**
+```
+Read MY_WORKFLOW.md, PROJECT_MASTER_PLAN.md, PROGRESS_LOG.md, and .cursorrules to understand this project's workflow, context, and documentation system. Then check if all required documentation files exist and help set up any missing ones.
+```
+
+**For Antigravity:**
+```
+Read MY_WORKFLOW.md, PROJECT_MASTER_PLAN.md, PROGRESS_LOG.md, and .agent/ANTIGRAVITY_RULES.md (or AI_RULES.md if that doesn't exist) to understand this project's workflow, context, and documentation system. Then check if all required documentation files exist and help set up any missing ones.
+```
+
+**For Claude or other AI tools:**
+```
+Read MY_WORKFLOW.md, PROJECT_MASTER_PLAN.md, PROGRESS_LOG.md, and AI_RULES.md to understand this project's workflow, context, and documentation system. Then check if all required documentation files exist and help set up any missing ones.
+```
+
+This single command will:
+- ✅ Orient the agent to your workflow
+- ✅ Load project context and priorities
+- ✅ Understand recent activity
+- ✅ Learn all safety rules
+- ✅ Verify documentation completeness
+- ✅ Help set up missing files
+
+**After this command, the agent is ready to work with you.**
+
+---
+
 ## Quick Start Checklist
 
 When setting up a new research workspace:
 
-1. [ ] Create `.cursorrules` (copy from Section 1)
-2. [ ] Create `AI_RULES.md` (identical to `.cursorrules`, except header)
-3. [ ] Create `PROJECT_MASTER_PLAN.md` (copy from Section 2)
-4. [ ] Create `PROGRESS_LOG.md` (copy from Section 3)
-5. [ ] Create `DECISION_LOG.md` (copy from Section 4)
-6. [ ] Create `TECHNICAL_SPECS.md` (copy from Section 5)
-7. [ ] **Copy `MY_WORKFLOW_STANDALONE_TEMPLATE.md` as `MY_WORKFLOW.md`** (or copy from Section 6)
-8. [ ] Create `writing-patterns.md` (copy from Section 7)
-9. [ ] Create `deck.md` (copy from Section 8)
-10. [ ] Create folder structure: `code/`, `data/`, `output/`, `drafts/`, `archive/`
-11. [ ] Customize each file for your specific project
+1. [ ] **Initialize Git repository** (see Section 12 for Git setup)
+2. [ ] Create `.gitignore` (copy from Section 12)
+3. [ ] Create `.cursorrules` (copy from Section 1)
+4. [ ] Create `AI_RULES.md` (identical to `.cursorrules`, except header)
+5. [ ] **(Optional) Create `.agent/ANTIGRAVITY_RULES.md`** (if using Antigravity; see Section 13)
+5. [ ] Create `PROJECT_MASTER_PLAN.md` (copy from Section 2)
+6. [ ] Create `PROGRESS_LOG.md` (copy from Section 3)
+7. [ ] Create `DECISION_LOG.md` (copy from Section 4)
+8. [ ] Create `TECHNICAL_SPECS.md` (copy from Section 5)
+9. [ ] **Copy `MY_WORKFLOW_STANDALONE_TEMPLATE.md` as `MY_WORKFLOW.md`** (or copy from Section 6)
+10. [ ] Create `writing-patterns.md` (copy from Section 7)
+11. [ ] Create `deck.md` (copy from Section 8)
+12. [ ] Create folder structure: `code/`, `data/`, `output/`, `drafts/`, `archive/`
+13. [ ] Connect to GitHub repository (see Section 12)
+14. [ ] Customize each file for your specific project
 
 **Note:** `MY_WORKFLOW.md` is also available as a standalone template file (`MY_WORKFLOW_STANDALONE_TEMPLATE.md`) that you can copy directly into any workspace.
 
@@ -30,6 +65,8 @@ When setting up a new research workspace:
 # SECTION 1: .cursorrules (and AI_RULES.md)
 
 Create both `.cursorrules` and `AI_RULES.md` with identical content (except for the header note). Cursor auto-reads `.cursorrules`; other AI tools (Claude, Antigravity, etc.) can reference `AI_RULES.md`.
+
+**Note for Antigravity users:** Antigravity also supports `ANTIGRAVITY_RULES.md` in the `.agent/` directory. This can be based on `AI_RULES.md` but may include Antigravity-specific workflows (PLANNING/EXECUTION/VERIFICATION modes, artifact strategies, etc.). See Section 13 for Antigravity-specific setup.
 
 ```markdown
 # .cursorrules — AI Agent Instructions
@@ -1142,6 +1179,10 @@ Create these folders in your project root:
 
 ```
 [project_root]/
+├── .git/                     ← Git repository (created by `git init`)
+├── .agent/                   ← Antigravity configuration (optional)
+│   └── ANTIGRAVITY_RULES.md  ← Antigravity-specific rules
+├── .gitignore                ← Git ignore rules (copy from Section 12)
 ├── .cursorrules              ← AI rules (auto-read by Cursor)
 ├── AI_RULES.md               ← Same as .cursorrules (for other AI tools)
 ├── PROJECT_MASTER_PLAN.md    ← Roadmap and context
@@ -1198,6 +1239,12 @@ Create these folders in your project root:
 
 # SECTION 11: Quick Reference Card
 
+## First Time Setup (New Project or New Agent)
+**Give this command to your AI agent:**
+```
+Read MY_WORKFLOW.md, PROJECT_MASTER_PLAN.md, PROGRESS_LOG.md, and .cursorrules to understand this project's workflow, context, and documentation system. Then check if all required documentation files exist and help set up any missing ones.
+```
+
 ## Session Start
 Just start chatting. Cursor reads `.cursorrules` automatically.
 
@@ -1218,6 +1265,247 @@ Prompt: **"Update the logs with this session's work"**
 - ✅ ALWAYS copy, don't move
 - ✅ ALWAYS preserve originals
 - ✅ Use `archive/` for retired files
+
+## Git Setup
+- ✅ Initialize Git repository for new projects
+- ✅ Create `.gitignore` before first commit
+- ✅ Connect to GitHub repository
+- ✅ Commit documentation files first
+
+---
+
+# SECTION 12: Git Repository Setup
+
+## Initialize Git Repository
+
+**For a new project, always initialize a Git repository:**
+
+```bash
+# Navigate to your project root directory
+cd /path/to/your/project
+
+# Initialize Git repository
+git init
+
+# Create initial commit with documentation files
+git add .cursorrules AI_RULES.md PROJECT_MASTER_PLAN.md PROGRESS_LOG.md DECISION_LOG.md TECHNICAL_SPECS.md MY_WORKFLOW.md writing-patterns.md deck.md .gitignore
+git commit -m "Initial commit: Project documentation setup"
+```
+
+## Connect to GitHub Repository
+
+**After creating a repository on GitHub:**
+
+```bash
+# Add remote repository (replace with your GitHub URL)
+git remote add origin https://github.com/yourusername/your-repo-name.git
+
+# Or if using SSH:
+git remote add origin git@github.com:yourusername/your-repo-name.git
+
+# Push initial commit
+git branch -M main
+git push -u origin main
+```
+
+**Note:** Replace `yourusername` and `your-repo-name` with your actual GitHub username and repository name.
+
+## .gitignore File
+
+**Create `.gitignore` in your project root with the following content:**
+
+```gitignore
+# Large data files - should not be in git
+*.dta
+*.csv
+*.xlsx
+*.xls
+*.sav
+*.sas7bdat
+*.rdata
+*.rda
+
+# LaTeX compiled outputs
+*.pdf
+*.aux
+*.log
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.out
+*.toc
+*.nav
+*.snm
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+env/
+
+# R
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj.user/
+
+# Stata
+*.smcl
+*.log
+
+# Statistical software outputs
+*.spv
+*.spo
+
+# Qualitative analysis software
+*.nvp
+*.hpr
+*.mx1
+
+# Temporary files
+*.tmp
+*.temp
+*~
+*.swp
+*.swo
+
+# Google Drive files
+*.gdoc
+*.gsheet
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment variables and secrets
+.env
+.env.local
+config/secrets.yaml
+
+# Large output files
+output/figures/*.png
+output/figures/*.jpg
+output/tables/*.pdf
+output/logs/*.smcl
+
+# Archive folder (optional - you may want to track some archived files)
+# Uncomment if you want to ignore everything in archive/
+# archive/*
+```
+
+**Customize for your project:**
+- Add file extensions specific to your analysis software
+- Add paths to large datasets that should never be committed
+- Adjust output folder exclusions based on your needs
+- Consider whether you want to track some files in `archive/` or ignore them all
+
+**Important:** The `.gitignore` file should be committed to your repository so all collaborators use the same ignore rules.
+
+---
+
+# SECTION 13: Antigravity-Specific Setup
+
+## Antigravity Rules File
+
+**Antigravity** (Google's AI coding assistant) uses `ANTIGRAVITY_RULES.md` in the `.agent/` directory as its equivalent to `.cursorrules`.
+
+### Setup Instructions
+
+1. **Create `.agent/` directory** (if it doesn't exist):
+   ```bash
+   mkdir -p .agent
+   ```
+
+2. **Create `ANTIGRAVITY_RULES.md`** based on `AI_RULES.md`:
+   - Copy `AI_RULES.md` as a starting point
+   - Add Antigravity-specific sections (see below)
+   - Place in `.agent/ANTIGRAVITY_RULES.md`
+
+### Antigravity-Specific Additions
+
+Add these sections to your `ANTIGRAVITY_RULES.md`:
+
+```markdown
+# ANTIGRAVITY-SPECIFIC WORKFLOWS
+
+## Task Mode Usage
+- **PLANNING Mode:** Use when researching codebase, understanding requirements, or designing approach
+  - Create `implementation_plan.md` artifact in brain directory
+  - Request user review via `notify_user` before proceeding
+- **EXECUTION Mode:** Use when actively writing code or making changes
+  - Update `task.md` artifact to track progress
+  - Switch to PLANNING if unexpected complexity arises
+- **VERIFICATION Mode:** Use when testing changes, validating correctness
+  - Create `walkthrough.md` artifact documenting results
+  - Include terminal output, test results, visual evidence
+
+## Artifact Strategy
+- **task.md**: Detailed checklist broken down by component-level items
+- **implementation_plan.md**: Technical plans during PLANNING mode requiring user review
+- **walkthrough.md**: Post-work summary with screenshots/recordings of verification
+- Store all artifacts in Antigravity brain directory (auto-created)
+
+## Command Execution Guidelines
+- Use `SafeToAutoRun: true` for read-only commands (ls, cat, grep)
+- Use `SafeToAutoRun: false` for any analysis scripts, data processing, or file modifications
+- For statistical analysis: Always propose commands, never auto-run
+- For data processing: Require user approval before execution
+
+## Antigravity Tool Usage Guidelines
+
+### File Operations
+- Use `view_file` to read existing code/data files
+- Use `find_by_name` and `grep_search` to explore codebase structure
+- Use `write_to_file` for new files, `replace_file_content`/`multi_replace_file_content` for edits
+- Always use absolute paths in Antigravity tools
+
+### Terminal Commands
+- Propose analysis commands with `run_command` (SafeToAutoRun: false)
+- For data processing scripts: require user approval before execution
+- Use `read_terminal` to capture output for analysis
+- Document terminal session results in walkthrough.md
+
+### Artifact Formatting
+- Use GitHub Flavored Markdown for all artifacts
+- Embed code using fenced blocks with language tags
+- Use diff blocks to show changes
+- Link to files: `[basename](file:///absolute/path)` 
+- Embed images/recordings: `![caption](/absolute/path)`
+- Use alerts (NOTE, IMPORTANT, WARNING, CAUTION) strategically
+```
+
+### File Location
+
+```
+[project_root]/
+├── .agent/
+│   └── ANTIGRAVITY_RULES.md    ← Antigravity-specific rules
+├── .cursorrules                ← Cursor rules (auto-read)
+└── AI_RULES.md                 ← Universal rules (for Claude, etc.)
+```
+
+**Note:** All three files should contain the same core rules, with Antigravity's file including additional Antigravity-specific workflows.
 
 ---
 

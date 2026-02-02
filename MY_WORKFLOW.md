@@ -96,6 +96,32 @@ git push origin main
 
 ---
 
+---
+
+## 🔧 GIT IN ANTIGRAVITY
+
+### Is it always connected?
+**YES.** You only need to initialize once (which is already done). Antigravity has persistent access to the repository.
+
+### Daily Routine in Antigravity
+
+**1. Start of Session (Optional)**
+If you worked on another computer, ask the agent:
+> "Pull the latest changes from git"
+
+**2. End of Session**
+Ask the agent:
+> "Push my work to git"
+
+The agent will run:
+```bash
+git add .
+git commit -m "Update work"
+git push
+```
+
+---
+
 ## 🔧 INITIAL GIT SETUP (One-Time Per Project)
 
 ### If Starting a New Project

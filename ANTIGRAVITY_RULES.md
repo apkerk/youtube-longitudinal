@@ -1,7 +1,7 @@
-# AI_RULES.md — Universal AI Agent Instructions
+# ANTIGRAVITY_RULES.md — Antigravity Agent Instructions
 # Project: YouTube Longitudinal Data Collection
 
-> **For AI Assistants:** This file contains critical rules and context for working on this project.
+> **For Antigravity Agents:** This file contains critical rules and context for working on this project.
 > Read this file at the start of every session. This is the same content as `.cursorrules`.
 
 > **🔴 CRITICAL:** `.cursorrules`, `AI_RULES.md`, and `ANTIGRAVITY_RULES.md` MUST remain identical (except for headers). When updating one, ALWAYS update the others.

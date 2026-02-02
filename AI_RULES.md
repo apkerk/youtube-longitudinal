@@ -4,7 +4,7 @@
 > **For AI Assistants:** This file contains critical rules and context for working on this project.
 > Read this file at the start of every session. This is the same content as `.cursorrules`.
 
-> **🔴 CRITICAL:** `.cursorrules` and `AI_RULES.md` MUST remain identical (except for headers). When updating one, ALWAYS update the other.
+> **🔴 CRITICAL:** `.cursorrules`, `AI_RULES.md`, and `ANTIGRAVITY_RULES.md` MUST remain identical (except for headers). When updating one, ALWAYS update the others.
 
 ---
 
