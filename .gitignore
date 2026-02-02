@@ -1,0 +1,21 @@
+# System
+.DS_Store
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# Project Specific
+youtube-longitudinal/config/config.yaml
+*.csv
+*.json
+*.db
+data/
+logs/
