@@ -10,12 +10,47 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 .env
 
-# Project Specific
-youtube-longitudinal/config/config.yaml
-*.csv
-*.json
-*.db
+# Data files (tracked by Google Drive, not git)
 data/
+*.csv
+*.xlsx
+*.dta
+*.json
+*.parquet
+*.db
+*.sav
+
+# Config with secrets
+config/config.yaml
+
+# Logs
 logs/
+
+# Temp and intermediate
+temp/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# VS Code / Cursor workspace files
+*.code-workspace
+
+# Large files
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.mp4
+*.mov
+
+# Stata artifacts
+*.smcl
+
+# Archive (too large for git, tracked by Drive)
+archive/
+
+# Output (regenerable from code)
+output/
