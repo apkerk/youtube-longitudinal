@@ -22,11 +22,17 @@
 
 ## Current Marker
 
-**Now:** Phase 4: Production Collection Ready ✅  
-**Last Session:** Feb 02, 2026 — Full Production Pipeline Implementation  
-**Next:** Start 200k x 2 stream collection (Stream A + A')
+**Now:** Phase 4: Production Collection Ready ✅
+**Last Session:** Feb 16, 2026 — Project restructured (flattened from triple-nested to root layout)
+**Next:** Install Python deps (`pip install -r requirements.txt`), then start 200k x 2 stream collection
 
-### Session Achievements (Feb 02, 2026 - Late Evening)
+### Session Achievements (Feb 16, 2026)
+- ✅ Flattened project from triple-nested to clean root-level layout
+- ✅ Created CLAUDE.md, `.claude/rules/`, `.claude/skills/log-update`
+- ✅ All Python paths verified working after restructuring
+- ✅ Committed and pushed to GitHub
+
+### Prior Session (Feb 02, 2026 - Late Evening)
 - ✅ Built complete production-grade modular architecture (15 new files)
 - ✅ Created comprehensive config system with 8-language keywords + full YouTube topic hierarchy
 - ✅ Implemented all 5 collection scripts (A, A', B, C, D)
@@ -145,12 +151,13 @@ What are the early-stage drivers of distinctiveness and virality for new cultura
 ## Documentation
 | File | Purpose |
 |------|---------|
+| `CLAUDE.md` | Project AI instructions, session protocol, safety rules |
 | `PROGRESS_LOG.md` | Dated chronicle of all work |
 | `DECISION_LOG.md` | Analytical decisions with rationale |
 | `TECHNICAL_SPECS.md` | Technical specifications (Sampling details) |
-| `SAMPLING_EXPERIMENTS.md` | **NEW** - Full experiment log with methodology validation |
-| `QUOTA_ANALYSIS.md` | **NEW** - Sample size & polling frequency trade-offs |
-| `AI_RULES.md` | Agent rules & Ten Commandments |
+| `docs/SAMPLING_EXPERIMENTS.md` | Full experiment log with methodology validation |
+| `docs/QUOTA_ANALYSIS.md` | Sample size & polling frequency trade-offs |
+| `docs/YOUTUBE_API_VARIABLE_REFERENCE.md` | Full YouTube API field documentation |
 
 ---
 

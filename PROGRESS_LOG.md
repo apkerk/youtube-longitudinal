@@ -5,20 +5,34 @@
 
 ---
 
-## Current Status (as of Feb 02, 2026 — Late Evening)
+## Current Status (as of Feb 16, 2026)
 
-**Phase:** Full Implementation COMPLETE ✅  
-**Roadmap Position:** Phase 4 (Production) Ready  
-**Data Quality Status:** Scripts tested, working, validated  
-**Tomorrow's Priority:** Start full-scale collection (200k x 2 streams)  
-**Next Steps:** 
-1. Run Stream A collection: `python3 -m src.collection.discover_intent`
-2. Run Stream A' collection: `python3 -m src.collection.discover_non_intent`
-3. Optional: Enrich with first video data OR skip for speed
+**Phase:** Phase 4 (Production) Ready — project restructured
+**Roadmap Position:** Phase 4 (Production) Ready
+**Data Quality Status:** Scripts tested, working, validated
+**Next Steps:**
+1. `pip install -r requirements.txt` (pyyaml not currently installed)
+2. Run Stream A collection: `python3 -m src.collection.discover_intent`
+3. Run Stream A' collection: `python3 -m src.collection.discover_non_intent`
 
 ---
 
 ## Feb 2026
+
+### Feb 16, 2026 — 02:15 PM [Project Restructuring]
+- Flattened project from triple-nested `youtube-longitudinal/youtube-longitudinal/youtube-longitudinal/` to root-level layout
+- Production code (`src/`) moved from Level 3 to root; all `Path(__file__)` relative paths verified working
+- Created project CLAUDE.md with session protocol, safety rules, coding standards
+- Added `.claude/rules/` (01-session-protocol, 02-data-collection)
+- Added `.claude/skills/log-update/` for session-end commit+push workflow
+- Moved 4 existing analysis skills (stata-regression, r-econometrics, python-panel-data, referee-audit) to root `.claude/skills/`
+- Detailed docs from Level 2 promoted to root (PROJECT_MASTER_PLAN, PROGRESS_LOG, TECHNICAL_SPECS, DECISION_LOG)
+- Reference docs (API variable ref, sampling experiments, quota analysis) moved to `docs/`
+- Updated `.gitignore` (comprehensive: data, secrets, artifacts, archive, output)
+- Archived: v1 legacy scripts, superseded rule files (AI_RULES, ANTIGRAVITY_RULES, MY_WORKFLOW), loose conversation/template files, stray 656MB .dta file (confirmed duplicate of dissertation copy)
+- Removed nested `.git/` repository (history captured in commit message)
+- Resolved merge conflict with remote (b527cb0 production commit)
+- What's next: install Python deps, then start production collection
 
 ### Feb 02, 2026 — 05:30 PM (Late Evening Session)
 **Session Focus:** Full Production Pipeline Implementation
