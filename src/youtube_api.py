@@ -15,6 +15,7 @@ Author: Katie Apker
 Last Updated: Feb 02, 2026
 """
 
+import csv
 import os
 import re
 import time
@@ -86,27 +87,62 @@ def get_authenticated_service(api_key: Optional[str] = None):
 
 
 # =============================================================================
+# QUOTA TRACKING
+# =============================================================================
+
+_quota_daily_total = 0
+_quota_current_date = ""
+
+
+def _log_quota_usage(quota_cost: int, endpoint_name: str) -> None:
+    """Append quota usage to daily CSV log."""
+    global _quota_daily_total, _quota_current_date
+
+    today = datetime.utcnow().strftime("%Y%m%d")
+    if today != _quota_current_date:
+        _quota_daily_total = 0
+        _quota_current_date = today
+
+    _quota_daily_total += quota_cost
+    log_path = Path(__file__).parent.parent / "data" / "logs" / f"quota_{today}.csv"
+
+    try:
+        write_header = not log_path.exists()
+        with open(log_path, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            if write_header:
+                writer.writerow(['timestamp', 'endpoint_name', 'quota_cost', 'cumulative_daily_total'])
+            writer.writerow([datetime.utcnow().isoformat(), endpoint_name, quota_cost, _quota_daily_total])
+    except Exception:
+        pass  # Never block API operations for logging failures
+
+
+# =============================================================================
 # REQUEST EXECUTION WITH RETRY
 # =============================================================================
 
-def execute_request(request, max_retries: int = 5) -> Dict:
+def execute_request(request, max_retries: int = 5, quota_cost: int = 1, endpoint_name: str = "unknown") -> Dict:
     """
     Execute an API request with exponential backoff for rate limits.
-    
+
     Args:
         request: YouTube API request object
         max_retries: Maximum number of retry attempts
-        
+        quota_cost: API quota units consumed by this request
+        endpoint_name: Name of the endpoint for quota logging
+
     Returns:
         API response dictionary
-        
+
     Raises:
         Exception: If all retries fail
     """
     retries = 0
     while retries < max_retries:
         try:
-            return request.execute()
+            result = request.execute()
+            _log_quota_usage(quota_cost, endpoint_name)
+            return result
         except HttpError as e:
             if e.resp.status in [403, 429, 500, 503]:
                 sleep_time = (2 ** retries) + (time.time() % 1)
@@ -417,14 +453,57 @@ def get_video_details_batch(youtube, video_ids: List[str], trigger_type: str = "
     return videos_data
 
 
+def get_video_stats_batch(youtube, video_ids: List[str]) -> List[Dict]:
+    """
+    Get only statistics for a batch of video IDs (lean daily panel fetch).
+
+    Unlike get_video_details_batch() which requests full snippet/contentDetails/status,
+    this only fetches statistics. Same API cost but less data transfer.
+
+    Args:
+        youtube: Authenticated YouTube API service
+        video_ids: List of video IDs to fetch
+
+    Returns:
+        List of dicts: {video_id, view_count, like_count, comment_count, scraped_at}
+    """
+    stats_data = []
+    unique_ids = list(set(video_ids))
+
+    for chunk in chunks(unique_ids, 50):
+        try:
+            request = youtube.videos().list(
+                part="statistics",
+                id=",".join(chunk)
+            )
+            response = execute_request(request)
+
+            for item in response.get('items', []):
+                statistics = item.get('statistics', {})
+                stats_data.append({
+                    'video_id': item.get('id'),
+                    'view_count': int(statistics.get('viewCount', 0)),
+                    'like_count': int(statistics.get('likeCount', 0)),
+                    'comment_count': int(statistics.get('commentCount', 0)),
+                    'scraped_at': datetime.utcnow().isoformat(),
+                })
+
+            time.sleep(config.SLEEP_BETWEEN_CALLS)
+
+        except Exception as e:
+            logger.error(f"Error fetching video stats: {e}")
+
+    return stats_data
+
+
 def parse_video_response(item: Dict, trigger_type: str) -> Dict:
     """
     Parse a single video API response into a flat dictionary.
-    
+
     Args:
         item: Video item from API response
         trigger_type: Why this video was fetched
-        
+
     Returns:
         Flat dictionary of video data
     """
@@ -619,6 +698,71 @@ def get_oldest_video(youtube, uploads_playlist_id: str) -> Optional[Dict]:
     except Exception as e:
         logger.error(f"Error getting oldest video: {e}")
         return None
+
+
+def get_all_video_ids(
+    youtube,
+    uploads_playlist_id: str,
+    channel_id: str,
+    start_page_token: Optional[str] = None
+) -> Tuple[List[Dict], Optional[str]]:
+    """
+    Get ALL video IDs from a channel's uploads playlist.
+
+    Unlike get_oldest_video() which caps at 10 pages, this paginates to
+    completion. Supports checkpoint/resume via start_page_token.
+
+    Args:
+        youtube: Authenticated YouTube API service
+        uploads_playlist_id: The uploads playlist ID (UU... format)
+        channel_id: Channel ID (for tagging output)
+        start_page_token: Optional page token to resume from
+
+    Returns:
+        Tuple of (list of video dicts, final page token or None if complete)
+        Each dict: {video_id, channel_id, published_at, title}
+    """
+    video_list: List[Dict] = []
+    page_token = start_page_token
+
+    while True:
+        try:
+            request = youtube.playlistItems().list(
+                part='snippet',
+                playlistId=uploads_playlist_id,
+                maxResults=50,
+                pageToken=page_token
+            )
+            response = execute_request(request)
+
+            for item in response.get('items', []):
+                snippet = item.get('snippet', {})
+                video_list.append({
+                    'video_id': snippet.get('resourceId', {}).get('videoId'),
+                    'channel_id': channel_id,
+                    'published_at': snippet.get('publishedAt'),
+                    'title': snippet.get('title'),
+                })
+
+            page_token = response.get('nextPageToken')
+            if not page_token:
+                return video_list, None
+
+            time.sleep(config.SLEEP_BETWEEN_CALLS)
+
+        except HttpError as e:
+            if e.resp.status == 404:
+                logger.warning(f"Playlist not found: {uploads_playlist_id}")
+                break
+            else:
+                logger.error(f"Error enumerating videos for {channel_id}: {e}")
+                return video_list, page_token
+
+        except Exception as e:
+            logger.error(f"Unexpected error enumerating videos for {channel_id}: {e}")
+            return video_list, page_token
+
+    return video_list, None
 
 
 def get_newest_videos(youtube, uploads_playlist_id: str, max_results: int = 5) -> List[str]:

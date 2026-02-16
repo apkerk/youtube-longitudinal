@@ -16,7 +16,7 @@ Last Updated: Feb 02, 2026
 """
 
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 from datetime import datetime
 
 # =============================================================================
@@ -30,6 +30,17 @@ CHANNELS_DIR = DATA_DIR / "channels"
 VIDEOS_DIR = DATA_DIR / "videos"
 LOGS_DIR = DATA_DIR / "logs"
 CONFIG_DIR = PROJECT_ROOT / "config"
+
+# Gender Gap & AI Census directories
+GENDER_GAP_DIR = CHANNELS_DIR / "gender_gap"
+AI_CENSUS_DIR = CHANNELS_DIR / "ai_census"
+VIDEO_INVENTORY_DIR = DATA_DIR / "video_inventory"
+DAILY_PANELS_DIR = DATA_DIR / "daily_panels"
+VIDEO_STATS_DIR = DAILY_PANELS_DIR / "video_stats"
+CHANNEL_STATS_DIR = DAILY_PANELS_DIR / "channel_stats"
+TRANSCRIPTS_DIR = DATA_DIR / "transcripts"
+COMMENTS_DIR = DATA_DIR / "comments"
+PROCESSED_DIR = DATA_DIR / "processed"
 
 # Stream-specific directories
 STREAM_DIRS = {
@@ -244,6 +255,31 @@ CASUAL_QUERIES: List[str] = [
 BENCHMARK_QUERIES: List[str] = [
     "a", "e", "i", "o", "u",
     "video",
+]
+
+# =============================================================================
+# AI SEARCH TERMS (AI Creator Census)
+# Broad: includes both generative AI and programming-AI tools
+# =============================================================================
+
+AI_SEARCH_TERMS: List[str] = [
+    "AI tutorial",
+    "artificial intelligence",
+    "ChatGPT",
+    "AI tools",
+    "agentic AI",
+    "AI automation",
+    "prompt engineering",
+    "generative AI",
+    "Midjourney tutorial",
+    "Claude Code",
+    "AI video editing",
+    "AI voice",
+    "DALL-E",
+    "Sora AI",
+    "ElevenLabs",
+    "Cursor AI",
+    "Copilot tutorial",
 ]
 
 # =============================================================================
@@ -612,6 +648,44 @@ VIDEO_FIELDS = [
     "scraped_at",
 ]
 
+# Daily panel video stats fields (lean — statistics only)
+VIDEO_STATS_FIELDS = [
+    "video_id",
+    "view_count",
+    "like_count",
+    "comment_count",
+    "scraped_at",
+]
+
+# Daily panel channel stats fields
+CHANNEL_STATS_FIELDS = [
+    "channel_id",
+    "view_count",
+    "subscriber_count",
+    "video_count",
+    "scraped_at",
+]
+
+# Video inventory fields (from enumerate_videos)
+VIDEO_INVENTORY_FIELDS = [
+    "video_id",
+    "channel_id",
+    "published_at",
+    "title",
+    "scraped_at",
+]
+
+# Comment fields (for future enrichment)
+COMMENT_FIELDS = [
+    "comment_id",
+    "video_id",
+    "author_display_name",
+    "text_display",
+    "like_count",
+    "published_at",
+    "scraped_at",
+]
+
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
@@ -632,11 +706,40 @@ def ensure_directories() -> None:
         stream_dir.mkdir(parents=True, exist_ok=True)
     VIDEOS_DIR.mkdir(parents=True, exist_ok=True)
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    GENDER_GAP_DIR.mkdir(parents=True, exist_ok=True)
+    AI_CENSUS_DIR.mkdir(parents=True, exist_ok=True)
+    VIDEO_INVENTORY_DIR.mkdir(parents=True, exist_ok=True)
+    VIDEO_STATS_DIR.mkdir(parents=True, exist_ok=True)
+    CHANNEL_STATS_DIR.mkdir(parents=True, exist_ok=True)
+    TRANSCRIPTS_DIR.mkdir(parents=True, exist_ok=True)
+    COMMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def get_output_path(stream: str, prefix: str = "initial") -> Path:
     """Get output path for a stream's data file."""
     return STREAM_DIRS[stream] / f"{prefix}_{get_date_stamp()}.csv"
+
+
+def get_daily_panel_path(panel_type: str, date_str: Optional[str] = None) -> Path:
+    """
+    Get output path for a daily panel file.
+
+    Args:
+        panel_type: 'video_stats' or 'channel_stats'
+        date_str: Optional date string (YYYY-MM-DD). Defaults to today UTC.
+
+    Returns:
+        Path to daily panel CSV file
+    """
+    if date_str is None:
+        date_str = datetime.utcnow().strftime("%Y-%m-%d")
+    if panel_type == "video_stats":
+        return VIDEO_STATS_DIR / f"{date_str}.csv"
+    elif panel_type == "channel_stats":
+        return CHANNEL_STATS_DIR / f"{date_str}.csv"
+    else:
+        raise ValueError(f"Unknown panel type: {panel_type}")
 
 
 def get_all_intent_keywords() -> List[tuple]:
