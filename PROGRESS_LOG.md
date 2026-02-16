@@ -7,17 +7,31 @@
 
 ## Current Status (as of Feb 16, 2026)
 
-**Phase:** Phase 4 (Production) Ready — project restructured
-**Roadmap Position:** Phase 4 (Production) Ready
-**Data Quality Status:** Scripts tested, working, validated
+**Phase:** Phase 0 of AI Design Integration (data prep) + Phase 4 (Production) Ready for New Creator Cohort
+**Roadmap Position:** Two parallel tracks launching
+**Data Quality Status:** Bailey's xlsx confirmed clean (earlier misalignment diagnosis was parsing artifact). ~4,098 channels uncoded for gender, ~4,106 uncoded for race. Minor typos in race field need cleaning.
 **Next Steps:**
 1. `pip install -r requirements.txt` (pyyaml not currently installed)
-2. Run Stream A collection: `python3 -m src.collection.discover_intent`
-3. Run Stream A' collection: `python3 -m src.collection.discover_non_intent`
+2. Phase 0: Clean Bailey's data, produce canonical channel list, update config.py
+3. Phase 1 Track A: Launch 5-stream new creator cohort collection
+4. Phase 1 Track B: Build video enumeration + daily stats engine for gender gap panel
+5. Phase 2: AI Creator Census discovery script
 
 ---
 
 ## Feb 2026
+
+### Feb 16, 2026 — 04:30 PM [AI Design Integration — Planning & Scope Expansion]
+- Read and evaluated design document (`SECOND_BRAIN/03-research/YOUTUBE_DATASET_DESIGN.md`) — three new research designs: AI Creator Census, AI Adoption Diffusion Panel, Audience Response
+- Audited all existing Python scripts against proposed architecture. Mapped reusable code vs. gaps.
+- Analyzed both raw data files: confirmed 14,169 unique channels, 100% overlap between Infludata and Bailey's lists
+- **Corrected misdiagnosis:** Bailey's xlsx does NOT have 4,097 misaligned rows. Those channels have BLANK gender/race (uncoded). Apparent misalignment was from parsing xlsx cells positionally instead of by cell reference.
+- **SCOPE EXPANSION (Katie-approved):** This repo now owns longitudinal data collection on the 14,169 gender gap channels. Gender gap paper analysis stays in CH2. Updated CLAUDE.md.
+- Resolved all 9 methodological decisions with Katie: all 14,169 channels, broad AI search terms, keyword-first AI detection, randomized comment sampling, partitioned CSVs to start
+- Created new directory structure: `src/panels/`, `src/enrichment/`, `src/analysis/`, `data/channels/gender_gap/`, `data/channels/ai_census/`, `data/video_inventory/`, `data/daily_panels/{video_stats,channel_stats}/`, `data/transcripts/`, `data/comments/`, `logs/`
+- Wrote full implementation plan: `.claude/plans/cached-knitting-puffin.md`
+- Wrote agent handoff document: `docs/AGENT_HANDOFF.md`
+- What's next: Hand off to parallel agents for implementation (data prep, API infrastructure, collection scripts, AI census)
 
 ### Feb 16, 2026 — 02:15 PM [Project Restructuring]
 - Flattened project from triple-nested `youtube-longitudinal/youtube-longitudinal/youtube-longitudinal/` to root-level layout

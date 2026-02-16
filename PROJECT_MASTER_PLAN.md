@@ -1,8 +1,8 @@
 # PROJECT MASTER PLAN: YouTube Longitudinal Data Collection
 
-**Purpose:** Comprehensive project context and roadmap  
-**Last Updated:** Feb 02, 2026  
-**Current Status:** Implementation Phase (Script Creation)
+**Purpose:** Comprehensive project context and roadmap
+**Last Updated:** Feb 16, 2026
+**Current Status:** AI Design Integration + Production Launch
 
 ---
 
@@ -22,11 +22,21 @@
 
 ## Current Marker
 
-**Now:** Phase 4: Production Collection Ready ✅
-**Last Session:** Feb 16, 2026 — Project restructured (flattened from triple-nested to root layout)
-**Next:** Install Python deps (`pip install -r requirements.txt`), then start 200k x 2 stream collection
+**Now:** Two parallel tracks launching
+**Last Session:** Feb 16, 2026 — AI Design Integration planning complete, scope expanded
+**Next:** Hand off to parallel agents for Phase 0 (data prep) + Phase 1 (dual-track collection launch)
 
-### Session Achievements (Feb 16, 2026)
+### Session Achievements (Feb 16, 2026 — Late Afternoon)
+- ✅ Evaluated 3 research designs from YOUTUBE_DATASET_DESIGN.md — all approved for implementation
+- ✅ Expanded project scope to include gender gap longitudinal panel (Katie-approved)
+- ✅ Updated CLAUDE.md with expanded scope, new directory layout, new sampling tables
+- ✅ Corrected Bailey's data quality misdiagnosis (blank fields, not misaligned)
+- ✅ Resolved all 9 methodological decisions with Katie
+- ✅ Created new directory structure for AI designs (panels/, enrichment/, analysis/, etc.)
+- ✅ Wrote full implementation plan (`.claude/plans/cached-knitting-puffin.md`)
+- ✅ Wrote agent handoff document (`docs/AGENT_HANDOFF.md`)
+
+### Prior Session (Feb 16, 2026 — Afternoon)
 - ✅ Flattened project from triple-nested to clean root-level layout
 - ✅ Created CLAUDE.md, `.claude/rules/`, `.claude/skills/log-update`
 - ✅ All Python paths verified working after restructuring
