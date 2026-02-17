@@ -15,12 +15,18 @@ The --mode flag controls which stats to collect:
 See docs/PANEL_SCHEMA.md for the full dual-cadence design rationale.
 
 Usage:
+    # Channel stats only (reads channel IDs directly, no inventory needed):
+    python -m src.panels.daily_stats \
+        --channel-list data/channels/gender_gap/channel_ids.csv \
+        --mode channel [--test] [--limit N]
+
+    # Video or both modes (requires video inventory):
     python -m src.panels.daily_stats \
         --video-inventory data/video_inventory/gender_gap_inventory.csv \
         [--mode channel|video|both] [--test] [--limit N]
 
 Author: Katie Apker
-Last Updated: Feb 16, 2026
+Last Updated: Feb 17, 2026
 """
 
 import argparse
@@ -64,14 +70,22 @@ class DailyStatsCollector:
     and appends them to the inventory. Supports checkpoint/resume.
     """
 
-    def __init__(self, youtube, inventory_path: Path):
+    def __init__(
+        self,
+        youtube,
+        inventory_path: Optional[Path] = None,
+        channel_list_path: Optional[Path] = None,
+    ):
         """
         Args:
             youtube: Authenticated YouTube API service
-            inventory_path: Path to video inventory CSV
+            inventory_path: Path to video inventory CSV (required for video/both modes)
+            channel_list_path: Path to a CSV with a channel_id column (optional;
+                used for channel-only mode to bypass the video inventory)
         """
         self.youtube = youtube
         self.inventory_path = inventory_path
+        self.channel_list_path = channel_list_path
         self.today = datetime.utcnow().strftime("%Y-%m-%d")
         self.checkpoint_path = config.DAILY_PANELS_DIR / ".daily_stats_checkpoint.json"
 
@@ -98,6 +112,30 @@ class DailyStatsCollector:
         channel_ids = sorted(channel_ids_set)
         logger.info(f"Loaded inventory: {len(video_ids)} videos, {len(channel_ids)} channels")
         return video_ids, channel_ids
+
+    def load_channel_list(self) -> List[str]:
+        """
+        Load channel IDs from a standalone channel list CSV.
+
+        The file must have a 'channel_id' column. Other columns are ignored.
+
+        Returns:
+            Sorted list of unique channel IDs
+        """
+        if self.channel_list_path is None:
+            raise ValueError("channel_list_path not set")
+
+        channel_ids_set: set = set()
+        with open(self.channel_list_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                cid = row.get('channel_id', '').strip()
+                if cid:
+                    channel_ids_set.add(cid)
+
+        channel_ids = sorted(channel_ids_set)
+        logger.info(f"Loaded channel list: {len(channel_ids)} channels from {self.channel_list_path.name}")
+        return channel_ids
 
     def load_checkpoint(self) -> Dict:
         """
@@ -229,6 +267,10 @@ class DailyStatsCollector:
         Returns:
             List of newly detected video entries
         """
+        if self.inventory_path is None:
+            logger.info("No inventory path set, skipping new video detection")
+            return []
+
         if previous_channel_stats_path is None or not previous_channel_stats_path.exists():
             logger.info("No previous channel stats found, skipping new video detection")
             return []
@@ -355,8 +397,16 @@ class DailyStatsCollector:
         collect_videos = mode in ("video", "both")
         collect_channels = mode in ("channel", "both")
 
-        # Step 1: Load inventory
-        video_ids, channel_ids = self.load_inventory()
+        # Step 1: Load channel IDs (from channel list or inventory) and video IDs
+        video_ids: List[str] = []
+        channel_ids: List[str] = []
+
+        if mode == "channel" and self.channel_list_path is not None:
+            # Channel-only mode with a dedicated channel list: skip inventory entirely
+            channel_ids = self.load_channel_list()
+        else:
+            # All other cases: load from the video inventory (provides both video + channel IDs)
+            video_ids, channel_ids = self.load_inventory()
 
         if collect_videos and not video_ids:
             logger.warning("No video IDs in inventory, nothing to collect")
@@ -444,8 +494,12 @@ def main():
         description="Daily panel statistics collection engine"
     )
     parser.add_argument(
-        '--video-inventory', type=str, required=True,
-        help='Path to video inventory CSV (e.g., data/video_inventory/gender_gap_inventory.csv)'
+        '--video-inventory', type=str, default=None,
+        help='Path to video inventory CSV (required for video/both modes)'
+    )
+    parser.add_argument(
+        '--channel-list', type=str, default=None,
+        help='Path to a CSV with a channel_id column (for channel-only mode without inventory)'
     )
     parser.add_argument(
         '--mode', type=str, default='both', choices=['channel', 'video', 'both'],
@@ -458,30 +512,64 @@ def main():
     # Ensure directories exist
     config.ensure_directories()
 
-    # Resolve inventory path
-    inventory_path = Path(args.video_inventory)
-    if not inventory_path.is_absolute():
-        inventory_path = config.PROJECT_ROOT / inventory_path
+    # Resolve paths
+    inventory_path: Optional[Path] = None
+    channel_list_path: Optional[Path] = None
+
+    if args.video_inventory:
+        inventory_path = Path(args.video_inventory)
+        if not inventory_path.is_absolute():
+            inventory_path = config.PROJECT_ROOT / inventory_path
+
+    if args.channel_list:
+        channel_list_path = Path(args.channel_list)
+        if not channel_list_path.is_absolute():
+            channel_list_path = config.PROJECT_ROOT / channel_list_path
+
+    # Validate: video/both modes require the inventory; channel mode needs
+    # either --channel-list or --video-inventory
+    needs_inventory = args.mode in ("video", "both")
+    has_channel_source = (channel_list_path is not None) or (inventory_path is not None)
+
+    if needs_inventory and inventory_path is None:
+        logger.error("--video-inventory is required for video or both modes")
+        sys.exit(1)
+
+    if args.mode == "channel" and not has_channel_source:
+        logger.error("Channel mode requires either --channel-list or --video-inventory")
+        sys.exit(1)
+
+    # Check files exist
+    if inventory_path is not None and not inventory_path.exists():
+        logger.error(f"Inventory file not found: {inventory_path}")
+        sys.exit(1)
+
+    if channel_list_path is not None and not channel_list_path.exists():
+        logger.error(f"Channel list file not found: {channel_list_path}")
+        sys.exit(1)
 
     logger.info("=" * 60)
     logger.info("PANEL STATISTICS COLLECTION")
     logger.info(f"Timestamp: {datetime.utcnow().isoformat()}")
     logger.info(f"Mode: {args.mode}")
-    logger.info(f"Inventory: {inventory_path}")
+    if inventory_path:
+        logger.info(f"Inventory: {inventory_path}")
+    if channel_list_path:
+        logger.info(f"Channel list: {channel_list_path}")
     logger.info(f"Test mode: {args.test}")
     if args.limit:
         logger.info(f"Limit: {args.limit}")
     logger.info("=" * 60)
 
-    if not inventory_path.exists():
-        logger.error(f"Inventory file not found: {inventory_path}")
-        sys.exit(1)
-
     try:
         youtube = get_authenticated_service()
         logger.info("Authenticated with YouTube API")
 
-        collector = DailyStatsCollector(youtube, inventory_path)
+        collector = DailyStatsCollector(
+            youtube,
+            inventory_path=inventory_path,
+            channel_list_path=channel_list_path,
+        )
         summary = collector.run(mode=args.mode, test_mode=args.test, limit=args.limit)
 
         logger.info("=" * 60)
