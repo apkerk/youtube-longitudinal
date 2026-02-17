@@ -34,6 +34,7 @@ CONFIG_DIR = PROJECT_ROOT / "config"
 # Gender Gap & AI Census directories
 GENDER_GAP_DIR = CHANNELS_DIR / "gender_gap"
 AI_CENSUS_DIR = CHANNELS_DIR / "ai_census"
+NEW_COHORT_DIR = CHANNELS_DIR / "new_cohort"
 VIDEO_INVENTORY_DIR = DATA_DIR / "video_inventory"
 DAILY_PANELS_DIR = DATA_DIR / "daily_panels"
 VIDEO_STATS_DIR = DAILY_PANELS_DIR / "video_stats"
@@ -800,6 +801,7 @@ def ensure_directories() -> None:
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
     GENDER_GAP_DIR.mkdir(parents=True, exist_ok=True)
     AI_CENSUS_DIR.mkdir(parents=True, exist_ok=True)
+    NEW_COHORT_DIR.mkdir(parents=True, exist_ok=True)
     VIDEO_INVENTORY_DIR.mkdir(parents=True, exist_ok=True)
     VIDEO_STATS_DIR.mkdir(parents=True, exist_ok=True)
     CHANNEL_STATS_DIR.mkdir(parents=True, exist_ok=True)
