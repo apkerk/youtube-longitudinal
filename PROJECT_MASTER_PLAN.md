@@ -22,9 +22,9 @@
 
 ## Current Marker
 
-**Now:** PAUSED for approach audit. Stream A COMPLETE (83,825). Streams B+D done. AI census (50,010) + gender gap panel (9,760) daily tracking LIVE on Mac Mini. Video enumerations running on laptop. Charter established in Second Brain.
-**Last Session:** Feb 17, 2026 — Reviewed and corrected project charter. Fixed missing services, stale milestone data, unclear milestone language.
-**Next:** 1) Katie decides on Stream A' + C (run, modify, or drop). 2) Katie decides AI adoption flagger scope. 3) Monitor video enumerations + automated daily runs. 4) After audit: execute remaining streams, build AI flagger, merge cohort.
+**Now:** PRODUCTION COLLECTIONS RUNNING. Stream D (expanded) COMPLETE (3,933). Stream B running (~4,315 at query 30/122). Stream A' running (~1,135 at keyword 3/47). Stream C queued for tomorrow. All on Mac Mini in screen sessions.
+**Last Session:** Feb 18, 2026 — Tested all 4 scripts, launched 3 production collections on Mac Mini. Stream D finished (3,933 channels).
+**Next:** 1) Check A'/B completion, launch Stream C. 2) Write scripts for 5 future streams. 3) Extract channel_ids.csv for all completed streams. 4) Create new cohort daily stats launchd service on Mac Mini.
 
 ### Session Achievements (Feb 16, 2026 — Night)
 - ✅ Panel filtered to 9,760 coded channels (from 14,169). channel_ids.csv + channel_metadata.csv regenerated.

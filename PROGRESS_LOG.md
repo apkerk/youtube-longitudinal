@@ -5,11 +5,11 @@
 
 ---
 
-## Current Status (as of Feb 18, 2026 — Evening)
+## Current Status (as of Feb 18, 2026 — Night)
 
-**Phase:** ARCHITECTURE EVALUATED. SAMPLING_ARCHITECTURE.md scored 79.4/100 after 3-round expert panel review. All factual errors corrected. Ready for production runs.
-**Roadmap Position:** Stream A COMPLETE (19,016 unique). Streams B (1,539) + D (1,862) undersized, expansion code ready. AI census (50,010) + gender gap panel (9,760) daily tracking LIVE. All expansion code ready. No production runs started yet.
-**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream A: 19,016 unique. Stream B: 1,539. Stream D: 1,862.
+**Phase:** PRODUCTION COLLECTIONS RUNNING. Three streams launched on Mac Mini.
+**Roadmap Position:** Stream A COMPLETE (19,016). Stream D (expanded) COMPLETE (3,933). Stream B running (~4,315 at 30/122 queries). Stream A' running (~1,135 at 3/47 keywords). Stream C held for tomorrow (quota management). AI census (50,010) + gender gap panel (9,760) daily tracking LIVE.
+**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream A: 19,016 unique. Stream B: ~4,315 (running). Stream D: 3,933 (expanded, complete).
 **What's Running:**
 - Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
 - AI census daily channel stats (Mac Mini, 9:00 UTC) — active
@@ -26,6 +26,19 @@
 3. Deploy expanded streams to Mac Mini for daily tracking
 
 ---
+
+### Feb 18, 2026 — Night [Production Launches — 3 Streams on Mac Mini]
+
+- **Tested all 4 remaining discovery scripts** on laptop with `--test --limit 5`: A' (Non-Intent), B (Algorithm Favorites), D (Casual Uploaders), C (Random Baseline). All passed. Stream C has a trivial edge case where `--limit <15` yields 0 prefixes due to integer division; not a production issue.
+- **Launched 3 production collections on Mac Mini** in detached screen sessions:
+  - **Stream A' (Non-Intent):** `stream_a_prime` screen, `--limit 200000 --skip-first-video --exclude-list data/channels/stream_a/channel_ids.csv`. Cross-dedup loaded 19,016 Stream A channels. At 3/47 keywords with ~1,135 channels found. Estimated runtime 1-2 hours.
+  - **Stream B (Algorithm Favorites):** `stream_b` screen, `--limit 25000`, 122 expanded queries. At 30/122 queries with ~4,315 channels. Strong yield (~150 unique per query).
+  - **Stream D (Casual Uploaders):** `stream_d` screen, `--limit 50000` (high ceiling to exhaust search space). **COMPLETED** — 3,933 unique channels across 37 filename patterns. Within the 3-5K realistic ceiling. Top yielders: IMG_ (231), Screen Recording, Untitled.
+- **Stream C (Random Baseline)** held for tomorrow — combined A'+B+D quota is ~600-700K units today, adding C's ~600-800K would exceed daily limit.
+- **Quota budget:** ~1.2-1.6M total across 3 days. Well within daily capacity.
+- **Decision from Katie:** Stream D limit set high to "get what you can get, audit later."
+- **Decision from Katie:** All production collection runs happen on Mac Mini (always-on), not laptop.
+- What's next: 1) Check A'/B completion. 2) Launch Stream C. 3) Write scripts for 5 future streams. 4) Extract channel_ids.csv for completed streams. 5) Create new cohort daily stats launchd service on Mac Mini.
 
 ### Feb 18, 2026 — Evening [Architecture Document Evaluated — 3-Round Expert Panel]
 
