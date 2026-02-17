@@ -22,9 +22,9 @@
 
 ## Current Marker
 
-**Now:** Mac Mini deployed and running. 4 launchd services active (daily channel, weekly video, sync, health check). Awaiting enumeration completion on laptop (143/9760).
-**Last Session:** Feb 16, 2026 — Deployed to Mac Mini via SSH, built health check + weekly digest, fixed IP/Python version.
-**Next:** 1) Enumeration finishes. 2) SCP inventory to Mac Mini. 3) Verify first automated 3 AM collection. 4) AI Creator Census.
+**Now:** Mac Mini FULLY OPERATIONAL for daily channel stats. 4 launchd services active. Channel stats decoupled from video inventory — collects all 9,760 channels. Enumeration still running on laptop (~200/9760).
+**Last Session:** Feb 17, 2026 — Deployed Mac Mini, built health monitoring, decoupled channel stats from inventory, tested full 9,760-channel collection.
+**Next:** 1) Verify 3 AM automated run collected 9,760 channels. 2) Enumeration finishes → SCP inventory → weekly video stats go live. 3) AI Creator Census.
 
 ### Session Achievements (Feb 16, 2026 — Night)
 - ✅ Panel filtered to 9,760 coded channels (from 14,169). channel_ids.csv + channel_metadata.csv regenerated.
