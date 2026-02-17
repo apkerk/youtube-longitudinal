@@ -7,20 +7,30 @@
 
 ## Current Status (as of Feb 17, 2026)
 
-**Phase:** Production — AI census DEPLOYED on Mac Mini (daily tracking active). Video enumeration for AI census channels launched on laptop.
-**Roadmap Position:** Stream B (1,539) + Stream D (1,862) DONE. Stream A running on Mac Mini. AI census: 50,010 channels, daily tracking LIVE on Mac Mini (9:00 UTC), video enumeration in progress.
-**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream B: 1,539. Stream D: 1,862.
-**Next Steps:**
-1. Monitor Stream A completion (screen -r stream_a on Mac Mini)
-2. Verify AI census first automated run (check logs after 9:00 UTC Feb 18)
-3. Check video enumeration completion (~50K channels)
-4. After enumeration: run AI flagger on inventory, SCP to Mac Mini
-5. Run Stream A' (~770K units): `python3 -m src.collection.discover_non_intent --limit 200000 --skip-first-video`
-6. Run Stream C (~1M units): `python3 -m src.collection.discover_random --limit 50000`
-7. After all streams: merge channel lists → deploy cohort daily stats to Mac Mini
-8. Design decision needed: 2020 birth cohort stream for retrospective AI diffusion history (see DECISION_LOG #005)
+**Phase:** PAUSED — Katie auditing overall approach before further production runs. Existing automated services continue running.
+**Roadmap Position:** Stream A COMPLETE (83,825 channels). Stream B (1,539) + Stream D (1,862) DONE. AI census: 50,010 channels, daily tracking LIVE on Mac Mini. Streams A' + C NOT yet started.
+**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream A: 83,825. Stream B: 1,539. Stream D: 1,862.
+**What's Running:**
+- Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
+- AI census daily channel stats (Mac Mini, 9:00 UTC) — active, first run 2026-02-17 produced 50,005 rows
+- AI census video enumeration (laptop) — 4,175/50,010 channels (~8.3%), ETA ~3 days
+- Gender gap video enumeration (laptop) — 5M+ rows, still running
+**Next Steps (pending Katie's audit):**
+1. Katie auditing approach — may change direction on remaining streams, AI designs, or collection strategy
+2. Verify AI census automated run (check logs after 9:00 UTC Feb 18)
+3. Monitor video enumerations (both running with checkpoint/resume)
+4. After audit: decide on Stream A' + C, AI flagger, new cohort merge
 
 ---
+
+### Feb 17, 2026 — Late Morning [Status Audit + Stream A Complete]
+
+- **Verified Mac Mini deployment:** AI census daily stats already live, first run produced 50,005 rows (2026-02-17.csv). All 5 launchd services healthy.
+- **Stream A COMPLETED overnight on Mac Mini:** 83,825 channels discovered across 46 keywords x 8 languages. Ran to full exhaustion of search space (short of 200K target — that was the actual yield ceiling). Screen session exited cleanly, no checkpoint = full completion.
+- **Stream A channel_ids.csv NOT yet extracted** — needs processing before merge.
+- **AI census video enumeration progressing:** 4,175/50,010 channels (8.3%), 85,454 video rows. ~3 days remaining at current rate.
+- **Gender gap video enumeration still running:** 5M+ rows written.
+- **PAUSED further production runs:** Katie auditing overall approach before Streams A', C, AI flagger, or new cohort merge. Existing automated services (gender gap + AI census daily stats) continue running.
 
 ### Feb 17, 2026 — Morning [AI Census Deployment COMPLETE + Video Enumeration Running]
 
