@@ -1,5 +1,8 @@
 # YouTube Longitudinal Data Collection
 
+> Charter: `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md`
+> Read at session start for goals, milestones, and delegation boundaries.
+
 ## Project Identity
 
 This project collects longitudinal YouTube data via the YouTube Data API v3 for two research programs:
@@ -46,9 +49,10 @@ This project collects longitudinal YouTube data via the YouTube Data API v3 for 
 
 ### On Startup
 1. Read this file (CLAUDE.md)
-2. Read PROJECT_MASTER_PLAN.md — understand current phase and next steps
-3. Read the last 3 entries of PROGRESS_LOG.md — understand recent work
-4. Check `git status` — ensure working tree is clean
+2. Read the project charter at `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md`. Print 3-line summary: current milestone, days until next deadline, blockers from last session. Verify work aligns with charter milestones.
+3. Read PROJECT_MASTER_PLAN.md — understand current phase and next steps
+4. Read the last 3 entries of PROGRESS_LOG.md — understand recent work
+5. Check `git status` — ensure working tree is clean
 
 ### On Completion
 1. Append timestamped entry to PROGRESS_LOG.md (append-only, never overwrite)
