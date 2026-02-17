@@ -5,27 +5,49 @@
 
 ---
 
-## Current Status (as of Feb 17, 2026 — Evening)
+## Current Status (as of Feb 18, 2026 — Night)
 
-**Phase:** PRODUCTION COLLECTIONS RUNNING. Video enumerations in progress on laptop.
-**Roadmap Position:** Stream A COMPLETE (19,016). Stream D (expanded) COMPLETE (3,933). Stream B running. Stream A' running. Stream C held (quota management). AI census (50,010) + gender gap panel (9,760) daily tracking LIVE.
-**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream A: 19,016 unique. Stream D: 3,933 (complete).
+**Phase:** A' AND B STALLED — need restart from checkpoints. 5 future stream scripts BUILT.
+**Roadmap Position:** Stream A COMPLETE (19,016). Stream D COMPLETE (3,933). Stream B STALLED at 10,993 unique (73/122 queries). Stream A' STALLED at 2,036 unique (7/47 keywords). Stream C held (not started). AI census (50,010) + gender gap panel (9,760) daily tracking LIVE.
+**Data Quality Status:** Same as before. B and A' CSVs have heavy row duplication (74K and 15K rows respectively) — dedup at extraction like Stream A.
 **What's Running:**
 - Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
 - AI census daily channel stats (Mac Mini, 9:00 UTC) — active
-- Gender gap video enumeration (laptop) — 96.4% complete (9,413/9,760 channels, 11M video rows, ~1.5 GB)
-- AI census video enumeration (laptop) — 22.6% complete (11,326/50,010 channels, 6M video rows), est. ~2 days remaining
+- Video enumerations on laptop (gender gap near-complete, AI census ~22%)
+**What's Stalled:**
+- Stream A' screen session on Mac Mini — python process exited, bash wrapper hanging. Checkpoint intact at 7/47 keywords, 2,036 channels.
+- Stream B screen session on Mac Mini — same. Checkpoint intact at 73/122 queries, 10,993 channels.
+- Both stopped at same second (23:32:30 UTC Feb 17) — system-level event (sleep/network/power).
 **What's Ready But Not Running:**
-- Stream B expansion (25K target, 122 queries) — code ready
-- Stream C random baseline (50K target) — script ready
-- Stream A' content-first (200K target, cross-dedup against Stream A) — script ready with `--exclude-list`
+- Stream C random baseline (50K target) — script ready, launch after A'/B
+- 5 future streams: topic_stratified, trending, livestream, shorts_first, creative_commons — scripts built, not yet run
 **Next Steps:**
-1. Monitor video enumerations to completion
-2. Run remaining production collections (priority: A' first for contemporaneity, then B, C)
-3. Create new cohort daily stats launchd service on Mac Mini
-4. Deploy expanded streams to Mac Mini for daily tracking
+1. **PRIORITY:** Kill dead screen sessions, restart A' and B from checkpoints on Mac Mini
+2. After A'/B complete: extract channel_ids.csv for all completed streams
+3. Assess quota usage before launching Stream C or future streams
+4. Create new cohort daily stats launchd service on Mac Mini
 
 ---
+
+### Feb 18, 2026 — Night [5 Future Stream Scripts Built + Mac Mini Status Check]
+
+- **Built 5 new discovery scripts** for future expansion streams (all in `src/collection/`):
+  - `discover_livestream.py` — `eventType=completed`, 25K target, 12 time windows
+  - `discover_shorts.py` — `videoDuration=short`, 50K target, 24 time windows
+  - `discover_creative_commons.py` — `videoLicense=creativeCommon`, 15K target
+  - `discover_topic_stratified.py` — cycles through 62 topic IDs from YOUTUBE_PARENT_TOPICS, 40K target
+  - `discover_trending.py` — `videos.list(chart=mostPopular)` across 51 region codes, daily append-only log (fundamentally different architecture: two outputs — trending sighting log + cumulative channel details)
+- **All scripts** have checkpoint/resume, `--test`/`--limit` flags, incremental CSV writes, CHANNEL_INITIAL_FIELDS schema, logging to `data/logs/`.
+- **Updated `config.py`:** 5 new STREAM_DIRS, 5 new SAMPLE_TARGETS, TRENDING_REGION_CODES (51 countries), TRENDING_LOG_FIELDS schema.
+- **Updated `youtube_api.py`:** `search_videos_paginated` now accepts `**extra_params` for topicId/eventType/videoDuration/videoLicense passthrough (backward-compatible). New `get_trending_videos()` function for chart=mostPopular.
+- **Checked Mac Mini production status:**
+  - Stream D: COMPLETE (3,933 unique, 22,158 CSV rows with duplication)
+  - Stream A': STALLED at 2,036 unique (7/47 keywords). Checkpoint intact.
+  - Stream B: STALLED at 10,993 unique (73/122 queries). Checkpoint intact.
+  - Both A' and B stopped at exact same second (23:32:30 UTC Feb 17). Python processes exited, bash wrappers hanging in screen sessions. Root cause: system-level event on Mac Mini.
+  - Screen sessions still exist but are dead (bash at 0% CPU, no python3 child processes).
+- **All changes committed and pushed** (eec40de).
+- What's next: Kill dead screens, restart A'/B from checkpoints. Then assess quota before launching C or future streams.
 
 ### Feb 17, 2026 — Evening [Video Enumeration Status Check + Bug Fix]
 
