@@ -98,6 +98,8 @@ Inherits all global safety rules from `~/.claude/CLAUDE.md`. Additional project-
 
 ## Sampling Design (Reference)
 
+> **Full architecture doc:** `docs/SAMPLING_ARCHITECTURE.md` — all 12 streams, methodologies, justifications, research designs, and design decisions in one place.
+
 ### New Creator Cohort (5 streams)
 
 | Stream | Target | Purpose | Script |

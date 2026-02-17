@@ -272,6 +272,7 @@ data/
 
 | Document | Purpose |
 |----------|---------|
+| `docs/SAMPLING_ARCHITECTURE.md` | **Canonical architecture doc: all 12 streams, justifications, research designs** |
 | `SAMPLING_EXPERIMENTS.md` | Full experiment log with results |
 | `QUOTA_ANALYSIS.md` | Sample size & polling frequency analysis |
 | `DECISION_LOG.md` | Methodological decisions with rationale |

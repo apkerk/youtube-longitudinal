@@ -29,6 +29,14 @@
 
 ---
 
+### Feb 18, 2026 — Morning [Consolidated Sampling Architecture Document]
+
+- **Created `docs/SAMPLING_ARCHITECTURE.md`** — single canonical reference for all 12 streams, sampling methodologies, experimental justifications, AI research designs, and key design decisions. ~500 lines consolidating content from 7 source documents (TECHNICAL_SPECS, DECISION_LOG, SAMPLING_EXPERIMENTS, PROJECT_MASTER_PLAN, YOUTUBE_DATASET_DESIGN, PROGRESS_LOG, CLAUDE.md).
+- **Contents:** Stream-by-stream write-ups (what it captures, why it exists, sampling method, empirical validation, status), 5-stream comparison logic diagram, gender gap panel composition + filtering rationale, all 4 AI research designs with identification strategies, 5 proposed future streams, full experimental evidence tables, quota budget summary, 9 key design decisions with alternatives rejected, known limitations and open questions.
+- **Added references** to the new doc from: PROJECT_MASTER_PLAN.md (Key Reference Files), TECHNICAL_SPECS.md (Reference Documents), CLAUDE.md (Sampling Design section), and PROJECT_CHARTER.md (Quality Bar section).
+- **Purpose:** Katie needs a single evaluable document for assessing the full stream architecture before resuming production runs.
+- What's next: Katie evaluates the architecture doc, provides feedback, then production runs resume.
+
 ### Feb 18, 2026 — Early Morning [Launch Prep Complete — Paused for Evaluation]
 
 - **Mac Mini bug fixes deployed:** SSH to 192.168.86.48, `git pull` pulled all 8 fixes (M4-M8, m1-m3). All 5 launchd services confirmed running (exit 0).

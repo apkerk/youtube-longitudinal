@@ -190,6 +190,7 @@ What are the early-stage drivers of distinctiveness and virality for new cultura
 | `PROGRESS_LOG.md` | Dated chronicle of all work |
 | `DECISION_LOG.md` | Analytical decisions with rationale |
 | `TECHNICAL_SPECS.md` | Technical specifications (Sampling details) |
+| `docs/SAMPLING_ARCHITECTURE.md` | **Canonical reference for all 12 streams, methodologies, justifications, and research designs** |
 | `docs/SAMPLING_EXPERIMENTS.md` | Full experiment log with methodology validation |
 | `docs/QUOTA_ANALYSIS.md` | Sample size & polling frequency trade-offs |
 | `docs/YOUTUBE_API_VARIABLE_REFERENCE.md` | Full YouTube API field documentation |
