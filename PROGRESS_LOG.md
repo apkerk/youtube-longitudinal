@@ -7,16 +7,16 @@
 
 ## Current Status (as of Feb 17, 2026)
 
-**Phase:** Production — Streams B+D collected, Stream A running. Daily channel stats on Mac Mini.
-**Roadmap Position:** Stream B (1,539 channels) + Stream D (1,862 channels) DONE. Stream A running in screen on Mac Mini (~200K target, checkpoint/resume). A' and C queued for subsequent days. Gender gap daily stats running. AI census done (5,026), 50K scaling planned.
-**Data Quality Status:** 9,760 panel channels; 9,672 return valid stats. AI census: 5,026 unique. Stream B: 1,539 (heavy algorithm bias as expected). Stream D: 1,862 (casual uploaders).
+**Phase:** Production — Streams B+D collected, Stream A running. AI census scaling to 50K (running).
+**Roadmap Position:** Stream B (1,539) + Stream D (1,862) DONE. Stream A running on Mac Mini. AI census scaled from 5K→50K (31K+ and climbing as of 10:52 PM). Gender gap daily stats running.
+**Data Quality Status:** 9,760 panel channels; 9,672 return valid stats. AI census: 31K+ (scaling in progress). Stream B: 1,539. Stream D: 1,862.
 **Next Steps:**
 1. Monitor Stream A completion (screen -r stream_a on Mac Mini)
-2. Run Stream A' next day (~770K units): `python3 -m src.collection.discover_non_intent --limit 200000 --skip-first-video`
-3. Run Stream C day after (~1M units): `python3 -m src.collection.discover_random --limit 50000`
-4. After all streams: merge channel lists → deploy cohort daily stats to Mac Mini
-5. Scale AI census to 50K (expand search terms, add sort order cycling)
-6. Verify 3 AM gender gap channel stats continue running
+2. When AI census completes: extract channel_ids.csv, deploy daily tracking to Mac Mini
+3. Run Stream A' next day (~770K units): `python3 -m src.collection.discover_non_intent --limit 200000 --skip-first-video`
+4. Run Stream C day after (~1M units): `python3 -m src.collection.discover_random --limit 50000`
+5. After all streams: merge channel lists → deploy cohort daily stats to Mac Mini
+6. Start video enumeration for AI census channels
 7. Enumeration finishes → SCP inventory → weekly video stats go live
 
 **MORNING ACTION ITEMS (Feb 17):**
@@ -26,6 +26,17 @@
 - **Post-collection deployment infrastructure** ready for another agent (handoff prompt written). Builds merge script, launchd plist, Drive sync for new cohort daily tracking. Should also include AI census launchd plist.
 
 ---
+
+### Feb 16, 2026 — 10:55 PM [AI Census Scaled to 50K + Multi-Design Architecture]
+
+- **Expanded AI_SEARCH_TERMS** from 17 → 45 terms (video/image gen, audio/music, coding, non-English, domain-specific)
+- **Added AI_FLAG_KEYWORDS** to config.py: 101 keywords across 6 categories for video title matching (treatment variable for adoption diffusion design)
+- **Updated discover_ai_creators.py**: `--months-back` (default 18, was 12), `--sort-orders` (default relevance,date), `--limit` (default 50K), safe append to existing output
+- **Created extract_ai_channel_list.py**: extracts channel_ids.csv + channel_metadata.csv from census output for daily tracking
+- **Created flag_ai_videos.py**: offline AI keyword flagger for video titles — flags ai_flag, ai_keywords_matched, ai_category per video
+- **Launched scaled census**: 45 terms x 2 sort orders x 18-month lookback = 90 work units. 31K+ channels found in first 18 minutes. Running in background with checkpoint/resume.
+- **Bug fix**: discover_ai_creators now always loads existing output before writing (prevents overwriting prior results when no checkpoint exists)
+- Remaining after census completes: extract channel lists, deploy daily AI census tracking to Mac Mini, start video enumeration for census channels
 
 ### Feb 16, 2026 — 10:37 PM [Streams B+D Collected, Stream A Launched]
 - **Ran Stream B (Benchmark) on Mac Mini:** 1,539 channels discovered across 6 vowel/generic queries. Heavy algorithm bias as expected: 742 channels >1M subs, 483 at 100K-1M. Median is top 0.01% of YouTube.
