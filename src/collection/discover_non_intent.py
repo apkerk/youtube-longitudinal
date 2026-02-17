@@ -113,11 +113,30 @@ def clear_checkpoint() -> None:
         logger.info("Checkpoint cleared")
 
 
+def load_exclude_list(exclude_path: Path) -> Set[str]:
+    """Load channel IDs to exclude (e.g., Stream A channels for cross-dedup)."""
+    exclude_ids: Set[str] = set()
+    if not exclude_path.exists():
+        logger.warning(f"Exclude list not found: {exclude_path}")
+        return exclude_ids
+
+    with open(exclude_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            cid = row.get('channel_id', '').strip()
+            if cid:
+                exclude_ids.add(cid)
+
+    logger.info(f"Loaded {len(exclude_ids)} channel IDs to exclude from {exclude_path}")
+    return exclude_ids
+
+
 def discover_non_intent_channels(
     youtube,
     target_count: int = 200000,
     test_mode: bool = False,
     output_path: Optional[Path] = None,
+    exclude_ids: Optional[Set[str]] = None,
 ) -> List[Dict]:
     """
     Discover content-focused new creators (no explicit intent signaling).
@@ -130,6 +149,7 @@ def discover_non_intent_channels(
         target_count: Target number of channels to collect
         test_mode: If True, uses reduced targets for testing
         output_path: Path to write CSV output (required)
+        exclude_ids: Set of channel IDs to skip (for cross-stream dedup)
 
     Returns:
         List of channel data dictionaries
@@ -138,9 +158,15 @@ def discover_non_intent_channels(
         target_count = min(target_count, 100)
         logger.info("TEST MODE: Limited to 100 channels")
 
+    if exclude_ids is None:
+        exclude_ids = set()
+
     # Load checkpoint or start fresh
     completed_keywords, channels_by_id = load_checkpoint(output_path)
-    seen_channel_ids: Set[str] = set(channels_by_id.keys())
+    seen_channel_ids: Set[str] = set(channels_by_id.keys()) | exclude_ids
+
+    if exclude_ids:
+        logger.info(f"Cross-dedup: excluding {len(exclude_ids)} channels from other streams")
 
     # If fresh start, write CSV header
     if not completed_keywords:
@@ -309,6 +335,8 @@ def main():
     parser.add_argument('--limit', type=int, default=200000, help='Target channel count')
     parser.add_argument('--skip-first-video', action='store_true',
                         help='Skip first video enrichment')
+    parser.add_argument('--exclude-list', type=str, default=None,
+                        help='Path to CSV of channel_ids to exclude (e.g., Stream A)')
     args = parser.parse_args()
 
     setup_logging()
@@ -322,6 +350,11 @@ def main():
         youtube = get_authenticated_service()
         logger.info("Authenticated with YouTube API")
 
+        # Load exclusion list if provided
+        exclude_ids: Set[str] = set()
+        if args.exclude_list:
+            exclude_ids = load_exclude_list(Path(args.exclude_list))
+
         output_path = config.get_output_path("stream_a_prime", "initial")
 
         channels = discover_non_intent_channels(
@@ -329,6 +362,7 @@ def main():
             target_count=args.limit,
             test_mode=args.test,
             output_path=output_path,
+            exclude_ids=exclude_ids,
         )
 
         if not channels:

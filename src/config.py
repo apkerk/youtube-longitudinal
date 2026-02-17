@@ -59,7 +59,7 @@ STREAM_DIRS = {
 SAMPLE_TARGETS = {
     "stream_a": 200000,      # Intent creators (LARGE for attrition)
     "stream_a_prime": 200000, # Non-intent creators (LARGE for attrition)
-    "stream_b": 2000,        # Algorithm favorites (benchmark)
+    "stream_b": 25000,       # Algorithm favorites (benchmark)
     "stream_c": 50000,       # Searchable random
     "stream_d": 25000,       # Casual uploads
 }
@@ -236,12 +236,46 @@ CASUAL_QUERIES: List[str] = [
     "GOPR",          # GoPro
     "DJI_",          # DJI drones
     "P_",            # Some Android phones
-    
-    # Screen recordings
+
+    # Samsung defaults
+    "SAMSUNG_",      # Samsung camera app
+    "samsung_",      # Samsung lowercase variant
+
+    # Google Pixel defaults
+    "PXL_",          # Pixel camera
+
+    # Messaging app forwards
+    "WhatsApp Video", # WhatsApp video forwards
+    "VID-2026",      # WhatsApp date-stamped videos
+    "telegram_",     # Telegram video forwards
+
+    # Screen capture / recording software
     "Screen Recording",
     "Untitled",
     "New Recording",
-    
+    "bandicam",      # Bandicam screen recorder
+    "OBS_",          # OBS Studio recording
+    "obs_",          # OBS lowercase
+    "Screencast",    # Generic screencast
+
+    # Video conferencing recordings
+    "zoom_0",        # Zoom meeting recordings
+    "GMT2026",       # Zoom timestamp format (GMT+date)
+    "Loom_",         # Loom screen recordings
+
+    # TikTok / Snapchat reposts
+    "TikTok",        # TikTok reposts/compilations
+    "snap-",         # Snapchat exports
+    "Snapchat",      # Snapchat video exports
+
+    # Timestamp-based defaults
+    "clip_",         # Generic clip export
+    "recording_",    # Generic recording
+    "capture_",      # Generic capture
+    "rec_",          # Short recording prefix
+    "trim.",         # Trimmed video export
+    "Trim_",         # Trimmed video variant
+
     # Date-based defaults
     "20260",         # Catches 2026-01-XX style filenames
     "video_2026",
@@ -254,8 +288,49 @@ CASUAL_QUERIES: List[str] = [
 # =============================================================================
 
 BENCHMARK_QUERIES: List[str] = [
+    # --- Original vowel/generic queries ---
     "a", "e", "i", "o", "u",
     "video",
+    # --- Entertainment & Media ---
+    "music", "movie", "trailer", "funny", "comedy", "prank",
+    "challenge", "react", "compilation", "highlights", "fail",
+    "satisfying", "ASMR", "podcast", "animation", "cartoon",
+    "Netflix", "drama", "horror", "documentary",
+    # --- Gaming ---
+    "gaming", "minecraft", "fortnite", "roblox", "GTA",
+    "gameplay", "walkthrough", "stream",
+    # --- Sports & Fitness ---
+    "football", "basketball", "soccer", "baseball", "boxing",
+    "MMA", "wrestling", "workout", "gym", "fitness", "yoga",
+    # --- Beauty & Fashion ---
+    "makeup", "beauty", "fashion", "haul", "skincare",
+    "hair", "outfit", "GRWM",
+    # --- Food & Cooking ---
+    "cooking", "recipe", "food", "mukbang", "baking",
+    "restaurant", "what I eat",
+    # --- Education & How-To ---
+    "how to", "tutorial", "tips", "explained", "science",
+    "math", "history", "English lesson",
+    # --- Music ---
+    "song", "cover", "rap", "remix", "live performance",
+    "concert", "beat",
+    # --- Tech & Reviews ---
+    "phone", "iPhone", "Samsung", "laptop", "tech review",
+    "unboxing", "best", "review",
+    # --- Travel & Lifestyle ---
+    "travel", "vlog", "adventure", "nature", "camping",
+    "road trip", "day in my life", "morning routine",
+    "room tour", "house tour",
+    # --- Family & Relationships ---
+    "family", "kids", "baby", "couple", "wedding", "dating",
+    # --- Business & Money ---
+    "money", "investing", "crypto", "real estate", "business",
+    "entrepreneur", "side hustle", "passive income",
+    # --- Ranked & Comparison ---
+    "top 10", "worst", "vs", "ranking", "comparison",
+    # --- Miscellaneous High-Volume ---
+    "DIY", "art", "drawing", "car", "dog", "cat",
+    "garden", "meditation", "motivation", "storytime",
 ]
 
 # =============================================================================
