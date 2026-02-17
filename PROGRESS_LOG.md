@@ -7,16 +7,28 @@
 
 ## Current Status (as of Feb 17, 2026)
 
-**Phase:** Production — Daily channel stats on Mac Mini + AI Creator Census COMPLETE.
-**Roadmap Position:** Channel stats collecting daily via launchd. AI census discovered 5,026 channels. Video enumeration still running on laptop. Streams A-D deployment in progress (separate agent).
-**Data Quality Status:** 9,760 panel channels; 9,672 return valid stats. AI census: 5,026 unique channels, 0 nulls, 41 overlap with gender gap panel.
+**Phase:** Production — Daily channel stats on Mac Mini. New Creator Cohort infrastructure ready, awaiting production discovery runs.
+**Roadmap Position:** Channel stats collecting daily. AI census done (5,026 channels). Streams A-D: checkpoint/resume + --panel-name infra built, ready for production runs. Video enumeration still running on laptop.
+**Data Quality Status:** 9,760 panel channels; 9,672 return valid stats. AI census: 5,026 unique channels.
 **Next Steps:**
-1. Verify 3 AM automated channel stats run (check 2026-02-18.csv)
-2. Enumeration finishes → SCP inventory → weekly video stats go live
-3. Analyze AI census overlap with gender gap panel (41 channels)
-4. Gender code AI census channels (deferred per design decision)
+1. Run Stream B + D production discovery (~35K API units) on Mac Mini
+2. Run Stream A production discovery (~765K units, separate day, --skip-first-video)
+3. Run Stream A' production discovery (~770K units, separate day)
+4. Run Stream C production discovery (~1M units, separate day)
+5. After all streams collected: merge channel lists, deploy cohort daily stats to Mac Mini
+6. Verify 3 AM gender gap channel stats continue running
+7. Enumeration finishes → SCP inventory → weekly video stats go live
 
 ---
+
+### Feb 16, 2026 — 09:15 PM [New Creator Cohort Streams A-D — Infrastructure Ready]
+- **Added `--panel-name` flag to `daily_stats.py`**: output goes to `channel_stats/{panel_name}/YYYY-MM-DD.csv` when set, flat default when not (backwards compatible). Also adds panel-specific checkpoint files to avoid collisions.
+- **Added checkpoint/resume to 3 large discovery scripts**: `discover_intent.py` (A), `discover_non_intent.py` (A'), `discover_random.py` (C). Saves progress after each keyword/prefix batch. Channels written incrementally to CSV. Interrupted runs resume from last checkpoint.
+- **`config.get_daily_panel_path()`** now accepts `panel_name` param for subdirectory routing.
+- Streams B and D are small enough to not need checkpoint/resume.
+- All 5 syntax-checked, `--panel-name` tested end-to-end (subdirectory creation verified).
+- **Plan file:** `.claude/plans/sharded-skipping-pie.md` — full 4-phase deployment plan with quota scheduling.
+- What's next: Run Streams B+D (same day, ~35K units), then A/A'/C one per day.
 
 ### Feb 16, 2026 — 08:30 PM [AI Creator Census — COMPLETE]
 - **Ran production AI Creator Census:** 5,026 unique channels discovered across 14 of 17 search terms (hit target before exhausting all terms).
