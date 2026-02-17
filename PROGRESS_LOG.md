@@ -7,19 +7,25 @@
 
 ## Current Status (as of Feb 17, 2026)
 
-**Phase:** Production — Daily channel stats on Mac Mini. New Creator Cohort infrastructure ready, awaiting production discovery runs.
-**Roadmap Position:** Channel stats collecting daily. AI census done (5,026 channels). Streams A-D: checkpoint/resume + --panel-name infra built, ready for production runs. Video enumeration still running on laptop.
-**Data Quality Status:** 9,760 panel channels; 9,672 return valid stats. AI census: 5,026 unique channels.
+**Phase:** Production — Daily channel stats on Mac Mini. AI census complete + 50K scaling plan approved. Streams A-D infra ready.
+**Roadmap Position:** Channel stats collecting daily. AI census done (5,026 channels), scaling to 50K planned. Streams A-D ready for production. Video enumeration still running on laptop.
+**Data Quality Status:** 9,760 panel channels; 9,672 return valid stats. AI census: 5,026 unique channels (30% AI-focused, 70% general creators with AI videos).
 **Next Steps:**
-1. Run Stream B + D production discovery (~35K API units) on Mac Mini
-2. Run Stream A production discovery (~765K units, separate day, --skip-first-video)
-3. Run Stream A' production discovery (~770K units, separate day)
-4. Run Stream C production discovery (~1M units, separate day)
-5. After all streams collected: merge channel lists, deploy cohort daily stats to Mac Mini
-6. Verify 3 AM gender gap channel stats continue running
-7. Enumeration finishes → SCP inventory → weekly video stats go live
+1. Scale AI census to 50K (expand search terms, add sort order cycling, extend to 18 months)
+2. Build AI keyword flagger for video titles (treatment variable for adoption diffusion)
+3. Deploy AI census daily tracking on Mac Mini (--panel-name ai_census)
+4. Run Streams A-D production discovery
+5. Verify 3 AM gender gap channel stats continue running
+6. Enumeration finishes → SCP inventory → weekly video stats go live
 
 ---
+
+### Feb 16, 2026 — 09:30 PM [AI Census Audit + 50K Scaling Plan]
+- **Audited AI census output (5,026 channels):** Median views = 897K (heavy algorithm bias, similar to Stream B). 30% have AI keywords in channel title/description (dedicated AI creators), 70% are general creators who made AI-adjacent videos. Top countries: India (1,093), US (1,053). Huge 2025 spike (1,150 channels = 23%).
+- **Designed telescoping multi-design collection architecture:** 4 layers — (1) daily channel stats for 50K AI channels + 9.7K gender gap, (2) video inventory + AI flagging, (3) weekly video engagement on AI-flagged subset, (4) sampled comments. All three AI research designs (census, adoption diffusion, audience response) served by one data structure.
+- **Approved plan for 50K scaling:** Expand search terms from 17 to ~47 (add specific tools: Runway, HeyGen, Pika, Suno, Stable Diffusion + non-English terms + domain-specific). Add sort order cycling (relevance + date). Extend time windows to 18 months. Estimated cost ~1.5M units over 1-2 days.
+- **Plan file:** `.claude/plans/cached-baking-glade.md` — 7-step implementation plan with parallelization strategy for agents.
+- What's next: Execute the 50K scaling plan (expand config, update script, run collection, build AI flagger, deploy to Mac Mini).
 
 ### Feb 16, 2026 — 09:15 PM [New Creator Cohort Streams A-D — Infrastructure Ready]
 - **Added `--panel-name` flag to `daily_stats.py`**: output goes to `channel_stats/{panel_name}/YYYY-MM-DD.csv` when set, flat default when not (backwards compatible). Also adds panel-specific checkpoint files to avoid collisions.
