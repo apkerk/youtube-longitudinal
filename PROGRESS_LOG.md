@@ -5,21 +5,34 @@
 
 ---
 
-## Current Status (as of Feb 16, 2026)
+## Current Status (as of Feb 17, 2026)
 
-**Phase:** Production — Mac Mini deployed, 4 launchd services running, awaiting enumeration completion
-**Roadmap Position:** Mac Mini fully deployed with daily channel stats, weekly video stats, sync-to-drive, and health check services. Enumeration still running on laptop (143/9760 channels). Once complete, recopy inventory to Mac Mini for full production.
-**Data Quality Status:** 9,760 channels with both gender and race coded. First test collection ran on Mac Mini (2 channels from partial inventory). Health check system operational.
+**Phase:** Production — Daily channel stats fully operational on Mac Mini (9,672/9,760 channels). Video enumeration still running on laptop.
+**Roadmap Position:** Channel stats collection decoupled from video inventory. Mac Mini launchd fires at 3 AM EST daily and collects all 9,760 channels directly from channel_ids.csv. Video stats still await enumeration completion.
+**Data Quality Status:** 9,760 channels in panel; 9,672 return valid stats (88 terminated/deleted). First full collection completed successfully on both laptop and Mac Mini.
 **Next Steps:**
-1. Wait for enumeration to finish on laptop (143/9760, checkpoint/resume active)
-2. SCP completed inventory to Mac Mini: `scp data/video_inventory/gender_gap_inventory.csv katieapker@192.168.86.48:~/.youtube-longitudinal/repo/data/video_inventory/`
-3. Run first FULL channel stats collection on Mac Mini (will get 9,760 channels)
-4. Verify launchd fires at 3 AM EST next morning
-5. Run AI Creator Census when ready (~500K API units)
+1. Wait for enumeration to finish on laptop (checkpoint/resume active)
+2. SCP completed inventory to Mac Mini when ready
+3. Verify launchd fires at 3 AM EST and produces 2026-02-18.csv
+4. Run AI Creator Census when ready (~500K API units)
 
 ---
 
 ## Feb 2026
+
+### Feb 16, 2026 — 08:15 PM [Channel Stats Decoupled from Video Inventory]
+- **Added `--channel-list` CLI arg to `daily_stats.py`** so channel-only mode reads from `channel_ids.csv` directly, bypassing the video inventory entirely. This unblocks daily channel stats collection while video enumeration is still in progress.
+- New `load_channel_list()` method reads any CSV with a `channel_id` column. Falls back to inventory-based loading when `--channel-list` not provided (backward compatible).
+- Validation logic updated: `--video-inventory` no longer required when `--mode channel` + `--channel-list` are both set. Still required for `--mode video` and `--mode both`.
+- Guard added to `detect_and_add_new_videos()`: skips cleanly when no inventory path is set.
+- **Tested on laptop:** 9,760 channels loaded, 9,672 stats collected (~50s). 88 channels returned not_found (terminated/deleted accounts).
+- **Deployed to Mac Mini via SSH (192.168.86.48):**
+  - `git pull` brought code up to date
+  - Updated launchd plist: replaced `--video-inventory` with `--channel-list data/channels/gender_gap/channel_ids.csv`
+  - Unloaded/reloaded plist, verified all 4 services in `launchctl list`
+  - **Tested on Mac Mini:** 9,760 channels loaded, 9,672 stats collected (~100s). Output: `data/daily_panels/channel_stats/2026-02-17.csv`
+- **Mac Mini now collecting full panel daily** (was only 2 channels before from partial inventory)
+- What's next: Verify 3 AM launchd run produces 2026-02-18.csv. Continue video enumeration on laptop.
 
 ### Feb 16, 2026 — 07:55 PM [Mac Mini Deployed + Health Monitoring Built]
 - **Deployed to Mac Mini via SSH** (192.168.86.48) — full Steps 1-7 from deployment guide
