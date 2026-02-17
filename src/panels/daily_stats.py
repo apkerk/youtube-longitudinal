@@ -1,16 +1,23 @@
 """
 daily_stats.py
 --------------
-Daily panel statistics collection engine.
+Panel statistics collection engine (dual-cadence design).
 
-Collects current view/like/comment counts for all videos and
-subscriber/view/video counts for all channels in the gender gap panel.
-Detects new videos and appends them to the inventory.
+Two collection modes run on separate schedules:
+  - Channel stats (daily):  subscriber/view/video counts for all channels
+  - Video stats (weekly):   view/like/comment counts for all videos in inventory
+
+The --mode flag controls which stats to collect:
+  --mode channel   Channel-level only (daily via launchd)
+  --mode video     Video-level only (weekly via launchd)
+  --mode both      Both in one run (default, for manual/test runs)
+
+See docs/PANEL_SCHEMA.md for the full dual-cadence design rationale.
 
 Usage:
     python -m src.panels.daily_stats \
         --video-inventory data/video_inventory/gender_gap_inventory.csv \
-        [--test] [--limit N]
+        [--mode channel|video|both] [--test] [--limit N]
 
 Author: Katie Apker
 Last Updated: Feb 16, 2026
@@ -311,58 +318,31 @@ class DailyStatsCollector:
 
         return new_entries
 
-    def save_daily_stats(
+    def run(
         self,
-        video_stats: List[Dict],
-        channel_stats: List[Dict],
-    ) -> Tuple[Path, Path]:
+        mode: str = "both",
+        test_mode: bool = False,
+        limit: Optional[int] = None,
+    ) -> Dict:
         """
-        Write daily panel CSVs for video stats and channel stats.
+        Execute panel collection pipeline.
 
-        Args:
-            video_stats: List of video stats dicts
-            channel_stats: List of channel stats dicts
+        Modes:
+            'channel' — channel stats only (daily schedule)
+            'video'   — video stats only (weekly schedule)
+            'both'    — all stats in one run (manual/test)
 
-        Returns:
-            Tuple of (video_stats_path, channel_stats_path)
-        """
-        video_path = config.get_daily_panel_path('video_stats', self.today)
-        channel_path = config.get_daily_panel_path('channel_stats', self.today)
-
-        # Write video stats
-        with open(video_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=config.VIDEO_STATS_FIELDS)
-            writer.writeheader()
-            for s in video_stats:
-                row = {field: s.get(field) for field in config.VIDEO_STATS_FIELDS}
-                writer.writerow(row)
-        logger.info(f"Saved {len(video_stats)} video stats to {video_path.name}")
-
-        # Write channel stats
-        with open(channel_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=config.CHANNEL_STATS_FIELDS)
-            writer.writeheader()
-            for s in channel_stats:
-                row = {field: s.get(field) for field in config.CHANNEL_STATS_FIELDS}
-                writer.writerow(row)
-        logger.info(f"Saved {len(channel_stats)} channel stats to {channel_path.name}")
-
-        return video_path, channel_path
-
-    def run(self, test_mode: bool = False, limit: Optional[int] = None) -> Dict:
-        """
-        Execute full daily collection pipeline.
-
-        Steps:
+        Steps (filtered by mode):
             1. Load inventory
             2. Load/validate checkpoint
-            3. Collect video stats (with checkpoint)
-            4. Collect channel stats (if not done per checkpoint)
-            5. Save daily panel files
-            6. Detect new videos and update inventory (if not done per checkpoint)
+            3. Collect video stats (mode=video or both)
+            4. Collect channel stats (mode=channel or both)
+            5. Save panel files
+            6. Detect new videos via channel stats diff (mode=channel or both)
             7. Clear checkpoint on success
 
         Args:
+            mode: 'channel', 'video', or 'both'
             test_mode: If True, default limit to 250 video IDs
             limit: Max video IDs to process
 
@@ -372,10 +352,13 @@ class DailyStatsCollector:
         if test_mode and limit is None:
             limit = 250
 
+        collect_videos = mode in ("video", "both")
+        collect_channels = mode in ("channel", "both")
+
         # Step 1: Load inventory
         video_ids, channel_ids = self.load_inventory()
 
-        if not video_ids:
+        if collect_videos and not video_ids:
             logger.warning("No video IDs in inventory, nothing to collect")
             return {'success': False, 'error': 'Empty inventory'}
 
@@ -383,30 +366,52 @@ class DailyStatsCollector:
         checkpoint = self.load_checkpoint()
 
         # Step 3: Collect video stats
-        video_stats = self.collect_video_stats(video_ids, checkpoint, limit=limit)
+        video_stats = []
+        video_path = None
+        if collect_videos:
+            video_stats = self.collect_video_stats(video_ids, checkpoint, limit=limit)
 
         # Step 4: Collect channel stats
-        if not checkpoint.get('channel_stats_done', False):
-            channel_stats = self.collect_channel_stats(channel_ids)
-            checkpoint['channel_stats_done'] = True
-            self.save_checkpoint(checkpoint)
-        else:
-            # Reload from today's saved file if checkpoint says done
-            channel_stats_path = config.get_daily_panel_path('channel_stats', self.today)
-            channel_stats = []
-            if channel_stats_path.exists():
-                with open(channel_stats_path, 'r', encoding='utf-8') as f:
-                    reader = csv.DictReader(f)
-                    for row in reader:
-                        channel_stats.append(row)
-                logger.info(f"Reloaded {len(channel_stats)} channel stats from {channel_stats_path.name}")
+        channel_stats = []
+        channel_path = None
+        if collect_channels:
+            if not checkpoint.get('channel_stats_done', False):
+                channel_stats = self.collect_channel_stats(channel_ids)
+                checkpoint['channel_stats_done'] = True
+                self.save_checkpoint(checkpoint)
+            else:
+                channel_stats_path = config.get_daily_panel_path('channel_stats', self.today)
+                if channel_stats_path.exists():
+                    with open(channel_stats_path, 'r', encoding='utf-8') as f:
+                        reader = csv.DictReader(f)
+                        for row in reader:
+                            channel_stats.append(row)
+                    logger.info(f"Reloaded {len(channel_stats)} channel stats from {channel_stats_path.name}")
 
-        # Step 5: Save daily panel files
-        video_path, channel_path = self.save_daily_stats(video_stats, channel_stats)
+        # Step 5: Save panel files
+        if collect_videos and video_stats:
+            video_path = config.get_daily_panel_path('video_stats', self.today)
+            with open(video_path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=config.VIDEO_STATS_FIELDS)
+                writer.writeheader()
+                for s in video_stats:
+                    row = {field: s.get(field) for field in config.VIDEO_STATS_FIELDS}
+                    writer.writerow(row)
+            logger.info(f"Saved {len(video_stats)} video stats to {video_path.name}")
 
-        # Step 6: Detect new videos
+        if collect_channels and channel_stats:
+            channel_path = config.get_daily_panel_path('channel_stats', self.today)
+            with open(channel_path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=config.CHANNEL_STATS_FIELDS)
+                writer.writeheader()
+                for s in channel_stats:
+                    row = {field: s.get(field) for field in config.CHANNEL_STATS_FIELDS}
+                    writer.writerow(row)
+            logger.info(f"Saved {len(channel_stats)} channel stats to {channel_path.name}")
+
+        # Step 6: Detect new videos (only when collecting channel stats)
         new_videos = []
-        if not checkpoint.get('new_video_detection_done', False):
+        if collect_channels and not checkpoint.get('new_video_detection_done', False):
             yesterday_str = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
             prev_channel_path = config.get_daily_panel_path('channel_stats', yesterday_str)
 
@@ -414,7 +419,7 @@ class DailyStatsCollector:
 
             checkpoint['new_video_detection_done'] = True
             self.save_checkpoint(checkpoint)
-        else:
+        elif collect_channels:
             logger.info("New video detection already done per checkpoint")
 
         # Step 7: Clear checkpoint on success
@@ -423,11 +428,12 @@ class DailyStatsCollector:
         summary = {
             'success': True,
             'date': self.today,
+            'mode': mode,
             'video_stats_collected': len(video_stats),
             'channel_stats_collected': len(channel_stats),
             'new_videos_detected': len(new_videos),
-            'video_stats_path': str(video_path),
-            'channel_stats_path': str(channel_path),
+            'video_stats_path': str(video_path) if video_path else None,
+            'channel_stats_path': str(channel_path) if channel_path else None,
         }
         return summary
 
@@ -440,6 +446,10 @@ def main():
     parser.add_argument(
         '--video-inventory', type=str, required=True,
         help='Path to video inventory CSV (e.g., data/video_inventory/gender_gap_inventory.csv)'
+    )
+    parser.add_argument(
+        '--mode', type=str, default='both', choices=['channel', 'video', 'both'],
+        help='Collection mode: channel (daily), video (weekly), or both (default)'
     )
     parser.add_argument('--test', action='store_true', help='Test mode (limit to 250 video IDs)')
     parser.add_argument('--limit', type=int, default=None, help='Max video IDs to process')
@@ -454,8 +464,9 @@ def main():
         inventory_path = config.PROJECT_ROOT / inventory_path
 
     logger.info("=" * 60)
-    logger.info("DAILY PANEL STATISTICS COLLECTION")
+    logger.info("PANEL STATISTICS COLLECTION")
     logger.info(f"Timestamp: {datetime.utcnow().isoformat()}")
+    logger.info(f"Mode: {args.mode}")
     logger.info(f"Inventory: {inventory_path}")
     logger.info(f"Test mode: {args.test}")
     if args.limit:
@@ -471,14 +482,18 @@ def main():
         logger.info("Authenticated with YouTube API")
 
         collector = DailyStatsCollector(youtube, inventory_path)
-        summary = collector.run(test_mode=args.test, limit=args.limit)
+        summary = collector.run(mode=args.mode, test_mode=args.test, limit=args.limit)
 
         logger.info("=" * 60)
-        logger.info("DAILY COLLECTION COMPLETE")
+        logger.info("COLLECTION COMPLETE")
         logger.info(f"Date: {summary.get('date')}")
-        logger.info(f"Video stats: {summary.get('video_stats_collected')}")
-        logger.info(f"Channel stats: {summary.get('channel_stats_collected')}")
-        logger.info(f"New videos detected: {summary.get('new_videos_detected')}")
+        logger.info(f"Mode: {summary.get('mode')}")
+        if summary.get('video_stats_collected'):
+            logger.info(f"Video stats: {summary.get('video_stats_collected')}")
+        if summary.get('channel_stats_collected'):
+            logger.info(f"Channel stats: {summary.get('channel_stats_collected')}")
+        if summary.get('new_videos_detected'):
+            logger.info(f"New videos detected: {summary.get('new_videos_detected')}")
         logger.info("=" * 60)
 
     except Exception as e:

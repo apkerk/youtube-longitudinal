@@ -22,9 +22,17 @@
 
 ## Current Marker
 
-**Now:** Gender gap panel infrastructure built and test-verified. Awaiting Katie's approval for production runs.
-**Last Session:** Feb 16, 2026 — Infrastructure slide deck completed (10 slides, full deck-compile protocol)
-**Next:** 1) Approve full video enumeration (14,169 channels, ~28K API units). 2) First daily stats run. 3) Set up launchd automation.
+**Now:** Production launch in progress. Video enumeration running on laptop (checkpoint/resume). Mac Mini deployment documented, ready for next agent.
+**Last Session:** Feb 16, 2026 — Launched enumeration, built dual-cadence infrastructure, wrote Mac Mini deployment guide
+**Next:** 1) Enumeration completes (~12M videos). 2) Deploy to Mac Mini per `docs/MAC_MINI_DEPLOYMENT.md`. 3) First full collection + verify launchd.
+
+### Session Achievements (Feb 16, 2026 — Night)
+- ✅ Panel filtered to 9,760 coded channels (from 14,169). channel_ids.csv + channel_metadata.csv regenerated.
+- ✅ daily_stats.py updated with --mode flag (channel/video/both) for dual-cadence collection
+- ✅ Video enumeration launched (9,760 channels, ~12M videos, checkpoint/resume)
+- ✅ docs/PANEL_SCHEMA.md written (dual-cadence schema, joins, storage projections)
+- ✅ docs/MAC_MINI_DEPLOYMENT.md written (9-step guide, EDEADLK workaround, local-first I/O)
+- ✅ launchd plists created (daily channel + weekly video), unloaded from laptop pending Mac Mini deploy
 
 ### Session Achievements (Feb 16, 2026 — Late Evening)
 - ✅ Built 10-slide Beamer infrastructure deck with custom theme, TikZ diagrams, progressive reveal

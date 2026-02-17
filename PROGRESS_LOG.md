@@ -7,18 +7,30 @@
 
 ## Current Status (as of Feb 16, 2026)
 
-**Phase:** Phase 1 of Gender Gap Panel — Infrastructure built, dual-cadence design decided, ready for production
-**Roadmap Position:** All collection infrastructure built. Panel restricted to 9,760 coded channels. Dual-cadence: daily channel stats, weekly video stats.
-**Data Quality Status:** Bailey's xlsx cleaned. Panel restricted to channels with BOTH gender and race coded (9,760 of 14,169). ~12M videos, ~1,230 avg per channel.
+**Phase:** Production Launch — enumeration running, Mac Mini deployment next
+**Roadmap Position:** Panel filtered to 9,760 coded channels. Dual-cadence design implemented. Video enumeration in progress (checkpoint/resume). Mac Mini deployment documented, ready for next agent.
+**Data Quality Status:** 9,760 channels with both gender and race coded. channel_ids.csv and channel_metadata.csv regenerated. Video inventory building (~12M videos expected).
 **Next Steps:**
-1. Regenerate channel_ids.csv filtered to 9,760 coded channels
-2. Run full video enumeration (~245K API units, ~9,760 channels)
-3. Set up launchd: daily channel stats (~195 units/day), weekly video stats (~240K units/week)
+1. Wait for video enumeration to complete (running on laptop with checkpoint/resume)
+2. Deploy to Mac Mini following `docs/MAC_MINI_DEPLOYMENT.md` (9-step guide)
+3. Run first full collection on Mac Mini, verify launchd automation
 4. Run AI Creator Census when ready (~500K API units)
 
 ---
 
 ## Feb 2026
+
+### Feb 16, 2026 — 09:45 PM [Production Launch + Mac Mini Handoff]
+- **Regenerated channel_ids.csv** to 9,760 coded channels (filtered from 14,169 to only those with both gender + race)
+- **Regenerated channel_metadata.csv** to match (9,760 rows with channel_id, perceivedGender, race, runBy, subscriberCount, viewCount)
+- **Updated daily_stats.py** with `--mode channel|video|both` flag for dual-cadence collection
+- **Launched video enumeration** on 9,760 channels (background, checkpoint/resume). ~80/9760 channels done at session end. Expected ~12M videos, ~245K API units total.
+- **Created two launchd plists** (daily channel stats + weekly video stats). Created on laptop then unloaded — will be recreated with local paths on Mac Mini.
+- **Wrote docs/PANEL_SCHEMA.md** — full dual-cadence schema documentation with field definitions, join examples, and storage projections
+- **Wrote docs/MAC_MINI_DEPLOYMENT.md** — 9-step deployment guide for next agent. Covers: local-first I/O (EDEADLK avoidance), git clone, deps, config, data copy, plists with local paths, sync-to-drive script, testing, and troubleshooting.
+- **Key insight from Second Brain:** Google Drive FUSE + launchd = deadlock. Must use local I/O on Mac Mini with rsync/osascript sync to Drive. Same pattern as Pat bot.
+- Storage projection: ~40 GB/year (was 416 GB with daily + full panel). Quota: ~3.5% of daily limit average.
+- What's next: Enumeration finishes (resume if interrupted). Next agent deploys to Mac Mini per docs/MAC_MINI_DEPLOYMENT.md.
 
 ### Feb 16, 2026 — 08:00 PM [Panel Design Decisions + Provenance]
 - **DECISION: Panel restricted to 9,760 channels** with both gender AND race coded (excludes blank + undetermined). Uncoded channels lack identifiable creators, less analytically useful.
