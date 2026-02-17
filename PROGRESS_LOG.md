@@ -7,25 +7,26 @@
 
 ## Current Status (as of Feb 16, 2026)
 
-**Phase:** Phase 1 of Gender Gap Panel — Infrastructure built, test-verified, ready for production
-**Roadmap Position:** All collection infrastructure built. Need Katie's approval for full enumeration + daily runs.
-**Data Quality Status:** Bailey's xlsx cleaned to 14,169 unique channels (515 duplicates removed, race typos corrected). Three canonical output files produced.
+**Phase:** Phase 1 of Gender Gap Panel — Infrastructure built, dual-cadence design decided, ready for production
+**Roadmap Position:** All collection infrastructure built. Panel restricted to 9,760 coded channels. Dual-cadence: daily channel stats, weekly video stats.
+**Data Quality Status:** Bailey's xlsx cleaned. Panel restricted to channels with BOTH gender and race coded (9,760 of 14,169). ~12M videos, ~1,230 avg per channel.
 **Next Steps:**
-1. Get Katie's approval to run full video enumeration (~28,338 API units, ~48 min)
-2. After enumeration: first full daily_stats run (~29,000 API units/day)
-3. Set up launchd automation for daily 3 AM EST runs
-4. Run AI Creator Census when ready (~500,000 API units)
+1. Regenerate channel_ids.csv filtered to 9,760 coded channels
+2. Run full video enumeration (~245K API units, ~9,760 channels)
+3. Set up launchd: daily channel stats (~195 units/day), weekly video stats (~240K units/week)
+4. Run AI Creator Census when ready (~500K API units)
 
 ---
 
 ## Feb 2026
 
-### Feb 16, 2026 — 07:30 PM [Source Provenance Column]
-- Added `source` column to `clean_baileys.py` — all 14,169 Infludata/Bailey's channels tagged `source="infludata"`
-- Column added to both `channel_metadata.csv` (7 cols, was 6) and `gender_gap_panel_clean.csv` (31 cols, was 30)
-- Complements existing `stream_type` field in API-discovered channels (`"ai_census"`, `"stream_a"`, etc.)
+### Feb 16, 2026 — 08:00 PM [Panel Design Decisions + Provenance]
+- **DECISION: Panel restricted to 9,760 channels** with both gender AND race coded (excludes blank + undetermined). Uncoded channels lack identifiable creators, less analytically useful.
+- **DECISION: Dual-cadence collection** — daily channel stats (tiny: ~195 API units/day, 1.1 MB/day), weekly video stats (~240K units, ~756 MB). daily_stats.py updated with `--mode channel|video|both` flag.
+- Storage projections for coded panel: 269 GB/year (was 416 GB for full panel). Daily quota ~24% (was 37%).
+- Added `source` column to `clean_baileys.py` — all channels tagged `source="infludata"` for provenance tracking
 - Re-ran clean_baileys.py: all validations pass, 14,169 rows, 515 dupes removed
-- What's next: production runs still awaiting approval
+- What's next: regenerate channel_ids.csv for 9,760 coded subset, run enumeration, set up launchd
 
 ### Feb 16, 2026 — 07:21 PM [Infrastructure Slide Deck — Complete]
 - Built 10-slide LaTeX Beamer deck (`output/youtube-longitudinal-infrastructure-deck.tex`) documenting the full data collection infrastructure
