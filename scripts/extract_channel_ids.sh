@@ -45,43 +45,23 @@ mkdir -p "$OUTPUT_DIR"
 
 echo "Extracting channel IDs from: $INPUT_CSV"
 
-# Find the column index for channel_id
-COLUMN_INDEX=$(head -n 1 "$INPUT_CSV" | awk -F',' '{
-    for (i=1; i<=NF; i++) {
-        if ($i == "channel_id") {
-            print i
-            exit
-        }
-    }
-}')
+# Use Python's csv module to handle quoted fields with embedded newlines/commas
+python3 -c "
+import csv, sys
+inpath, outpath = sys.argv[1], sys.argv[2]
+with open(inpath) as f:
+    reader = csv.DictReader(f)
+    if 'channel_id' not in reader.fieldnames:
+        print('Error: channel_id column not found in CSV header')
+        print('Available columns:', ', '.join(reader.fieldnames))
+        sys.exit(1)
+    ids = sorted(set(row['channel_id'] for row in reader if row['channel_id']))
+with open(outpath, 'w') as f:
+    f.write('channel_id\n')
+    for cid in ids:
+        f.write(cid + '\n')
+print(f'Extracted {len(ids)} unique channel IDs')
+print(f'Output written to: {outpath}')
+" "$INPUT_CSV" "$OUTPUT_CSV"
 
-# Check if channel_id column was found
-if [ -z "$COLUMN_INDEX" ]; then
-    echo "Error: 'channel_id' column not found in CSV header"
-    echo "Available columns:"
-    head -n 1 "$INPUT_CSV"
-    exit 1
-fi
-
-echo "Found channel_id in column $COLUMN_INDEX"
-
-# Extract channel IDs, deduplicate, and sort
-# Skip header row, extract column, remove empty lines, sort uniquely
-tail -n +2 "$INPUT_CSV" | \
-    awk -F',' -v col="$COLUMN_INDEX" '{print $col}' | \
-    grep -v '^$' | \
-    sort -u > /tmp/channel_ids_tmp.txt
-
-# Count extracted IDs
-COUNT=$(wc -l < /tmp/channel_ids_tmp.txt | tr -d ' ')
-
-# Write output with header
-echo "channel_id" > "$OUTPUT_CSV"
-cat /tmp/channel_ids_tmp.txt >> "$OUTPUT_CSV"
-
-# Clean up temp file
-rm -f /tmp/channel_ids_tmp.txt
-
-echo "Extracted $COUNT unique channel IDs"
-echo "Output written to: $OUTPUT_CSV"
 echo "Done."

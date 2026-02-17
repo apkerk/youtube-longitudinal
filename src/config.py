@@ -263,6 +263,7 @@ BENCHMARK_QUERIES: List[str] = [
 # =============================================================================
 
 AI_SEARCH_TERMS: List[str] = [
+    # --- Core / General ---
     "AI tutorial",
     "artificial intelligence",
     "ChatGPT",
@@ -271,16 +272,107 @@ AI_SEARCH_TERMS: List[str] = [
     "AI automation",
     "prompt engineering",
     "generative AI",
+    # --- Video / Image Generation ---
     "Midjourney tutorial",
-    "Claude Code",
     "AI video editing",
-    "AI voice",
     "DALL-E",
     "Sora AI",
+    "Runway AI",
+    "HeyGen tutorial",
+    "Pika AI",
+    "Kling AI",
+    "Stable Diffusion tutorial",
+    "AI art tutorial",
+    "AI photography",
+    "Synthesia tutorial",
+    "D-ID AI",
+    # --- Audio / Music ---
+    "AI voice",
     "ElevenLabs",
+    "Suno AI",
+    "Udio AI",
+    "AI music generation",
+    # --- Coding ---
+    "Claude Code",
     "Cursor AI",
     "Copilot tutorial",
+    "GitHub Copilot coding",
+    "Replit AI",
+    "AI coding tutorial",
+    # --- Broad Concepts ---
+    "AI content creation",
+    "AI workflow",
+    "AI for creators",
+    "LLM tutorial",
+    "AI agent",
+    "AI productivity",
+    # --- Non-English ---
+    "IA tutorial",
+    "IA herramientas",
+    "AI教程",
+    "KI Tutorial",
+    # --- Domain-Specific ---
+    "AI business",
+    "AI marketing",
+    "AI design",
 ]
+
+# =============================================================================
+# AI FLAG KEYWORDS (for video title matching — adoption diffusion treatment)
+# Broader than search terms: includes abbreviations, tool names, variations.
+# Organized by category for ai_category assignment.
+# =============================================================================
+
+AI_FLAG_KEYWORDS: Dict[str, List[str]] = {
+    "tools_general": [
+        "chatgpt", "gpt-4", "gpt-4o", "gpt4", "openai",
+        "claude", "anthropic", "gemini", "bard",
+        "copilot", "perplexity", "llama", "mistral",
+        "ai tool", "ai tools", "ai app", "ai software",
+        "prompt engineering", "ai automation", "ai workflow",
+        "ai productivity", "ai agent", "agentic ai",
+        "llm", "large language model",
+    ],
+    "image_video": [
+        "midjourney", "dall-e", "dalle", "stable diffusion",
+        "runway", "sora", "pika", "kling", "heygen",
+        "synthesia", "d-id", "luma ai", "invideo ai",
+        "ai art", "ai image", "ai video", "ai animation",
+        "ai photography", "ai generated", "ai-generated",
+        "text to image", "text-to-image", "text to video", "text-to-video",
+        "ai thumbnail", "ai edit",
+    ],
+    "audio_music": [
+        "elevenlabs", "suno", "udio", "mubert",
+        "ai voice", "ai music", "ai song", "ai audio",
+        "voice cloning", "text to speech", "text-to-speech",
+        "ai narrator", "ai singing",
+    ],
+    "coding": [
+        "cursor ai", "cursor ide", "claude code", "github copilot",
+        "replit ai", "codeium", "tabnine", "ai coding",
+        "ai programming", "vibe coding", "vibecoding",
+        "code with ai", "ai developer",
+    ],
+    "content_creation": [
+        "ai content", "ai writing", "ai copywriting",
+        "ai marketing", "ai seo", "ai social media",
+        "ai thumbnail", "ai script", "ai editing",
+        "ai for creators", "ai content creation",
+    ],
+    "general_ai": [
+        "artificial intelligence", "generative ai",
+        "machine learning", "deep learning", "neural network",
+        "ai tutorial", "ai review", "ai news",
+        "ai update", "ai business", "ai design",
+        "ai education", "ai startup",
+    ],
+}
+
+# Flat set for fast matching (built from the categorized dict above)
+AI_FLAG_KEYWORDS_FLAT: List[str] = []
+for _cat_keywords in AI_FLAG_KEYWORDS.values():
+    AI_FLAG_KEYWORDS_FLAT.extend(_cat_keywords)
 
 # =============================================================================
 # RANDOM PREFIX CONFIG (Stream C)

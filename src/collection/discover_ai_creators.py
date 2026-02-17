@@ -109,22 +109,33 @@ def _append_channels_to_csv(channels: List[Dict], output_path: Path, write_heade
 def discover_ai_creators(
     youtube,
     output_path: Path,
-    target_count: int = 5000,
-    test_mode: bool = False
+    target_count: int = 50000,
+    test_mode: bool = False,
+    months_back: int = 18,
+    sort_orders: List[str] = None,
 ) -> int:
     """
     Discover channels creating AI-related content across search terms.
     Writes incrementally to CSV with checkpoint/resume.
+
+    For each search term, iterates over multiple sort orders (e.g., relevance
+    and date) to surface different channels per term. Each (term, sort_order)
+    combo is a separate checkpoint unit.
 
     Args:
         youtube: Authenticated YouTube API service
         output_path: Path to output CSV
         target_count: Target number of channels to collect
         test_mode: If True, uses reduced targets for testing
+        months_back: How many months back to search (default 18)
+        sort_orders: List of YouTube sort orders to cycle through per term
 
     Returns:
         Total number of channels collected
     """
+    if sort_orders is None:
+        sort_orders = ["relevance", "date"]
+
     if test_mode:
         target_count = min(target_count, 100)
         logger.info("TEST MODE: Limited to 100 channels")
@@ -133,40 +144,43 @@ def discover_ai_creators(
     checkpoint = _load_checkpoint()
     completed_terms = checkpoint.get('completed_terms', [])
 
-    # Load existing output if resuming
-    channels_by_id = _load_existing_output(output_path) if completed_terms else {}
+    # Always load existing output to avoid overwriting prior results
+    channels_by_id = _load_existing_output(output_path)
     seen_channel_ids: Set[str] = set(checkpoint.get('seen_channel_ids', []))
     seen_channel_ids.update(channels_by_id.keys())
 
-    # If resuming with existing data but no output file header yet, that's covered
-    # by writing header only when starting fresh
     needs_header = not output_path.exists() or len(channels_by_id) == 0
 
-    # Generate 30-day time windows going back 12 months
-    time_windows = _generate_ai_time_windows()
+    # Generate 30-day time windows
+    time_windows = _generate_ai_time_windows(months_back=months_back)
 
-    # AI search terms
     search_terms = config.AI_SEARCH_TERMS
 
-    # Calculate per-term target
+    # Build work units: (term, sort_order) combos
+    work_units = [(term, order) for term in search_terms for order in sort_orders]
+
+    # Per-term target (across all sort orders for that term)
     per_term_target = max(10, target_count // len(search_terms))
 
     logger.info(f"Target: {target_count} channels")
     logger.info(f"Already collected: {len(channels_by_id)}")
-    logger.info(f"Search terms: {len(search_terms)} ({len(completed_terms)} already done)")
+    logger.info(f"Search terms: {len(search_terms)}, sort orders: {sort_orders}")
+    logger.info(f"Work units: {len(work_units)} ({len(completed_terms)} already done)")
     logger.info(f"Per-term target: {per_term_target}")
-    logger.info(f"Time windows: {len(time_windows)} (30-day spans, 12 months)")
+    logger.info(f"Time windows: {len(time_windows)} (30-day spans, {months_back} months)")
 
-    for idx, term in enumerate(search_terms):
+    for idx, (term, order) in enumerate(work_units):
         if len(channels_by_id) >= target_count:
             logger.info(f"Reached target of {target_count} channels")
             break
 
-        if term in completed_terms:
-            logger.info(f"[{idx+1}/{len(search_terms)}] Skipping '{term}' (already completed)")
+        # Checkpoint key is "term||order" to track (term, sort_order) combos
+        unit_key = f"{term}||{order}"
+
+        if unit_key in completed_terms:
             continue
 
-        logger.info(f"[{idx+1}/{len(search_terms)}] Searching: '{term}'")
+        logger.info(f"[{idx+1}/{len(work_units)}] Searching: '{term}' (order={order})")
 
         term_channels = 0
         term_new_channels: List[Dict] = []
@@ -184,7 +198,7 @@ def discover_ai_creators(
                     published_after=window_start,
                     published_before=window_end,
                     max_pages=3 if test_mode else 10,
-                    order="relevance"
+                    order=order
                 )
 
                 if not search_results:
@@ -216,20 +230,20 @@ def discover_ai_creators(
                         term_new_channels.append(channel)
 
                 logger.info(f"  -> Found {len(channel_details)} channels "
-                           f"(term total: {term_channels}, overall: {len(channels_by_id)})")
+                           f"(unit total: {term_channels}, overall: {len(channels_by_id)})")
 
             except Exception as e:
-                logger.error(f"  Error searching '{term}': {e}")
+                logger.error(f"  Error searching '{term}' (order={order}): {e}")
                 continue
 
-        # Write this term's channels to CSV
+        # Write this unit's channels to CSV
         if term_new_channels:
             _append_channels_to_csv(term_new_channels, output_path, write_header=needs_header)
             needs_header = False
             logger.info(f"  Wrote {len(term_new_channels)} channels to {output_path.name}")
 
-        # Checkpoint after each term
-        completed_terms.append(term)
+        # Checkpoint after each work unit
+        completed_terms.append(unit_key)
         _save_checkpoint(seen_channel_ids, completed_terms)
 
     total = len(channels_by_id)
@@ -241,9 +255,12 @@ def discover_ai_creators(
     return total
 
 
-def _generate_ai_time_windows() -> List[Tuple[str, str]]:
+def _generate_ai_time_windows(months_back: int = 18) -> List[Tuple[str, str]]:
     """
-    Generate 30-day time windows going back 12 months.
+    Generate 30-day time windows going back N months.
+
+    Args:
+        months_back: Number of months to look back (default 18)
 
     Returns:
         List of (start_iso, end_iso) tuples
@@ -251,8 +268,8 @@ def _generate_ai_time_windows() -> List[Tuple[str, str]]:
     windows = []
     now = datetime.now(timezone.utc)
 
-    for months_back in range(0, 12):
-        window_end = now - timedelta(days=months_back * 30)
+    for m in range(0, months_back):
+        window_end = now - timedelta(days=m * 30)
         window_start = window_end - timedelta(days=30)
 
         windows.append((
@@ -267,14 +284,21 @@ def main() -> None:
     """Main entry point for AI Creator Census collection."""
     parser = argparse.ArgumentParser(description="AI Creator Census: Discover AI content creators")
     parser.add_argument('--test', action='store_true', help='Run in test mode (100 channels)')
-    parser.add_argument('--limit', type=int, default=5000, help='Target channel count')
+    parser.add_argument('--limit', type=int, default=50000, help='Target channel count')
+    parser.add_argument('--months-back', type=int, default=18, help='Months of history to search (default 18)')
+    parser.add_argument('--sort-orders', type=str, default='relevance,date',
+                        help='Comma-separated sort orders to cycle per term (default: relevance,date)')
     args = parser.parse_args()
+
+    sort_orders = [s.strip() for s in args.sort_orders.split(',')]
 
     config.ensure_directories()
 
     logger.info("=" * 60)
-    logger.info("AI CREATOR CENSUS: DISCOVERY")
+    logger.info("AI CREATOR CENSUS: DISCOVERY (SCALED)")
     logger.info("=" * 60)
+    logger.info(f"Months back: {args.months_back}")
+    logger.info(f"Sort orders: {sort_orders}")
 
     output_path = config.AI_CENSUS_DIR / f"initial_{config.get_date_stamp()}.csv"
 
@@ -286,7 +310,9 @@ def main() -> None:
             youtube=youtube,
             output_path=output_path,
             target_count=args.limit,
-            test_mode=args.test
+            test_mode=args.test,
+            months_back=args.months_back,
+            sort_orders=sort_orders,
         )
 
         if total == 0:

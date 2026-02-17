@@ -22,9 +22,9 @@
 
 ## Current Marker
 
-**Now:** AI Census 5K done, 50K scaling plan approved. Streams A-D infra ready. Mac Mini collecting daily.
-**Last Session:** Feb 17, 2026 — Audited AI census, designed multi-design telescoping architecture, approved 50K scaling plan.
-**Next:** 1) Execute 50K AI census scaling. 2) Build AI keyword flagger. 3) Deploy AI census daily tracking to Mac Mini. 4) Run Streams A-D production.
+**Now:** Streams B (1,539) + D (1,862) collected. Stream A running in screen on Mac Mini. A' + C queued for subsequent days.
+**Last Session:** Feb 17, 2026 — Ran Streams B+D production discovery. Launched Stream A (200K target) in screen session. Fixed extract_channel_ids.sh multiline CSV bug.
+**Next:** 1) Monitor Stream A completion. 2) Run A' next day, C day after. 3) Merge all streams → deploy cohort daily stats. 4) Scale AI census to 50K. 5) Verify 3 AM channel stats.
 
 ### Session Achievements (Feb 16, 2026 — Night)
 - ✅ Panel filtered to 9,760 coded channels (from 14,169). channel_ids.csv + channel_metadata.csv regenerated.
