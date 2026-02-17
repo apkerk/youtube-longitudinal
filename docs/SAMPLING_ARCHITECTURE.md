@@ -1,8 +1,16 @@
 # Sampling Architecture: YouTube Longitudinal Data Collection
 
 **Purpose:** Single canonical reference for all streams, sampling methodologies, justifications, and research designs
-**Last Updated:** Feb 17, 2026
+**Last Updated:** Feb 18, 2026
 **Use:** Evaluate each stream's design rigor, identify gaps, and guide production decisions
+
+### Change Log
+
+| Date | Change |
+|------|--------|
+| Feb 17, 2026 | Initial version consolidating all stream specs, research designs, and design decisions |
+| Feb 18, 2026 (R1) | Fixed Stream A count (83,825 raw → 19,016 unique), corrected gender/race distributions to actual 9,760 panel, added staggered DiD estimation spec, dedup protocol, Infludata sampling frame discussion, gender coding methodology, deployment constraints, pagination cap notes, safeSearch documentation, source of truth hierarchy |
+| Feb 18, 2026 (R2) | Corrected all keyword/query counts against config.py (manually verified): 46 intent, 47 non-intent, 45 AI search, 101 AI flag, 122 benchmark, 37 casual. Removed surviving "natural experiment" language from Decision 4. Added new limitations (#8-10) and open questions (#6-8). |
 
 ---
 
@@ -26,10 +34,10 @@
 This project collects longitudinal YouTube data for two research programs through 12 data streams (7 active/ready, 5 proposed).
 
 **Research Program 1: New Creator Cohort**
-Five streams designed to capture the full distribution of new YouTube channels created in 2026. Enables causal inference about early-stage creator strategy by comparing intentional launchers against multiple baselines with known bias profiles.
+Five streams designed to capture the full distribution of new YouTube channels created in 2026. Enables comparisons of early-stage creator strategy by matching intentional launchers against multiple baselines with known bias profiles. Causal claims require careful attention to selection effects (see Sections 4.3 and Design 3).
 
 **Research Program 2: Gender Gap Longitudinal Panel**
-Daily tracking of 9,760 established channels from the Infludata/Bailey's dataset, plus an AI Creator Census of 50,010 channels. Supports four AI research designs that exploit within-creator variation and staggered adoption timing.
+Daily tracking of 9,760 established channels from the Infludata/Bailey's dataset (a commercial panel with known selection biases; see Section 3.2), plus an AI Creator Census of 50,010 channels. Supports four AI research designs that exploit within-creator variation and staggered adoption timing.
 
 **Unifying Logic:** Each stream in Program 1 captures a different slice of the new-creator population. Each design in Program 2 answers a different causal question about AI adoption and gender dynamics. The streams are standalone datasets that can be analyzed independently or combined.
 
@@ -37,11 +45,11 @@ Daily tracking of 9,760 established channels from the Infludata/Bailey's dataset
 
 | # | Stream Name | Population | Target N | Status | Collection Cadence |
 |---|-------------|-----------|----------|--------|-------------------|
-| 1 | Intent Creators | New channels with entrepreneurial launch signals | 200K (actual: 83,825) | COLLECTED | Daily channel stats |
+| 1 | Intent Creators | New channels with entrepreneurial launch signals | 200K (actual: 19,016 unique) | COLLECTED | Daily channel stats |
 | 2 | Non-Intent Creators | New channels that start with content, no intro | 200K | APPROVED, not yet run | Daily channel stats |
 | 3 | Algorithm Favorites | Channels YouTube's search algorithm surfaces | 25K (actual: 1,539) | COLLECTED (expansion approved) | Monthly sweep |
 | 4 | Searchable Random | Channels found via random prefix search | 50K | APPROVED, not yet run | Monthly sweep |
-| 5 | Casual Uploaders | Channels with raw/default filenames | 3-5K (actual: 1,862) | COLLECTED (expansion approved) | Weekly sweep |
+| 5 | Casual Uploaders | Channels with raw/default filenames | 25K (actual: 1,862 from 15 queries) | COLLECTED (expansion to 37 queries approved) | Weekly sweep |
 | 6 | Gender Gap Panel | Established channels with coded gender + race | 9,760 | LIVE (daily tracking) | Daily channel, weekly video |
 | 7 | AI Creator Census | Channels producing AI-related content | 50,010 | LIVE (daily tracking) | Daily channel, weekly video |
 | 8 | Topic-Stratified Discovery | Channels sampled across 26 YouTube topic categories | ~30-40K | PROPOSED | TBD |
@@ -64,18 +72,20 @@ Daily tracking of 9,760 established channels from the Infludata/Bailey's dataset
 - `search.list(q=INTENT_KEYWORDS, type='video', order='date')` across 8 languages
 - Extract channel IDs from search results
 - Keep only channels with `published_at >= 2026-01-01`
-- 46 intent keywords across English, Hindi, Spanish, Japanese, German, Portuguese, Korean, French
+- 46 intent keywords across Hindi (6), English (9), Spanish (6), Japanese (5), German (5), Portuguese (5), Korean (5), French (5)
+- **Pagination cap:** YouTube search returns a maximum of ~500 results per query regardless of page tokens. Multiple keywords and languages diversify the search surface to partially circumvent this limit, but the total discoverable population per keyword is bounded by this cap.
 
 **Key design parameters:**
 - Languages ordered by yield rate: Hindi (35.3%), English (30.9%), Spanish (29.3%), Japanese (24.5%), German (24.0%), Portuguese (23.1%), Korean (22.5%), French (18.3%)
 - `order=date` (not relevance) to minimize popularity bias
 - No region filter on search (global), but `regionCode=US` available and validated as non-biasing
+- `safeSearch` parameter left at API default (`moderate`), which silently excludes content YouTube classifies as adult. This systematically excludes certain creator types and content categories from discovery.
 
 **Empirical validation:**
 - EXP-002/010: 12.7% yield rate for intent keywords (vs. 1.9% for non-intent). 6.6x more efficient.
 - EXP-006: English alone captures only 14% of findable new creators. Multilingual expands by 7.1x.
 
-**What it collected:** 83,825 channels across 46 keywords x 8 languages. Ran to full exhaustion of the search space (below 200K target because that was the actual yield ceiling of the API).
+**What it collected:** 19,016 unique channels (83,825 raw CSV rows before cross-keyword deduplication) across 46 keywords x 8 languages. The raw-to-unique ratio (4.4:1) reflects heavy overlap between keyword batches — the same channel is often discoverable through multiple search terms. The yield was below the 200K target because the ~500-result-per-query pagination cap limits the discoverable population. Temporal windowing (`publishedAfter`/`publishedBefore` in weekly chunks) was not used and could potentially increase yield.
 
 **Script:** `src/collection/discover_intent.py`
 **Quota cost:** ~404,000 units (initial); ~4,000 units (weekly sweep)
@@ -86,17 +96,19 @@ Daily tracking of 9,760 established channels from the Infludata/Bailey's dataset
 
 **What it captures:** New channels (created 2026+) whose first videos are content (gameplay, tutorials, recipes, reviews) rather than channel introductions. Same entry cohort as Stream A, different launch strategy.
 
-**Why this stream exists:** Causal inference comparison for the effect of intentional launching. If Stream A creators are people who "announce" their channel, Stream A' creators are people who "just start making things." Comparing their trajectories isolates whether the intent signal (and the strategic behavior it proxies) predicts different outcomes.
+**Why this stream exists:** Observational comparison for the effect of intentional launching. If Stream A creators are people who "announce" their channel, Stream A' creators are people who "just start making things." Comparing their trajectories tests whether the intent signal (and the strategic behavior it proxies) predicts different outcomes. This is NOT a natural experiment — creators self-select into launch strategies — but the comparison is analytically valuable when combined with appropriate controls for content category, language, and channel age.
 
 **Sampling method:**
 - `search.list(q=CONTENT_KEYWORDS, type='video', order='date')` across 8 languages
 - Same date filter (channel created >= 2026-01-01)
-- 48 content keywords: "gameplay," "let's play," "tutorial," "recipe," "review," "unboxing," "haul," etc., translated across all 8 languages
+- Cross-deduplication against Stream A via `--exclude-list` flag (channels already found in Stream A are excluded)
+- 47 content keywords: "gameplay," "let's play," "tutorial," "recipe," "review," "unboxing," "haul," etc., translated across all 8 languages
 
 **Key design parameters:**
 - Same language set and date filter as Stream A for comparability
 - Content keywords chosen to be orthogonal to intent signals (no overlap with "welcome"/"intro" language)
 - Lower yield rate (1.9%) means more API calls per channel found
+- Same `safeSearch=moderate` default as Stream A
 
 **Empirical validation:**
 - EXP-002/010: 1.92% yield rate. Viable but 6.6x less efficient than intent keywords.
@@ -112,28 +124,28 @@ Daily tracking of 9,760 established channels from the Infludata/Bailey's dataset
 
 ### 2.3 Algorithm Favorites (Stream B)
 
-**What it captures:** Channels that YouTube's search algorithm surfaces when given maximally generic queries (vowels: a, e, i, o, u, "video"). These are the channels the platform actively promotes.
+**What it captures:** Channels that YouTube's search algorithm surfaces when given generic queries across 12 categories (single letters, common words, broad topics, question starters, etc.). These are the channels the platform actively promotes.
 
 **Why this stream exists:** Benchmark for what new creators compete against for visibility. If you search YouTube using the broadest possible queries, you get the top 0.01% of the platform. This stream quantifies the competitive landscape — the ceiling of success that new entrants see when they arrive.
 
 **Sampling method:**
-- `search.list(q=VOWELS, type='video', order='relevance')`
-- Keywords: `a`, `e`, `i`, `o`, `u`, `video`
+- `search.list(q=BENCHMARK_QUERIES, type='video', order='relevance')`
+- 122 queries across 14 categories: original vowels/generic, entertainment/media, gaming, sports/fitness, beauty/fashion, food/cooking, education/how-to, music, tech/reviews, travel/lifestyle, family/relationships, business/money, ranked/comparison, miscellaneous high-volume
 - No date filter (captures established channels)
 
 **Key design parameters:**
 - `order=relevance` (not date) — this intentionally maximizes algorithm bias. The bias IS the signal.
-- Expanded from 2K target to 25K via additional keyword searches (approved Feb 17)
-- Expansion will use keyword searches (not category stratification) to build a standalone "who wins on YouTube" dataset
+- Expanded from original 6 queries (vowels + "video") to 122 queries across 14 categories to build a standalone "who wins on YouTube" dataset (approved Feb 17)
+- Target expanded from 2K to 25K
 
 **Empirical validation:**
 - EXP-001/003: Median views = 1,161,938. 94.4% are "big channels" (>1K subs). This is catastrophic popularity bias.
 - This finding is why the stream was relabeled from "Market Baseline" to "Algorithm Favorites" — it does not represent the market, it represents what the algorithm promotes.
 
-**What it collected:** 1,539 channels. 742 have >1M subscribers, 483 at 100K-1M. Far below the expanded 25K target.
+**What it collected:** 1,539 channels from the original 6 queries. 742 have >1M subscribers, 483 at 100K-1M. Expansion to 122 queries not yet run; target 25K.
 
 **Script:** `src/collection/discover_benchmark.py`
-**Quota cost:** ~12,000 units (initial at 2K); expansion TBD
+**Quota cost:** ~12,000 units (initial 6 queries); ~250,000 units (expansion to 122 queries, estimated)
 
 ---
 
@@ -172,11 +184,12 @@ Daily tracking of 9,760 established channels from the Infludata/Bailey's dataset
 
 **Sampling method:**
 - `search.list(q=RAW_FILE_PATTERNS, type='video', order='date')`
-- 15 filename patterns: `IMG_`, `MVI_`, `DSC_`, `MOV_`, `VID_`, `DSCF`, `GOPR`, `DJI_`, `P_`, `Screen Recording`, `Untitled`, `New Recording`, `20260`, `video_2026`, `Video 2026`
+- 37 filename patterns across 7 categories: camera defaults (`IMG_`, `MVI_`, `DSC_`, `MOV_`, `VID_`, `DSCF`, `GOPR`, `DJI_`, `P_`), phone defaults (`Samsung`, `Xiaomi`, `Pixel`), screen recordings, untitled/default names, date-based filenames, platform export defaults, and generic numbered clips
 
 **Key design parameters:**
 - `order=date` to capture recent uploads
-- Expansion approved: add ~20 more filename patterns (e.g., phone-specific patterns, screen recorder defaults) to target 3-5K channels
+- Expanded from original 15 to 37 patterns (Feb 17, 2026) to increase coverage of casual upload behaviors
+- Target: 25K channels (config.py `SAMPLE_TARGETS`)
 - Multi-signal filtering post-hoc: use filename + channel metadata to identify truly casual uploaders vs. creators who occasionally upload raw files
 
 **Empirical validation:**
@@ -232,20 +245,51 @@ The five streams form a complete picture:
 
 ### 3.2 Panel Filtering Decision
 
-**Decision:** Restrict to channels with BOTH gender AND race coded (9,760 of 14,169). Drops 31% of channels.
+**Decision:** Restrict to channels with BOTH gender AND race non-blank and non-"undetermined" (9,760 of 14,169). Drops 4,409 channels (31%).
+
+**Filtering rule:** A channel is included if and only if `perceivedGender` is not blank and not "undetermined" AND `race` is not blank and not "undetermined." This excludes 3,785 channels blank on both, 282 undetermined on both, and 342 channels with one variable coded but the other blank or undetermined.
 
 **Justification:**
-- The 4,100+ uncoded channels are not missing at random. Analysis of the `runBy` field shows they are: organizations (51%), teams (13%), broken/inactive (13%), AI bots (9%), uncoded individuals (14%).
+- The 4,409 excluded channels are not missing at random. Analysis of the `runBy` field shows they are: organizations (51%), teams (13%), broken/inactive (13%), AI bots (9%), uncoded individuals (14%).
 - Zero overlap with the target population (individual human entrepreneurs)
-- Gender and race are the key independent variables — channels missing both contribute nothing to any regression
+- Gender and race are the key independent variables — channels missing either contribute nothing to any regression that uses both
 - Intersectional analysis (gender x race) is a core design goal, which requires both variables
-- Saves 35% on quota and storage
+- Saves 31% on quota and storage
 - Uncoded channels can be added back if coding is later completed
 
-**Gender distribution:** man=6,590 (67.5%), woman=3,465 (35.5%), non-binary=37 (0.4%)
-**Race distribution:** white=7,113 (72.9%), Black=1,718 (17.6%), Asian=814 (8.3%), Hispanic=124 (1.3%)
+**Gender distribution (9,760 panel):** man=6,345 (65.0%), woman=3,383 (34.7%), non-binary=32 (0.3%)
+**Race distribution (9,760 panel):** white=7,106 (72.8%), Black=1,717 (17.6%), Asian=812 (8.3%), Hispanic=124 (1.3%), data error=1 (<0.1%)
 
-### 3.3 Collection Design
+*Note: One channel has `race='broken'` — a data entry error in Bailey's original coding that survived the filter. Should be recoded or excluded.*
+
+### 3.3 Infludata Sampling Frame
+
+**Source:** Infludata is a commercial influencer marketing platform. The 14,169 channels in this dataset were selected by Infludata based on their proprietary criteria, which likely emphasize commercial value (brand sponsorship potential, minimum follower thresholds, engagement rates).
+
+**Implications for external validity:**
+- The panel systematically overrepresents channels that are commercially attractive and underrepresents small, niche, and non-commercial creators
+- The panel is US-only, restricting generalizability to the American YouTube creator ecosystem
+- Infludata's selection criteria are proprietary and not fully documented, making the sampling frame partially opaque
+- The panel should be understood as "commercially relevant US YouTube creators," not "all US YouTube creators"
+
+**Mitigations:**
+- The gender gap research question is about *within-panel variation* (do male and female creators in the same market differ?), not about population-level prevalence
+- Intersectional analysis uses relative comparisons (gender x race interactions), which are less sensitive to the overall sampling frame than absolute estimates
+- The New Creator Cohort (Program 1) provides a complementary sample with a known, transparent sampling frame
+
+### 3.4 Gender Coding Methodology
+
+**Coder:** Bailey (research assistant), coding from publicly available channel information (profile photos, video appearances, channel descriptions, self-identification in "About" sections).
+
+**Variable:** `perceivedGender` — coded as man, woman, non-binary, or undetermined. The "perceived" label reflects that coding was based on external presentation, not self-reported gender identity. This is a standard limitation of observational coding in platform studies.
+
+**Known limitations:**
+- No formal intercoder reliability assessment was conducted. The coding protocol and any training materials are documented in the dissertation CH2 directory.
+- The `runBy` field distinguishes individuals from organizations/teams/bots, but couples channels or channels with multiple presenters may have ambiguous gender coding.
+- N=32 non-binary channels in the filtered panel is insufficient for standalone subgroup analysis. Non-binary channels will appear in descriptive statistics but cannot support regression-based comparisons. Future work should consider targeted oversampling of non-binary creators if this subgroup is analytically important.
+- Race coding (`race` field) used a similar observational approach. No multiracial category was available, and the coding did not distinguish between self-identification and phenotypic assessment.
+
+### 3.5 Collection Design
 
 **Daily channel stats (running):**
 - `channels.list(part=statistics)` for all 9,760 channels
@@ -289,7 +333,7 @@ The five streams form a complete picture:
 - `search.list(q=AI_SEARCH_TERMS, type='video')` across 45 terms
 - Sort by relevance and by date (two passes per term)
 - 18-month lookback window (captures pre-ChatGPT through current)
-- Terms span: general AI, video/image generation, audio/music AI, coding AI, non-English terms, domain-specific tools
+- Terms span: general AI, video/image generation, audio/music AI, coding AI, non-English terms (Spanish, Chinese, German for 4 key terms), domain-specific tools
 
 **Current tracking:** Daily channel stats on Mac Mini (9:00 UTC). Video enumeration in progress (8.3% complete as of Feb 17).
 
@@ -311,13 +355,20 @@ The five streams form a complete picture:
 **Population:** Gender gap panel (9,760 channels). These are established creators with coded demographics whose pre-AI video history provides the baseline.
 
 **Treatment variable:** AI adoption, detected through three layers:
-1. **Keyword matching** on video titles/descriptions (101 keywords across 6 categories in `AI_FLAG_KEYWORDS`)
+1. **Keyword matching** on video titles/descriptions (101 keywords across 6 categories in `AI_FLAG_KEYWORDS`: tools_general (25), image_video (26), audio_music (13), coding (13), content_creation (11), general_ai (13))
 2. **Transcript analysis** for AI tool references within the video itself
-3. **Production quality discontinuities** — sudden changes in upload frequency, video length distribution, or thumbnail style (requires longitudinal baseline)
+3. **Production quality discontinuities** — sudden changes in upload frequency, video length distribution, or thumbnail style (requires longitudinal baseline). *Note: Layer 3 is conceptual and not yet operationally defined. Formal specification (detection algorithm, threshold, baseline window) is needed before implementation.*
 
 **Key methodological challenge:** Distinguishing "talking about AI" from "producing with AI." A creator who reviews ChatGPT is different from a creator who uses ChatGPT to write their scripts. Layer 1 catches both; layers 2-3 are needed to separate them.
 
-**Complementary analysis on new cohort:** Stream A (intent) vs. A' (non-intent) provides a natural experiment for AI adoption among new creators. Same entry cohort, different launch strategies. Stream D (casual) provides a non-strategic baseline. This tracks "born AI-native" adoption, complementing the established-creator adoption story.
+**Estimation specification (staggered DiD):**
+- **Treatment timing definition:** The first video flagged by the AI keyword matcher (Layer 1) defines the adoption date. This is a conservative proxy — actual adoption may precede the first flagged video. Sensitivity analyses should test alternative definitions (first cluster of 3+ AI videos within 30 days; first AI keyword in channel description).
+- **Parallel trends assumption:** Pre-adoption engagement trends for early adopters must parallel those of later/never-adopters. Testable via event-study plots showing leads and lags around the adoption date. Violations would appear as diverging pre-trends.
+- **No anticipation assumption:** Creators should not change behavior in anticipation of adopting AI tools. This is plausible if adoption is driven by external events (e.g., new tool release) rather than gradual internal decisions. However, creators who "research" AI tools before adopting may show pre-trend shifts. The event-study design can detect this.
+- **Treatment heterogeneity:** AI adoption is not binary — creators may adopt one AI tool, experiment briefly, or adopt gradually. Callaway & Sant'Anna (2021) accommodates heterogeneous treatment effects across adoption cohorts. Never-adopters serve as the comparison group.
+- **Minimum pre-treatment window:** At least 60 days of pre-adoption channel stats are needed per creator for reliable pre-trend estimation. Creators who adopt within the first 60 days of panel observation should be flagged for sensitivity analysis.
+
+**Complementary analysis on new cohort:** Stream A (intent) vs. A' (non-intent) provides an observational comparison for AI adoption among new creators. Same entry cohort, different launch strategies. Stream D (casual) provides a non-strategic baseline. This tracks "born AI-native" adoption, complementing the established-creator adoption story. *Note: This is not a natural experiment — creators self-select into launch strategies. Confounding by personality, strategic orientation, and content category threatens the comparison.*
 
 **Script:** `src/collection/flag_ai_videos.py` (offline AI keyword flagger, built)
 **Status:** Infrastructure built. Awaiting video inventory completion and Katie's decision on AI flagger scope.
@@ -328,14 +379,15 @@ The five streams form a complete picture:
 
 **Research question:** Do new strategic creators adopt AI more than non-strategic ones? Is AI adoption front-loaded in intentional launchers?
 
-**Identification strategy:** Cross-stream comparison within the new creator cohort
+**Identification strategy:** Cross-stream observational comparison within the new creator cohort
 - Stream A (intent) vs. A' (non-intent) vs. D (casual)
 - Same temporal cohort, different launch strategies
 - Tracks "born AI-native" adoption patterns
+- **This is NOT a natural experiment.** Creators self-select into intent vs. non-intent launch strategies. The comparison is observational with plausible confounding by personality type, strategic orientation, and content category. Intent keywords skew toward lifestyle/vlog; non-intent skew toward gaming/cooking. Observed differences in AI adoption rates could reflect content category norms rather than strategic intent.
 
 **Why this design:**
 - Complements Design 2 (established creators pivoting to AI) with Design 3 (new creators who may be AI-native from day one)
-- Stream A vs. A' is a natural experiment: same entry window, different launch behavior
+- Stream A vs. A' is a quasi-experiment: same entry window, different launch behavior. Propensity score matching on observable channel characteristics (category, language, subscriber count at discovery) can partially address selection, but unobservable confounders remain.
 - No new infrastructure required — the AI keyword flagger works on any channel's videos
 
 **Status:** Depends on collection of Streams A' and D (expansion). Infrastructure ready.
@@ -455,7 +507,7 @@ All core sampling strategies were empirically tested before production use. Full
 | Intent (Stream A) | 307 | 39 | **12.7%** |
 | Non-Intent (Stream A') | 312 | 6 | 1.92% |
 
-Intent keywords are 6.6x more efficient at finding new creators.
+Intent keywords are 6.6x more efficient at finding new creators. *Note: These yield rates are from validation experiments (EXP-002/010) using small samples, not production collection. Actual production yield may differ.*
 
 ### 6.3 Language Bias (EXP-006)
 
@@ -490,11 +542,11 @@ English alone captures only 14% of findable new creators. Multilingual sampling 
 
 | Stream | Target | Units | Notes |
 |--------|--------|-------|-------|
-| Intent Creators (A) | 200K | ~404,000 | DONE (83,825 collected) |
+| Intent Creators (A) | 200K | ~404,000 | DONE (19,016 unique collected) |
 | Non-Intent Creators (A') | 200K | ~404,000 | 1 day |
 | Algorithm Favorites (B) | 25K | TBD | Expansion from 1,539 |
 | Searchable Random (C) | 50K | ~300,000 | 1 day |
-| Casual Uploaders (D) | 3-5K | ~150,000 | Expansion from 1,862 |
+| Casual Uploaders (D) | 25K | ~150,000 | Expansion from 1,862 (15 queries → 37 queries) |
 | AI Creator Census | 50K | ~100,000 | DONE (50,010 collected) |
 
 ### 7.2 Steady-State Costs (Running)
@@ -523,17 +575,43 @@ English alone captures only 14% of findable new creators. Multilingual sampling 
 | Comments | Deferred | Retroactive (timestamped) — can be collected any time. Not time-sensitive like views. |
 | Transcripts | Deferred | Unofficial API (no quota cost). Low priority until AI adoption detection phase. |
 
-### 8.2 Channel Stats Schema (8 fields)
+### 8.2 Channel Daily Stats Schema (5 fields)
 
-`channel_id`, `view_count`, `subscriber_count`, `video_count`, `made_for_kids`, `status`, `made_for_kids_changed`, `scraped_at`
+`channel_id`, `view_count`, `subscriber_count`, `video_count`, `scraped_at`
 
-### 8.3 Video Stats Schema (24 fields)
+*Note: The channel sweep schema (used for periodic health checks) has 8 fields, adding `made_for_kids`, `status`, `made_for_kids_changed`. These are distinct data products.*
 
-`video_id`, `channel_id`, `title`, `description`, `published_at`, `view_count`, `like_count`, `comment_count`, `duration`, `duration_seconds`, `is_short`, `category_id`, `category_name`, `tags`, `hashtags`, `hashtag_count`, `definition`, `dimension`, `caption`, `licensed_content`, `content_rating_yt`, `region_restriction_blocked`, `region_restriction_allowed`, `scraped_at`
+### 8.3 Video Discovery Schema (25 fields)
 
-### 8.4 Initial Channel Collection Schema (28+ fields)
+`video_id`, `channel_id`, `title`, `description`, `published_at`, `view_count`, `like_count`, `comment_count`, `duration`, `duration_seconds`, `is_short`, `category_id`, `category_name`, `tags`, `hashtags`, `hashtag_count`, `definition`, `dimension`, `caption`, `licensed_content`, `content_rating_yt`, `region_restriction_blocked`, `region_restriction_allowed`, `trigger_type`, `scraped_at`
 
-Full schema documented in [TECHNICAL_SPECS.md](../TECHNICAL_SPECS.md).
+*The video daily stats schema (lean daily panel) has only 5 fields: `video_id`, `view_count`, `like_count`, `comment_count`, `scraped_at`.*
+
+### 8.4 Initial Channel Collection Schema (33 fields)
+
+Full schema documented in [TECHNICAL_SPECS.md](../TECHNICAL_SPECS.md). Source of truth: `CHANNEL_INITIAL_FIELDS` in `src/config.py`.
+
+### 8.5 Deduplication Protocol
+
+**Within-stream dedup:**
+- Dedup key: `channel_id` (exact match)
+- Timing: Post-hoc, after collection completes. The checkpoint/resume pattern writes duplicates across keyword batches during collection; dedup happens at the extraction step when `channel_ids.csv` is generated.
+- Tie-breaking: First occurrence retained (chronological order of keyword batch processing)
+- Example: Stream A collected 83,825 raw rows that deduplicated to 19,016 unique channels (4.4:1 ratio due to cross-keyword overlap)
+
+**Cross-stream dedup:**
+- Stream A' uses `--exclude-list` flag pointing to Stream A's `channel_ids.csv` to exclude channels already discovered by Stream A
+- Streams B, C, D are intentionally NOT cross-deduped against A/A' because they sample different populations (established channels, random population, casual uploaders)
+- The AI Census is NOT cross-deduped against the gender gap panel because overlap is analytically interesting (established creators who also produce AI content)
+
+### 8.6 Deployment Constraints
+
+- **Runtime environment:** Mac Mini (local-first I/O) for all automated daily/weekly jobs. Laptop for ad-hoc scripts and one-time collections.
+- **Mac Mini:** username=katieapker, Python 3.9.6, repo at `/Users/katieapker/.youtube-longitudinal/repo`
+- **Laptop:** Python 3.14 (different version — scripts must be compatible with both)
+- **CRITICAL: Google Drive FUSE + launchd = EDEADLK.** Writing directly to Google Drive-mounted paths from launchd jobs causes kernel-level deadlocks. All automated collection writes to local paths first; a separate launchd job syncs to Drive.
+- **Scheduling:** launchd plists with staggered start times (gender gap 8:00 UTC, new cohort 8:30 UTC, AI census 9:00 UTC)
+- Full deployment details: see MAC_MINI_DEPLOYMENT.md (not in this repo; operational doc)
 
 ---
 
@@ -556,7 +634,7 @@ Full schema documented in [TECHNICAL_SPECS.md](../TECHNICAL_SPECS.md).
 
 ### Decision 4: Four AI Research Designs (Feb 17, 2026)
 **What:** Expanded from 3 to 4 designs. Added AI Adoption Among New Creators.
-**Why:** Stream A vs. A' is a natural experiment for "born AI-native" adoption. No new infrastructure required.
+**Why:** Stream A vs. A' provides an observational comparison for "born AI-native" adoption patterns (same temporal cohort, different launch strategies). No new infrastructure required.
 
 ### Decision 5: Relabel Stream B from "Market Baseline" to "Algorithm Favorites" (Feb 2, 2026)
 **What:** Changed the conceptual label after EXP-003 revealed catastrophic popularity bias.
@@ -567,8 +645,8 @@ Full schema documented in [TECHNICAL_SPECS.md](../TECHNICAL_SPECS.md).
 **Why:** English captures only 14% of findable new creators. Hindi has the highest yield (35.3%). English-only would produce a fundamentally non-representative sample.
 
 ### Decision 7: Expand Stream B to 25K via Keywords, Not Categories (Feb 17, 2026)
-**What:** Scale Stream B from 2K to 25K using expanded keyword searches.
-**Why:** Katie wants this as a standalone "who wins on YouTube" dataset. Keyword expansion captures more of the algorithm's surface area than category stratification. Category stratification risks imposing researcher priors about which categories matter.
+**What:** Scale Stream B from 6 queries to 122 queries across 14 categories, targeting 25K channels.
+**Why:** Katie wants this as a standalone "who wins on YouTube" dataset. Keyword expansion across diverse categories (single letters, common words, broad topics, question starters, everyday activities, emotional terms, etc.) captures more of the algorithm's surface area than YouTube category stratification. Category stratification risks imposing researcher priors about which categories matter.
 
 ### Decision 8: Comments Deferred (Feb 17, 2026)
 **What:** No comment collection until a specific paper needs them.
@@ -580,7 +658,7 @@ Full schema documented in [TECHNICAL_SPECS.md](../TECHNICAL_SPECS.md).
 
 ### Limitations
 
-1. **Search API unreliability.** YouTube's search results are not deterministic (Rieder et al. 2025; Efstratiou 2025). Identical queries return different results at different times. All keyword-based streams (A, A', B, D, AI Census) are affected. Mitigation: multiple query terms, multiple sort orders, checkpoint/resume.
+1. **Search API unreliability.** YouTube's search results are not deterministic (Rieder et al. 2025; Efstratiou 2025). Identical queries return different results at different times. All keyword-based streams (A, A', B, D, AI Census) are affected. Mitigation: multiple query terms, multiple sort orders, checkpoint/resume. Additionally, the `safeSearch=moderate` default silently filters adult content, and the ~500-result pagination cap limits discoverable population per query.
 
 2. **Subscriber count rounding.** Above 1K subscribers, YouTube rounds to 3 significant figures. Growth rate analysis is more reliable than level comparisons for mid-size channels.
 
@@ -588,15 +666,21 @@ Full schema documented in [TECHNICAL_SPECS.md](../TECHNICAL_SPECS.md).
 
 4. **No native Shorts identifier.** YouTube API does not flag Shorts. Workaround: `duration <= 180 seconds` (updated from 60s after YouTube expanded Shorts to 3 minutes in October 2024).
 
-5. **AI census inclusion precision.** ~70% of the 50,010 AI census channels are general creators who made an AI-adjacent video, not dedicated AI creators. The "talking about AI" vs. "producing with AI" distinction needs operationalization.
+5. **AI census inclusion precision.** ~70% of the 50,010 AI census channels are general creators who made an AI-adjacent video, not dedicated AI creators. The "talking about AI" vs. "producing with AI" distinction needs operationalization. Precision is estimated at ~30%; recall is unknown (no way to estimate how many AI creators are missed by the 45 search terms).
 
-6. **Gender coding is human-coded and binary-dominant.** Only 37 non-binary channels in the dataset. Intersectional analysis (gender x race) has small cell sizes for some combinations (e.g., Hispanic x woman).
+6. **Gender coding is human-coded and binary-dominant.** Only 32 non-binary channels in the filtered panel. Intersectional analysis (gender x race) has small cell sizes for some combinations (e.g., Hispanic x woman). See Section 3.4 for coding methodology details and limitations.
 
-7. **Stream A yield ceiling.** Target was 200K; actual yield was 83,825. The intent keyword search space has a natural ceiling — not every new channel uses these phrases, and the API only surfaces discoverable content.
+7. **Stream A yield ceiling.** Target was 200K; actual yield was 19,016 unique channels (83,825 raw rows before dedup). The yield ceiling reflects both the API's ~500-result pagination cap per query and genuine limits on the discoverable population. Temporal windowing (`publishedAfter`/`publishedBefore`) was not used and could potentially increase yield.
+
+8. **Infludata sampling frame.** The gender gap panel is drawn from a commercial influencer marketing dataset with proprietary selection criteria. The panel likely overrepresents commercially attractive channels. See Section 3.3 for full discussion.
+
+9. **No precision/recall validation for keyword sampling.** Intent keywords are assumed to capture entrepreneurial intent, but no manual validation study has confirmed this. A sample of 200 Stream A channels should be human-coded for actual entrepreneurial intent to estimate precision and assess whether keyword signals correlate with the construct of interest.
+
+10. **Keyword-based discovery is recall-limited.** All keyword-based streams (A, A', AI Census) can only find channels that the YouTube search API indexes and returns for specific queries. Channels that exist but are not indexed, or that use different terminology than the search terms, are systematically missed. The recall rate is fundamentally unknowable.
 
 ### Open Questions
 
-1. **AI adoption flagger scope.** Three-layer detection (keyword → transcript → production discontinuity) is designed but the "producing with AI" layer needs operationalization. What counts as "AI-produced" for a creator who uses ChatGPT for scripts but records themselves on camera?
+1. **AI adoption flagger scope.** Three-layer detection (keyword → transcript → production discontinuity) is designed but layers 2-3 need operationalization. Layer 3 ("production quality discontinuities") has no formal detection algorithm — what statistical test detects "sudden changes" in upload frequency? Over what baseline window? What threshold? What counts as "AI-produced" for a creator who uses ChatGPT for scripts but records themselves on camera?
 
 2. **2020 Birth Cohort (Decision 005).** Retrospective cohort spanning the full AI diffusion arc (pre-ChatGPT through 2026). Proposed but needs Katie's decision on feasibility, sample size, and gender coding method.
 
@@ -604,7 +688,13 @@ Full schema documented in [TECHNICAL_SPECS.md](../TECHNICAL_SPECS.md).
 
 4. **Comment depth.** When comments are eventually collected: full pull or randomized sample? AI Census gets full pull on AI-flagged videos. Other streams TBD.
 
-5. **Gender coding for new populations.** AI census channels (50K) and new creator cohort channels (83K+) have no gender/race coding. Method TBD: name-based classifier (Genderize.io) + manual coding for ambiguous cases? Or full manual coding?
+5. **Gender coding for new populations.** AI census channels (50K) and new creator cohort channels (19K+ unique) have no gender/race coding. Method TBD: name-based classifier (Genderize.io) + manual coding for ambiguous cases? Or full manual coding?
+
+6. **Power analysis.** No minimum detectable effect sizes have been calculated for any stream comparison or AI research design. Stream D has only 1,862 channels (pre-expansion); whether this provides sufficient power to detect meaningful differences against the 19K intent creators depends on effect sizes from CH2. N=32 non-binary channels cannot support any subgroup regression.
+
+7. **Intent keyword validation.** No manual coding study has confirmed that channels found via intent keywords actually display entrepreneurial intent. A validation sample (200 channels, 2 coders, intercoder reliability) would quantify precision and strengthen the construct validity claim.
+
+8. **Idempotency of collection scripts.** If a daily stats run partially completes and is re-run, does it append duplicates or skip already-collected channels? The idempotency contract for each script should be formally specified.
 
 ---
 
@@ -621,3 +711,6 @@ This document consolidates content from:
 | [YOUTUBE_DATASET_DESIGN.md](../../SECOND_BRAIN/03-research/YOUTUBE_DATASET_DESIGN.md) | AI research designs, identification strategies |
 | [PROGRESS_LOG.md](../PROGRESS_LOG.md) | Production status, 12-stream architecture discussion |
 | [CLAUDE.md](../CLAUDE.md) | Sampling design reference tables |
+| `src/config.py` | Authoritative keyword lists, schema definitions, sample targets |
+
+**Source of truth hierarchy:** When this document and `src/config.py` disagree on keyword counts, schema fields, or sample targets, `config.py` is authoritative. This document provides rationale and context; config.py provides operational definitions.

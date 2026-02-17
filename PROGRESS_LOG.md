@@ -5,29 +5,37 @@
 
 ---
 
-## Current Status (as of Feb 18, 2026)
+## Current Status (as of Feb 18, 2026 — Evening)
 
-**Phase:** LAUNCH PREP DONE. Code changes committed. PAUSED for Katie's stream evaluation before production runs.
-**Roadmap Position:** Stream A COMPLETE (19,016 unique — see note below). Streams B (1,539) + D (1,862) undersized. AI census (50,010) daily tracking LIVE. All expansion code ready. No production runs started yet.
-**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream A: 19,016 unique (83,825 raw rows had heavy cross-keyword duplication). Stream B: 1,539. Stream D: 1,862.
+**Phase:** ARCHITECTURE EVALUATED. SAMPLING_ARCHITECTURE.md scored 79.4/100 after 3-round expert panel review. All factual errors corrected. Ready for production runs.
+**Roadmap Position:** Stream A COMPLETE (19,016 unique). Streams B (1,539) + D (1,862) undersized, expansion code ready. AI census (50,010) + gender gap panel (9,760) daily tracking LIVE. All expansion code ready. No production runs started yet.
+**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream A: 19,016 unique. Stream B: 1,539. Stream D: 1,862.
 **What's Running:**
 - Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
 - AI census daily channel stats (Mac Mini, 9:00 UTC) — active
 - AI census video enumeration (laptop) — in progress
 - Gender gap video enumeration (laptop) — in progress
 **What's Ready But Not Running:**
-- Stream B expansion (25K target, 100+ queries) — code ready, needs `git pull` on Mac Mini then run
-- Stream D expansion (5K target, 40+ patterns) — code ready
+- Stream B expansion (25K target, 122 queries) — code ready, needs `git pull` on Mac Mini then run
+- Stream D expansion (25K target, 37 patterns) — code ready
 - Stream C random baseline (50K target) — script ready
 - Stream A' content-first (200K target, cross-dedup against Stream A) — script ready with `--exclude-list`
 **Next Steps:**
-1. Katie finishes stream evaluation — may modify targets, queries, or approach
-2. Integrate evaluation feedback into scripts/config
-3. Run production collections (B, D, C, A' in priority order)
-4. Create new cohort daily stats launchd service on Mac Mini (doesn't exist yet)
-5. Deploy expanded streams to Mac Mini for daily tracking
+1. Run production collections (priority: A' first for contemporaneity, then B, D, C)
+2. Create new cohort daily stats launchd service on Mac Mini
+3. Deploy expanded streams to Mac Mini for daily tracking
 
 ---
+
+### Feb 18, 2026 — Evening [Architecture Document Evaluated — 3-Round Expert Panel]
+
+- **Ran `/plan-eval` on `docs/SAMPLING_ARCHITECTURE.md`** — 10-expert panel, 3 rounds of evaluation + fixes
+- **Round 1 (62/100):** Found critical factual errors: Stream A count wrong (83,825 stated vs 19,016 unique), gender percentages summed to 103.4% (wrong denominator), schema field counts wrong (8 vs 5 for daily stats), "natural experiment" language for A vs A' comparison wouldn't survive peer review
+- **Round 1 fixes applied:** Corrected Stream A to 19,016 unique, recomputed gender/race on actual 9,760 panel (man=6,345/65%, woman=3,383/34.7%, NB=32/0.3%), fixed all schemas. Added 5 new sections: staggered DiD estimation specification (parallel trends, no-anticipation, treatment heterogeneity, 60-day minimum pre-treatment window), deduplication protocol, Infludata sampling frame discussion, gender coding methodology, deployment constraints (EDEADLK warning). Added pagination cap and safeSearch notes. Added source-of-truth hierarchy (config.py is authoritative).
+- **Round 2 (72.3/100):** Sub-agent had miscounted keyword lists — 4 of 6 counts were wrong. Manually verified against config.py: 46 intent, 47 non-intent, 45 AI search, 101 AI flag, 122 benchmark, 37 casual. Fixed all. Removed surviving "natural experiment" from Decision 4.
+- **Round 3 (79.4/100):** All numbers verified correct. Panel said doc is at realistic ceiling without Katie's input on 5 methodological decisions: power analysis, ethics/IRB, panel attrition protocol, Design 4 assumptions, gender coding method for new populations.
+- **Key lesson:** Sub-agents can miscount list items in code files. When factual accuracy matters, read the source code directly and count manually.
+- What's next: production runs — A' first (contemporaneity matters), then B, D, C
 
 ### Feb 18, 2026 — Morning [Consolidated Sampling Architecture Document]
 
