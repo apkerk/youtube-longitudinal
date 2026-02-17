@@ -5,25 +5,41 @@
 
 ---
 
-## Current Status (as of Feb 17, 2026)
+## Current Status (as of Feb 18, 2026)
 
-**Phase:** Audit decisions MADE. Code bug fixes DONE. Architecture table pending Katie's approval. Automated services running.
-**Roadmap Position:** Stream A COMPLETE (83,825). Streams B (1,539) + D (1,862) DONE. AI census (50,010) daily tracking LIVE. Streams A' + C APPROVED for collection. Stream B + D APPROVED for expansion.
-**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream A: 83,825. Stream B: 1,539. Stream D: 1,862.
+**Phase:** LAUNCH PREP DONE. Code changes committed. PAUSED for Katie's stream evaluation before production runs.
+**Roadmap Position:** Stream A COMPLETE (19,016 unique — see note below). Streams B (1,539) + D (1,862) undersized. AI census (50,010) daily tracking LIVE. All expansion code ready. No production runs started yet.
+**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream A: 19,016 unique (83,825 raw rows had heavy cross-keyword duplication). Stream B: 1,539. Stream D: 1,862.
 **What's Running:**
 - Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
 - AI census daily channel stats (Mac Mini, 9:00 UTC) — active
 - AI census video enumeration (laptop) — in progress
 - Gender gap video enumeration (laptop) — in progress
+**What's Ready But Not Running:**
+- Stream B expansion (25K target, 100+ queries) — code ready, needs `git pull` on Mac Mini then run
+- Stream D expansion (5K target, 40+ patterns) — code ready
+- Stream C random baseline (50K target) — script ready
+- Stream A' content-first (200K target, cross-dedup against Stream A) — script ready with `--exclude-list`
 **Next Steps:**
-1. Katie approves unified stream architecture table (12 streams total, 5 new)
-2. Build expanded Stream B script (25K target via keyword expansion)
-3. Add ~20 new filename patterns to Stream D, re-run
-4. Run Stream C (random baseline) and Stream A' (content-first)
-5. Deploy expanded streams to Mac Mini
-6. Comment sampling: AI Census first (full pull on AI-flagged videos), then Algorithm Favorites (randomized sample)
+1. Katie finishes stream evaluation — may modify targets, queries, or approach
+2. Integrate evaluation feedback into scripts/config
+3. Run production collections (B, D, C, A' in priority order)
+4. Create new cohort daily stats launchd service on Mac Mini (doesn't exist yet)
+5. Deploy expanded streams to Mac Mini for daily tracking
 
 ---
+
+### Feb 18, 2026 — Early Morning [Launch Prep Complete — Paused for Evaluation]
+
+- **Mac Mini bug fixes deployed:** SSH to 192.168.86.48, `git pull` pulled all 8 fixes (M4-M8, m1-m3). All 5 launchd services confirmed running (exit 0).
+- **Stream A channel_ids.csv extracted:** Raw CSV had 83,825 rows but only **19,016 unique channel IDs**. Heavy duplication across keyword batches (same channels found by multiple intent keywords). Previous "83,825 channels" count was misleading — the dedup happened at extraction, not during incremental collection.
+- **Stream B (Algorithm Favorites) expanded:** BENCHMARK_QUERIES in config.py grew from 6 entries (vowels + "video") to 100+ common search terms across 12 categories. discover_benchmark.py rewritten with checkpoint/resume and incremental CSV writes. Default target updated to 25,000.
+- **Stream D (Casual Uploaders) expanded:** CASUAL_QUERIES grew from 16 to 40+ patterns (Samsung, Pixel, WhatsApp, OBS, Zoom, Loom, Snapchat, TikTok, timestamp defaults). discover_casual.py rewritten with checkpoint/resume. Default target updated to 5,000.
+- **Stream A' cross-dedup built:** Added `--exclude-list` flag to discover_non_intent.py. Loads channel_ids.csv and adds those IDs to seen-set before discovery. Stream A's 19,016 channels will be excluded.
+- **Channel_ids.csv copied to laptop** via SCP for cross-dedup use in Stream A'.
+- **New cohort daily stats service MISSING:** No launchd plist for new cohort on Mac Mini. Charter listed it at 8:30 UTC but it was never created. Needs setup after expanded streams are collected.
+- **PAUSED:** Katie running stream evaluation before production. Next agent integrates evaluation results with this prep work.
+- What's next: integrate evaluation feedback, then execute production runs
 
 ### Feb 17, 2026 — Night [Audit Bug Fixes + Architecture Table]
 
