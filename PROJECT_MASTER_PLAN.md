@@ -22,9 +22,9 @@
 
 ## Current Marker
 
-**Now:** Production launch in progress. Video enumeration running on laptop (checkpoint/resume). Mac Mini deployment documented, ready for next agent.
-**Last Session:** Feb 16, 2026 — Launched enumeration, built dual-cadence infrastructure, wrote Mac Mini deployment guide
-**Next:** 1) Enumeration completes (~12M videos). 2) Deploy to Mac Mini per `docs/MAC_MINI_DEPLOYMENT.md`. 3) First full collection + verify launchd.
+**Now:** Mac Mini deployed and running. 4 launchd services active (daily channel, weekly video, sync, health check). Awaiting enumeration completion on laptop (143/9760).
+**Last Session:** Feb 16, 2026 — Deployed to Mac Mini via SSH, built health check + weekly digest, fixed IP/Python version.
+**Next:** 1) Enumeration finishes. 2) SCP inventory to Mac Mini. 3) Verify first automated 3 AM collection. 4) AI Creator Census.
 
 ### Session Achievements (Feb 16, 2026 — Night)
 - ✅ Panel filtered to 9,760 coded channels (from 14,169). channel_ids.csv + channel_metadata.csv regenerated.

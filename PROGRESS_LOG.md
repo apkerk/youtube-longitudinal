@@ -7,18 +7,40 @@
 
 ## Current Status (as of Feb 16, 2026)
 
-**Phase:** Production Launch — enumeration running, Mac Mini deployment next
-**Roadmap Position:** Panel filtered to 9,760 coded channels. Dual-cadence design implemented. Video enumeration in progress (checkpoint/resume). Mac Mini deployment documented, ready for next agent.
-**Data Quality Status:** 9,760 channels with both gender and race coded. channel_ids.csv and channel_metadata.csv regenerated. Video inventory building (~12M videos expected).
+**Phase:** Production — Mac Mini deployed, 4 launchd services running, awaiting enumeration completion
+**Roadmap Position:** Mac Mini fully deployed with daily channel stats, weekly video stats, sync-to-drive, and health check services. Enumeration still running on laptop (143/9760 channels). Once complete, recopy inventory to Mac Mini for full production.
+**Data Quality Status:** 9,760 channels with both gender and race coded. First test collection ran on Mac Mini (2 channels from partial inventory). Health check system operational.
 **Next Steps:**
-1. Wait for video enumeration to complete (running on laptop with checkpoint/resume)
-2. Deploy to Mac Mini following `docs/MAC_MINI_DEPLOYMENT.md` (9-step guide)
-3. Run first full collection on Mac Mini, verify launchd automation
-4. Run AI Creator Census when ready (~500K API units)
+1. Wait for enumeration to finish on laptop (143/9760, checkpoint/resume active)
+2. SCP completed inventory to Mac Mini: `scp data/video_inventory/gender_gap_inventory.csv katieapker@192.168.86.48:~/.youtube-longitudinal/repo/data/video_inventory/`
+3. Run first FULL channel stats collection on Mac Mini (will get 9,760 channels)
+4. Verify launchd fires at 3 AM EST next morning
+5. Run AI Creator Census when ready (~500K API units)
 
 ---
 
 ## Feb 2026
+
+### Feb 16, 2026 — 07:55 PM [Mac Mini Deployed + Health Monitoring Built]
+- **Deployed to Mac Mini via SSH** (192.168.86.48) — full Steps 1-7 from deployment guide
+  - Cloned repo, installed deps (Python 3.9.6 on Mac Mini, not 3.14), copied config + data
+  - Created and loaded 4 launchd services: daily-channel-stats, weekly-video-stats, sync-to-drive, health-check
+  - Ran test collection: 2 channel stats collected (partial inventory on Mac Mini)
+- **Built health check system** (`src/validation/health_check.py`) — 9 checks:
+  channel freshness, channel completeness, video freshness, video completeness,
+  log errors, inventory integrity, disk space, quota usage, stale checkpoints.
+  Outputs HEALTHY/DEGRADED/FAILING. Supports --json. Runs daily at 12:00 UTC via launchd.
+- **Built weekly digest** (`src/validation/weekly_digest.py`) — markdown summary of
+  collection coverage, growth trends, data volume. Run manually or schedulable.
+- **Fixed Mac Mini details:** IP was .41 (wrong), corrected to .48. Python is 3.9.6 not 3.14.
+  Drive sync from laptop to Mac Mini can be stale — use scp for critical files.
+- **Discovered Drive sync issue:** Files copied from Drive mount on Mac Mini had stale data
+  (channel_ids.csv had 14,170 rows instead of 9,761). Used scp from laptop to push correct files.
+- **Enumeration status:** 143/9760 channels done (~1.5%), still running on laptop.
+  Once complete, scp inventory to Mac Mini for full production.
+- Health check ran on Mac Mini: DEGRADED (expected — partial inventory, no video stats yet).
+  All infrastructure checks pass (disk 37.6%, no errors, no stale checkpoints).
+- What's next: Wait for enumeration, scp inventory, run full collection, verify 3 AM automation.
 
 ### Feb 16, 2026 — 09:45 PM [Production Launch + Mac Mini Handoff]
 - **Regenerated channel_ids.csv** to 9,760 coded channels (filtered from 14,169 to only those with both gender + race)
