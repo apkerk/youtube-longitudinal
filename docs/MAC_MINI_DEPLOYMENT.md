@@ -53,15 +53,15 @@ This project must follow the same pattern.
 
 ### Mac Mini Details
 - **Username:** `katieapker`
-- **SSH:** `ssh katieapker@192.168.86.41`
-- **System Python:** `/usr/bin/python3` (use this, NOT Homebrew)
-- **Existing launchd services:** 4 (Pat bot, dashboard, heartbeat, inbox sync)
+- **SSH:** `ssh katieapker@192.168.86.48` (ethernet)
+- **System Python:** `/usr/bin/python3` (3.9.6 — use this, NOT Homebrew)
+- **Existing launchd services:** 9 (Pat bot, dashboard, heartbeat, inbox sync, etc.)
 - **Local service directory pattern:** `~/.pat-system/` (follow this convention)
 
 ### Step 1: Create Local Project Directory
 
 ```bash
-ssh katieapker@192.168.86.41
+ssh katieapker@192.168.86.48
 
 # Create local working directory (follows the ~/.pat-system/ convention)
 mkdir -p ~/.youtube-longitudinal
@@ -352,14 +352,14 @@ wc -l data/daily_panels/video_stats/*.csv
 
 ```bash
 # Check if daily channel stats ran at 3 AM
-ssh katieapker@192.168.86.41 'ls -la ~/.youtube-longitudinal/repo/data/daily_panels/channel_stats/'
-ssh katieapker@192.168.86.41 'tail -20 ~/.youtube-longitudinal/repo/data/logs/daily_channel_stats_stdout.log'
+ssh katieapker@192.168.86.48 'ls -la ~/.youtube-longitudinal/repo/data/daily_panels/channel_stats/'
+ssh katieapker@192.168.86.48 'tail -20 ~/.youtube-longitudinal/repo/data/logs/daily_channel_stats_stdout.log'
 
 # Check for errors
-ssh katieapker@192.168.86.41 'tail -20 ~/.youtube-longitudinal/repo/data/logs/daily_channel_stats_stderr.log'
+ssh katieapker@192.168.86.48 'tail -20 ~/.youtube-longitudinal/repo/data/logs/daily_channel_stats_stderr.log'
 
 # Check launchd status
-ssh katieapker@192.168.86.41 'launchctl list | grep youtube'
+ssh katieapker@192.168.86.48 'launchctl list | grep youtube'
 ```
 
 ---
@@ -369,7 +369,7 @@ ssh katieapker@192.168.86.41 'launchctl list | grep youtube'
 The Mac Mini runs from a local git clone. When code changes are pushed from the laptop:
 
 ```bash
-ssh katieapker@192.168.86.41 'cd ~/.youtube-longitudinal/repo && git pull'
+ssh katieapker@192.168.86.48 'cd ~/.youtube-longitudinal/repo && git pull'
 ```
 
 The data/ directory is gitignored, so `git pull` only updates code, never overwrites data.
