@@ -75,6 +75,7 @@ class DailyStatsCollector:
         youtube,
         inventory_path: Optional[Path] = None,
         channel_list_path: Optional[Path] = None,
+        panel_name: Optional[str] = None,
     ):
         """
         Args:
@@ -82,12 +83,17 @@ class DailyStatsCollector:
             inventory_path: Path to video inventory CSV (required for video/both modes)
             channel_list_path: Path to a CSV with a channel_id column (optional;
                 used for channel-only mode to bypass the video inventory)
+            panel_name: Optional panel subdirectory name (e.g., 'new_cohort').
+                When set, output goes to channel_stats/{panel_name}/YYYY-MM-DD.csv.
+                When None, uses the flat default (backwards compatible).
         """
         self.youtube = youtube
         self.inventory_path = inventory_path
         self.channel_list_path = channel_list_path
+        self.panel_name = panel_name
         self.today = datetime.utcnow().strftime("%Y-%m-%d")
-        self.checkpoint_path = config.DAILY_PANELS_DIR / ".daily_stats_checkpoint.json"
+        checkpoint_suffix = f"_{panel_name}" if panel_name else ""
+        self.checkpoint_path = config.DAILY_PANELS_DIR / f".daily_stats_checkpoint{checkpoint_suffix}.json"
 
     def load_inventory(self) -> Tuple[List[str], List[str]]:
         """
@@ -202,7 +208,7 @@ class DailyStatsCollector:
         # If resuming, reload partial results from today's output file
         all_stats: List[Dict] = []
         if start_batch > 0:
-            partial_path = config.get_daily_panel_path('video_stats', self.today)
+            partial_path = config.get_daily_panel_path('video_stats', self.today, panel_name=self.panel_name)
             if partial_path.exists():
                 with open(partial_path, 'r', encoding='utf-8') as f:
                     reader = csv.DictReader(f)
@@ -430,7 +436,7 @@ class DailyStatsCollector:
                 checkpoint['channel_stats_done'] = True
                 self.save_checkpoint(checkpoint)
             else:
-                channel_stats_path = config.get_daily_panel_path('channel_stats', self.today)
+                channel_stats_path = config.get_daily_panel_path('channel_stats', self.today, panel_name=self.panel_name)
                 if channel_stats_path.exists():
                     with open(channel_stats_path, 'r', encoding='utf-8') as f:
                         reader = csv.DictReader(f)
@@ -440,7 +446,7 @@ class DailyStatsCollector:
 
         # Step 5: Save panel files
         if collect_videos and video_stats:
-            video_path = config.get_daily_panel_path('video_stats', self.today)
+            video_path = config.get_daily_panel_path('video_stats', self.today, panel_name=self.panel_name)
             with open(video_path, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.DictWriter(f, fieldnames=config.VIDEO_STATS_FIELDS)
                 writer.writeheader()
@@ -450,7 +456,7 @@ class DailyStatsCollector:
             logger.info(f"Saved {len(video_stats)} video stats to {video_path.name}")
 
         if collect_channels and channel_stats:
-            channel_path = config.get_daily_panel_path('channel_stats', self.today)
+            channel_path = config.get_daily_panel_path('channel_stats', self.today, panel_name=self.panel_name)
             with open(channel_path, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.DictWriter(f, fieldnames=config.CHANNEL_STATS_FIELDS)
                 writer.writeheader()
@@ -463,7 +469,7 @@ class DailyStatsCollector:
         new_videos = []
         if collect_channels and not checkpoint.get('new_video_detection_done', False):
             yesterday_str = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
-            prev_channel_path = config.get_daily_panel_path('channel_stats', yesterday_str)
+            prev_channel_path = config.get_daily_panel_path('channel_stats', yesterday_str, panel_name=self.panel_name)
 
             new_videos = self.detect_and_add_new_videos(channel_stats, prev_channel_path)
 
@@ -505,6 +511,8 @@ def main():
         '--mode', type=str, default='both', choices=['channel', 'video', 'both'],
         help='Collection mode: channel (daily), video (weekly), or both (default)'
     )
+    parser.add_argument('--panel-name', type=str, default=None,
+        help='Panel subdirectory name (e.g., new_cohort). Output goes to channel_stats/{name}/.')
     parser.add_argument('--test', action='store_true', help='Test mode (limit to 250 video IDs)')
     parser.add_argument('--limit', type=int, default=None, help='Max video IDs to process')
     args = parser.parse_args()
@@ -556,6 +564,8 @@ def main():
         logger.info(f"Inventory: {inventory_path}")
     if channel_list_path:
         logger.info(f"Channel list: {channel_list_path}")
+    if args.panel_name:
+        logger.info(f"Panel name: {args.panel_name}")
     logger.info(f"Test mode: {args.test}")
     if args.limit:
         logger.info(f"Limit: {args.limit}")
@@ -569,6 +579,7 @@ def main():
             youtube,
             inventory_path=inventory_path,
             channel_list_path=channel_list_path,
+            panel_name=args.panel_name,
         )
         summary = collector.run(mode=args.mode, test_mode=args.test, limit=args.limit)
 

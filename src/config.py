@@ -721,13 +721,16 @@ def get_output_path(stream: str, prefix: str = "initial") -> Path:
     return STREAM_DIRS[stream] / f"{prefix}_{get_date_stamp()}.csv"
 
 
-def get_daily_panel_path(panel_type: str, date_str: Optional[str] = None) -> Path:
+def get_daily_panel_path(panel_type: str, date_str: Optional[str] = None, panel_name: Optional[str] = None) -> Path:
     """
     Get output path for a daily panel file.
 
     Args:
         panel_type: 'video_stats' or 'channel_stats'
         date_str: Optional date string (YYYY-MM-DD). Defaults to today UTC.
+        panel_name: Optional panel subdirectory (e.g., 'new_cohort').
+            When set, output goes to channel_stats/{panel_name}/YYYY-MM-DD.csv.
+            When None, uses the flat default: channel_stats/YYYY-MM-DD.csv.
 
     Returns:
         Path to daily panel CSV file
@@ -735,11 +738,17 @@ def get_daily_panel_path(panel_type: str, date_str: Optional[str] = None) -> Pat
     if date_str is None:
         date_str = datetime.utcnow().strftime("%Y-%m-%d")
     if panel_type == "video_stats":
-        return VIDEO_STATS_DIR / f"{date_str}.csv"
+        base_dir = VIDEO_STATS_DIR
     elif panel_type == "channel_stats":
-        return CHANNEL_STATS_DIR / f"{date_str}.csv"
+        base_dir = CHANNEL_STATS_DIR
     else:
         raise ValueError(f"Unknown panel type: {panel_type}")
+
+    if panel_name:
+        base_dir = base_dir / panel_name
+        base_dir.mkdir(parents=True, exist_ok=True)
+
+    return base_dir / f"{date_str}.csv"
 
 
 def get_all_intent_keywords() -> List[tuple]:
