@@ -22,9 +22,9 @@
 
 ## Current Marker
 
-**Now:** Streams B (1,539) + D (1,862) collected. Stream A running in screen on Mac Mini. A' + C queued for subsequent days.
-**Last Session:** Feb 17, 2026 — Ran Streams B+D production discovery. Launched Stream A (200K target) in screen session. Fixed extract_channel_ids.sh multiline CSV bug.
-**Next:** 1) Monitor Stream A completion. 2) Run A' next day, C day after. 3) Merge all streams → deploy cohort daily stats. 4) Scale AI census to 50K. 5) Verify 3 AM channel stats.
+**Now:** AI Census (50,010 channels) DEPLOYED on Mac Mini with daily tracking. Video enumeration running on laptop. Stream A in progress on Mac Mini. Streams B+D done.
+**Last Session:** Feb 17, 2026 — Scaled AI census to 50K, deployed daily tracking to Mac Mini (9:00 UTC launchd), launched video enumeration for 50K AI census channels.
+**Next:** 1) Verify first automated AI census run (Feb 18). 2) Monitor Stream A + video enumeration completion. 3) Run AI flagger on completed inventory. 4) Run A' next day, C day after. 5) Merge all streams → deploy cohort daily stats. 6) Consider 2020 birth cohort stream (DECISION_LOG #005).
 
 ### Session Achievements (Feb 16, 2026 — Night)
 - ✅ Panel filtered to 9,760 coded channels (from 14,169). channel_ids.csv + channel_metadata.csv regenerated.

@@ -7,33 +7,32 @@
 
 ## Current Status (as of Feb 17, 2026)
 
-**Phase:** Production — AI census deployed, video enumeration running.
-**Roadmap Position:** Stream B (1,539) + Stream D (1,862) DONE. Stream A running on Mac Mini. AI census: 50,010 channels, daily tracking deploying to Mac Mini, video enumeration launched.
-**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels. Stream B: 1,539. Stream D: 1,862.
+**Phase:** Production — AI census DEPLOYED on Mac Mini (daily tracking active). Video enumeration for AI census channels launched on laptop.
+**Roadmap Position:** Stream B (1,539) + Stream D (1,862) DONE. Stream A running on Mac Mini. AI census: 50,010 channels, daily tracking LIVE on Mac Mini (9:00 UTC), video enumeration in progress.
+**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream B: 1,539. Stream D: 1,862.
 **Next Steps:**
 1. Monitor Stream A completion (screen -r stream_a on Mac Mini)
-2. Verify AI census daily tracking running on Mac Mini (check logs after 9:00 UTC)
-3. Monitor video enumeration completion (~50K channels, several hours)
+2. Verify AI census first automated run (check logs after 9:00 UTC Feb 18)
+3. Check video enumeration completion (~50K channels)
 4. After enumeration: run AI flagger on inventory, SCP to Mac Mini
 5. Run Stream A' (~770K units): `python3 -m src.collection.discover_non_intent --limit 200000 --skip-first-video`
 6. Run Stream C (~1M units): `python3 -m src.collection.discover_random --limit 50000`
 7. After all streams: merge channel lists → deploy cohort daily stats to Mac Mini
-
-**MORNING ACTION ITEMS (Feb 17):**
-- **AI census → longitudinal panel:** Deploy daily tracking for AI census channels on Mac Mini (`--panel-name ai_census`). Enables DiD on success by tactics, demographics, ascriptives. Needs launchd plist alongside new cohort plist. See DECISION_LOG #004.
-- **Design decision needed:** 2020 birth cohort stream for retrospective AI diffusion history. See DECISION_LOG #005. Channels created ~2020 with full video history → observe pre-ChatGPT baseline through current AI saturation. Enables diffusion curves by gender, precise adoption dating, content evolution tracking. Key questions: sampling method, quota cost, gender coding approach.
-- **Research designs expanded to 4** (from 3). See DECISION_LOG #004. Added: AI adoption in new creator cohort (A vs A' vs D) + audience response redesigned as within-creator variation (AI vs non-AI videos from same channel in AI census). AI census redesigned as longitudinal panel (not one-time snapshot).
-- **Post-collection deployment infrastructure** ready for another agent (handoff prompt written). Builds merge script, launchd plist, Drive sync for new cohort daily tracking. Should also include AI census launchd plist.
+8. Design decision needed: 2020 birth cohort stream for retrospective AI diffusion history (see DECISION_LOG #005)
 
 ---
 
-### Feb 17, 2026 — Morning [AI Census Deployment + Video Enumeration]
+### Feb 17, 2026 — Morning [AI Census Deployment COMPLETE + Video Enumeration Running]
 
 - **AI census collection COMPLETE:** 50,010 channels in 34 min (45 terms x 2 sort orders x 18 months). Top yielders: artificial intelligence (2,859), AI tools (2,815), prompt engineering (2,786).
-- **Deploying daily tracking to Mac Mini:** launchd plist created (`com.youtube.ai-census-daily-channel-stats`), scheduled 9:00 UTC. SCP channel_ids.csv + git pull + load service (running via agent).
+- **Mac Mini deployment COMPLETE:** launchd plist created (`com.youtube.ai-census-daily-channel-stats`), scheduled 9:00 UTC. SCP'd channel_ids.csv to Mac Mini, loaded service. Test run returned stats for 50,005 of 50,010 channels (5 likely terminated/private).
 - **Video enumeration launched:** 50K channels, ~183K API units, checkpoint/resume. Running on laptop in background.
 - **Handoff report written:** `HANDOFF_AI_CENSUS_DEPLOY.md` for agent continuity.
-- Next: verify Mac Mini deployment, monitor enumeration, then run AI flagger on completed inventory.
+- **Three launchd services now active on Mac Mini:**
+  1. Gender gap daily channel stats (8:00 UTC)
+  2. New cohort daily channel stats (8:30 UTC)
+  3. AI census daily channel stats (9:00 UTC)
+- Next: verify first automated AI census run (Feb 18 after 9:00 UTC), monitor video enumeration, run AI flagger on completed inventory.
 
 ### Feb 16, 2026 — 10:55 PM [AI Census Scaled to 50K + Multi-Design Architecture]
 
