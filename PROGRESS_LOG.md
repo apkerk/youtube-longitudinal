@@ -23,6 +23,33 @@
 
 ---
 
+### Feb 17, 2026 — Evening [Strategic Design Review + Stream Architecture Overhaul]
+
+- **Full design review session** — Katie reviewed every audit finding (F1-F4, M1-M3) and made decisions:
+  - F1 (Stream C / random baseline): **RUN IT** — just hasn't been executed yet
+  - F2 (Pre-analysis plan): **DOWNGRADED to INFO** — not applicable to data infrastructure projects; pre-registration is for experiments
+  - F3 (Stream A'): **COLLECT ASAP** — contemporaneity concern acknowledged
+  - F4 (AI Census validation): **Claude agent will validate** — Katie pushes back on audit framing; "found in search" IS relevant from user perspective. Distinction needed: "talking about AI" vs "producing with AI"
+  - M1 (Expand panel to 14,169): **KEEP 9,760** — data confirms exclusion is substantively correct (uncoded channels are 51% organizations, 13% teams, 13% broken, 9% AI bots; 0% overlap with individual entrepreneurs)
+  - M2 (Stream D): **ADD ~20 MORE PATTERNS**, target 3-5K channels, multi-signal filtering post-hoc
+  - M3 (Stream B): **EXPAND TO 25K** via expanded keyword searches (NOT category stratification). Standalone dataset for "who wins" research questions.
+- **Critical framing correction from Katie:** This is NOT one research project. It's automated data infrastructure producing multiple datasets for multiple papers. The audit's single-paper framing was wrong.
+- **Coded vs uncoded channel analysis:** Confirmed Katie's instinct. runBy field shows 100% of coded channels are individual creators. Uncoded are organizations (51%), teams (13%), broken (13%), AI bots (9%), and uncoded individuals (14%). Median observables nearly identical, but construct validity demands individual-only panel.
+- **5 new sampling methods proposed and approved in principle:**
+  1. Topic-Stratified Discovery (topicId parameter, 26 topic categories)
+  2. Trending Tracker (chart=mostPopular, 51 region codes)
+  3. Livestream Creators (eventType=completed)
+  4. Shorts-First Creators (videoDuration=short)
+  5. Creative Commons Educators (videoLicense=creativeCommon)
+- **Storage/cadence decisions:**
+  - Katie has 2 TB Google Drive — 19+ years of headroom
+  - Weekly video stats on ALL panels: ~96-104 GB/year — approved
+  - Channel stats daily: ~8.4 GB/year — trivial
+  - Comment data: decision pending (full initial pull vs sampled)
+- **Katie wants descriptive stream labels** replacing letter codes (e.g., "Intent Creators" not "Stream A")
+- **No code written this session** — pure strategic design review
+- What's next: next agent finalizes unified stream architecture, then implements code fixes (M4-M8) and new stream scripts
+
 ### Feb 17, 2026 — Afternoon [Charter Review + Corrections]
 
 - **Reviewed new PROJECT_CHARTER.md** (created in Second Brain session). Verified framing: this project is data infrastructure, not a single paper.
