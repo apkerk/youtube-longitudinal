@@ -23,6 +23,18 @@
 
 ---
 
+### Feb 17, 2026 — Afternoon [Charter Review + Corrections]
+
+- **Reviewed new PROJECT_CHARTER.md** (created in Second Brain session). Verified framing: this project is data infrastructure, not a single paper.
+- **Fixed charter inaccuracies:**
+  - "First milestone" → "Current milestone" with clearer language separating charter (done) from outstanding stream/AI decisions (not done)
+  - Added 3 missing Mac Mini services to automated services table (weekly video stats, sync-to-drive, health check — was only showing the 3 collection jobs)
+  - Rewrote next actions to put actual decisions (A', C, AI flagger) first instead of buried
+  - Added concrete enumeration progress to video enumeration milestone (gender gap ~5M+ rows, AI census ~8%)
+- **Confirmed charter accuracy on:** dataset sizes, 3 collection service schedules, autonomy boundaries, relationship to gender gap paper repo
+- **No phase change.** Approach audit still IN PROGRESS — charter is established but decisions on A', C, and AI designs remain.
+- What's next: Katie makes audit decisions on remaining streams and AI research designs
+
 ### Feb 17, 2026 — Late Morning [Status Audit + Stream A Complete]
 
 - **Verified Mac Mini deployment:** AI census daily stats already live, first run produced 50,005 rows (2026-02-17.csv). All 5 launchd services healthy.
