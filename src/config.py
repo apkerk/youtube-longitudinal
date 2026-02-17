@@ -50,6 +50,11 @@ STREAM_DIRS = {
     "stream_b": CHANNELS_DIR / "stream_b",
     "stream_c": CHANNELS_DIR / "stream_c",
     "stream_d": CHANNELS_DIR / "stream_d",
+    "topic_stratified": CHANNELS_DIR / "topic_stratified",
+    "trending": CHANNELS_DIR / "trending",
+    "livestream": CHANNELS_DIR / "livestream",
+    "shorts_first": CHANNELS_DIR / "shorts_first",
+    "creative_commons": CHANNELS_DIR / "creative_commons",
 }
 
 # =============================================================================
@@ -57,11 +62,16 @@ STREAM_DIRS = {
 # =============================================================================
 
 SAMPLE_TARGETS = {
-    "stream_a": 200000,      # Intent creators (LARGE for attrition)
-    "stream_a_prime": 200000, # Non-intent creators (LARGE for attrition)
-    "stream_b": 25000,       # Algorithm favorites (benchmark)
-    "stream_c": 50000,       # Searchable random
-    "stream_d": 25000,       # Casual uploads
+    "stream_a": 200000,         # Intent creators (LARGE for attrition)
+    "stream_a_prime": 200000,   # Non-intent creators (LARGE for attrition)
+    "stream_b": 25000,          # Algorithm favorites (benchmark)
+    "stream_c": 50000,          # Searchable random
+    "stream_d": 25000,          # Casual uploads
+    "topic_stratified": 40000,  # Topic-stratified across 62 topic categories
+    "trending": 0,              # Accumulating daily (no fixed target)
+    "livestream": 25000,        # Livestream creators
+    "shorts_first": 50000,      # Shorts-first creators
+    "creative_commons": 15000,  # Creative Commons educators
 }
 
 # =============================================================================
@@ -471,6 +481,20 @@ RANDOM_PREFIX_LENGTH = 3
 RANDOM_PREFIX_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 # =============================================================================
+# TRENDING REGION CODES (51 regions for daily trending tracker)
+# ISO 3166-1 alpha-2 codes supported by YouTube's mostPopular chart
+# =============================================================================
+
+TRENDING_REGION_CODES: List[str] = [
+    "US", "GB", "CA", "AU", "IN", "DE", "FR", "ES", "IT", "BR",
+    "MX", "AR", "CL", "CO", "PE", "JP", "KR", "TW", "HK", "SG",
+    "MY", "PH", "ID", "TH", "VN", "RU", "UA", "PL", "NL", "BE",
+    "AT", "CH", "SE", "NO", "DK", "FI", "IE", "PT", "CZ", "RO",
+    "HU", "GR", "TR", "IL", "SA", "AE", "EG", "ZA", "KE", "NG",
+    "NZ",
+]
+
+# =============================================================================
 # API CONFIGURATION
 # =============================================================================
 
@@ -864,6 +888,23 @@ COMMENT_FIELDS = [
     "text_display",
     "like_count",
     "published_at",
+    "scraped_at",
+]
+
+# Trending log fields (daily append-only log of trending video sightings)
+TRENDING_LOG_FIELDS = [
+    "trending_date",
+    "region_code",
+    "position",
+    "video_id",
+    "channel_id",
+    "video_title",
+    "video_view_count",
+    "video_like_count",
+    "video_comment_count",
+    "video_published_at",
+    "category_id",
+    "category_name",
     "scraped_at",
 ]
 

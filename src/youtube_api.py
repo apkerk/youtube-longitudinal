@@ -974,64 +974,130 @@ def search_videos(
 
 def search_videos_paginated(
     youtube,
-    query: str,
-    published_after: str,
-    published_before: str,
+    query: Optional[str] = None,
+    published_after: Optional[str] = None,
+    published_before: Optional[str] = None,
     max_pages: int = 10,
     region_code: Optional[str] = None,
-    order: str = "date"
+    order: str = "date",
+    **extra_params
 ) -> List[Dict]:
     """
     Search for videos with pagination support.
-    
+
     Args:
         youtube: Authenticated YouTube API service
-        query: Search query string
+        query: Search query string (optional — omit for parameter-only searches)
         published_after: ISO timestamp for start of window
         published_before: ISO timestamp for end of window
         max_pages: Maximum number of pages to fetch
         region_code: Optional region code
         order: Sort order
-        
+        **extra_params: Additional search.list parameters passed through directly.
+            Useful for: topicId, eventType, videoDuration, videoLicense, etc.
+
     Returns:
         List of all video items across pages
     """
     all_videos = []
     page_token = None
-    
+
     for _ in range(max_pages):
         try:
             kwargs = {
                 'part': 'snippet',
                 'type': 'video',
-                'q': query,
-                'publishedAfter': published_after,
-                'publishedBefore': published_before,
                 'order': order,
                 'maxResults': 50,
             }
-            
+
+            if query:
+                kwargs['q'] = query
+            if published_after:
+                kwargs['publishedAfter'] = published_after
+            if published_before:
+                kwargs['publishedBefore'] = published_before
             if region_code:
                 kwargs['regionCode'] = region_code
             if page_token:
                 kwargs['pageToken'] = page_token
-                
+
+            # Merge any additional search parameters
+            kwargs.update(extra_params)
+
             request = youtube.search().list(**kwargs)
             response = execute_request(request, quota_cost=100, endpoint_name="search.list")
 
             items = response.get('items', [])
             all_videos.extend(items)
-            
+
             page_token = response.get('nextPageToken')
             if not page_token:
                 break
-                
+
             time.sleep(config.SLEEP_BETWEEN_CALLS)
-            
+
         except Exception as e:
             logger.error(f"Error in paginated search for '{query}': {e}")
             break
-            
+
+    return all_videos
+
+
+def get_trending_videos(
+    youtube,
+    region_code: str = "US",
+    max_pages: int = 4,
+) -> List[Dict]:
+    """
+    Get currently trending (mostPopular) videos for a region.
+
+    Uses videos.list(chart=mostPopular) which returns video resources directly
+    (not search results). Costs 1 unit per call (not 100 like search.list).
+
+    Args:
+        youtube: Authenticated YouTube API service
+        region_code: ISO 3166-1 alpha-2 country code
+        max_pages: Maximum pages to fetch (50 results per page, ~200 max total)
+
+    Returns:
+        List of video items from the trending chart
+    """
+    all_videos = []
+    page_token = None
+
+    for _ in range(max_pages):
+        try:
+            kwargs = {
+                'part': 'snippet,statistics',
+                'chart': 'mostPopular',
+                'regionCode': region_code,
+                'maxResults': 50,
+            }
+            if page_token:
+                kwargs['pageToken'] = page_token
+
+            request = youtube.videos().list(**kwargs)
+            response = execute_request(request, endpoint_name="videos.list_trending")
+
+            items = response.get('items', [])
+            all_videos.extend(items)
+
+            page_token = response.get('nextPageToken')
+            if not page_token:
+                break
+
+            time.sleep(config.SLEEP_BETWEEN_CALLS)
+
+        except HttpError as e:
+            if e.resp.status == 404:
+                logger.warning(f"Trending not available for region {region_code}")
+                break
+            raise
+        except Exception as e:
+            logger.error(f"Error fetching trending for {region_code}: {e}")
+            break
+
     return all_videos
 
 
