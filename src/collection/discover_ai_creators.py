@@ -9,15 +9,19 @@ search for videos -> extract channel IDs -> get channel details -> save.
 Unlike the new creator cohort streams, this has NO date filter.
 We want all AI creators regardless of when they started.
 
+Supports checkpoint/resume: if interrupted, re-run the same command
+and it picks up where it left off.
+
 Usage:
     python -m src.collection.discover_ai_creators [--test] [--limit N]
 """
 
 import argparse
 import csv
+import json
 import logging
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
@@ -43,44 +47,113 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+CHECKPOINT_PATH = config.AI_CENSUS_DIR / '.discover_checkpoint.json'
+
+
+def _load_checkpoint() -> dict:
+    """Load checkpoint state if it exists."""
+    if CHECKPOINT_PATH.exists():
+        with open(CHECKPOINT_PATH, 'r') as f:
+            cp = json.load(f)
+        logger.info(f"Resuming from checkpoint: {len(cp.get('seen_channel_ids', []))} channels seen, "
+                     f"{len(cp.get('completed_terms', []))} terms completed")
+        return cp
+    return {'seen_channel_ids': [], 'completed_terms': []}
+
+
+def _save_checkpoint(seen_channel_ids: Set[str], completed_terms: List[str]) -> None:
+    """Save checkpoint state."""
+    CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(CHECKPOINT_PATH, 'w') as f:
+        json.dump({
+            'seen_channel_ids': list(seen_channel_ids),
+            'completed_terms': completed_terms,
+            'saved_at': datetime.now(timezone.utc).isoformat(),
+        }, f)
+
+
+def _remove_checkpoint() -> None:
+    """Remove checkpoint file after successful completion."""
+    if CHECKPOINT_PATH.exists():
+        CHECKPOINT_PATH.unlink()
+        logger.info("Checkpoint removed (collection complete)")
+
+
+def _load_existing_output(output_path: Path) -> Dict[str, Dict]:
+    """Load channels from an existing partial output CSV."""
+    channels_by_id: Dict[str, Dict] = {}
+    if output_path.exists():
+        with open(output_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                cid = row.get('channel_id')
+                if cid:
+                    channels_by_id[cid] = row
+        logger.info(f"Loaded {len(channels_by_id)} channels from existing output")
+    return channels_by_id
+
+
+def _append_channels_to_csv(channels: List[Dict], output_path: Path, write_header: bool = False) -> None:
+    """Append channel rows to the output CSV."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    mode = 'w' if write_header else 'a'
+    with open(output_path, mode, newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=config.CHANNEL_INITIAL_FIELDS)
+        if write_header:
+            writer.writeheader()
+        for channel in channels:
+            row = {field: channel.get(field) for field in config.CHANNEL_INITIAL_FIELDS}
+            writer.writerow(row)
+
 
 def discover_ai_creators(
     youtube,
+    output_path: Path,
     target_count: int = 5000,
     test_mode: bool = False
-) -> List[Dict]:
+) -> int:
     """
     Discover channels creating AI-related content across search terms.
+    Writes incrementally to CSV with checkpoint/resume.
 
     Args:
         youtube: Authenticated YouTube API service
+        output_path: Path to output CSV
         target_count: Target number of channels to collect
         test_mode: If True, uses reduced targets for testing
 
     Returns:
-        List of channel data dictionaries
+        Total number of channels collected
     """
     if test_mode:
         target_count = min(target_count, 100)
         logger.info("TEST MODE: Limited to 100 channels")
 
-    # All discovered channels (keyed by channel_id to deduplicate)
-    channels_by_id: Dict[str, Dict] = {}
+    # Load checkpoint
+    checkpoint = _load_checkpoint()
+    completed_terms = checkpoint.get('completed_terms', [])
 
-    # Track channel IDs we've already processed
-    seen_channel_ids: Set[str] = set()
+    # Load existing output if resuming
+    channels_by_id = _load_existing_output(output_path) if completed_terms else {}
+    seen_channel_ids: Set[str] = set(checkpoint.get('seen_channel_ids', []))
+    seen_channel_ids.update(channels_by_id.keys())
+
+    # If resuming with existing data but no output file header yet, that's covered
+    # by writing header only when starting fresh
+    needs_header = not output_path.exists() or len(channels_by_id) == 0
 
     # Generate 30-day time windows going back 12 months
     time_windows = _generate_ai_time_windows()
 
-    # AI search terms (simple list, not language-keyed dict)
+    # AI search terms
     search_terms = config.AI_SEARCH_TERMS
 
     # Calculate per-term target
     per_term_target = max(10, target_count // len(search_terms))
 
     logger.info(f"Target: {target_count} channels")
-    logger.info(f"Search terms: {len(search_terms)}")
+    logger.info(f"Already collected: {len(channels_by_id)}")
+    logger.info(f"Search terms: {len(search_terms)} ({len(completed_terms)} already done)")
     logger.info(f"Per-term target: {per_term_target}")
     logger.info(f"Time windows: {len(time_windows)} (30-day spans, 12 months)")
 
@@ -89,17 +162,22 @@ def discover_ai_creators(
             logger.info(f"Reached target of {target_count} channels")
             break
 
+        if term in completed_terms:
+            logger.info(f"[{idx+1}/{len(search_terms)}] Skipping '{term}' (already completed)")
+            continue
+
         logger.info(f"[{idx+1}/{len(search_terms)}] Searching: '{term}'")
 
         term_channels = 0
+        term_new_channels: List[Dict] = []
 
-        # Search across multiple time windows
         for window_start, window_end in time_windows:
             if term_channels >= per_term_target:
                 break
+            if len(channels_by_id) >= target_count:
+                break
 
             try:
-                # Search for videos with this term, ordered by relevance
                 search_results = search_videos_paginated(
                     youtube=youtube,
                     query=term,
@@ -112,10 +190,7 @@ def discover_ai_creators(
                 if not search_results:
                     continue
 
-                # Extract unique channel IDs
                 channel_ids = extract_channel_ids_from_search(search_results)
-
-                # Filter to only new channel IDs
                 new_channel_ids = [
                     cid for cid in channel_ids
                     if cid not in seen_channel_ids
@@ -124,7 +199,6 @@ def discover_ai_creators(
                 if not new_channel_ids:
                     continue
 
-                # Get full channel details
                 channel_details = get_channel_full_details(
                     youtube=youtube,
                     channel_ids=new_channel_ids,
@@ -133,15 +207,13 @@ def discover_ai_creators(
                     discovery_keyword=term
                 )
 
-                # NO date filter — we want ALL channels regardless of creation date
-
-                # Add to collection
                 for channel in channel_details:
                     cid = channel['channel_id']
                     if cid not in channels_by_id:
                         channels_by_id[cid] = channel
                         seen_channel_ids.add(cid)
                         term_channels += 1
+                        term_new_channels.append(channel)
 
                 logger.info(f"  -> Found {len(channel_details)} channels "
                            f"(term total: {term_channels}, overall: {len(channels_by_id)})")
@@ -150,59 +222,45 @@ def discover_ai_creators(
                 logger.error(f"  Error searching '{term}': {e}")
                 continue
 
-    channels = list(channels_by_id.values())
-    logger.info(f"Discovery complete: {len(channels)} total channels")
+        # Write this term's channels to CSV
+        if term_new_channels:
+            _append_channels_to_csv(term_new_channels, output_path, write_header=needs_header)
+            needs_header = False
+            logger.info(f"  Wrote {len(term_new_channels)} channels to {output_path.name}")
 
-    return channels
+        # Checkpoint after each term
+        completed_terms.append(term)
+        _save_checkpoint(seen_channel_ids, completed_terms)
+
+    total = len(channels_by_id)
+    logger.info(f"Discovery complete: {total} total channels")
+
+    # Clean up checkpoint on success
+    _remove_checkpoint()
+
+    return total
 
 
 def _generate_ai_time_windows() -> List[Tuple[str, str]]:
     """
     Generate 30-day time windows going back 12 months.
 
-    Unlike discover_intent's 48-hour windows (which target recent uploads),
-    these broader windows cast a wider net for established AI creators.
-
     Returns:
         List of (start_iso, end_iso) tuples
     """
     windows = []
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
-    # 30-day windows going back 12 months (roughly 12 windows)
     for months_back in range(0, 12):
         window_end = now - timedelta(days=months_back * 30)
         window_start = window_end - timedelta(days=30)
 
         windows.append((
-            window_start.isoformat() + 'Z',
-            window_end.isoformat() + 'Z'
+            window_start.isoformat(),
+            window_end.isoformat()
         ))
 
     return windows
-
-
-def save_channels_to_csv(channels: List[Dict], output_path: Path) -> None:
-    """
-    Save channel data to CSV file.
-
-    Args:
-        channels: List of channel dictionaries
-        output_path: Path to output CSV file
-    """
-    # Ensure directory exists
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(output_path, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=config.CHANNEL_INITIAL_FIELDS)
-        writer.writeheader()
-
-        for channel in channels:
-            # Ensure all expected fields are present
-            row = {field: channel.get(field) for field in config.CHANNEL_INITIAL_FIELDS}
-            writer.writerow(row)
-
-    logger.info(f"Saved {len(channels)} channels to {output_path}")
 
 
 def main() -> None:
@@ -212,43 +270,43 @@ def main() -> None:
     parser.add_argument('--limit', type=int, default=5000, help='Target channel count')
     args = parser.parse_args()
 
-    # Ensure directories exist
     config.ensure_directories()
 
     logger.info("=" * 60)
     logger.info("AI CREATOR CENSUS: DISCOVERY")
     logger.info("=" * 60)
 
+    output_path = config.AI_CENSUS_DIR / f"initial_{config.get_date_stamp()}.csv"
+
     try:
-        # Authenticate
         youtube = get_authenticated_service()
         logger.info("Authenticated with YouTube API")
 
-        # Discover channels
-        channels = discover_ai_creators(
+        total = discover_ai_creators(
             youtube=youtube,
+            output_path=output_path,
             target_count=args.limit,
             test_mode=args.test
         )
 
-        if not channels:
+        if total == 0:
             logger.warning("No channels discovered!")
             return
-
-        # Save to CSV
-        output_path = config.AI_CENSUS_DIR / f"initial_{config.get_date_stamp()}.csv"
-        save_channels_to_csv(channels, output_path)
 
         # Summary by discovery keyword
         logger.info("=" * 60)
         logger.info("COLLECTION SUMMARY")
         logger.info("=" * 60)
-        logger.info(f"Total channels: {len(channels)}")
+        logger.info(f"Total channels: {total}")
+        logger.info(f"Output: {output_path}")
 
+        # Read back for keyword summary
         by_keyword: Dict[str, int] = {}
-        for ch in channels:
-            kw = ch.get('discovery_keyword', 'Unknown')
-            by_keyword[kw] = by_keyword.get(kw, 0) + 1
+        with open(output_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                kw = row.get('discovery_keyword', 'Unknown')
+                by_keyword[kw] = by_keyword.get(kw, 0) + 1
 
         for kw, count in sorted(by_keyword.items(), key=lambda x: -x[1]):
             logger.info(f"  {kw}: {count}")
