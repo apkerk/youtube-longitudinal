@@ -19,6 +19,12 @@
 6. Verify 3 AM gender gap channel stats continue running
 7. Enumeration finishes → SCP inventory → weekly video stats go live
 
+**MORNING ACTION ITEMS (Feb 17):**
+- **AI census → longitudinal panel:** Deploy daily tracking for AI census channels on Mac Mini (`--panel-name ai_census`). Enables DiD on success by tactics, demographics, ascriptives. Needs launchd plist alongside new cohort plist. See DECISION_LOG #004.
+- **Design decision needed:** 2020 birth cohort stream for retrospective AI diffusion history. See DECISION_LOG #005. Channels created ~2020 with full video history → observe pre-ChatGPT baseline through current AI saturation. Enables diffusion curves by gender, precise adoption dating, content evolution tracking. Key questions: sampling method, quota cost, gender coding approach.
+- **Research designs expanded to 4** (from 3). See DECISION_LOG #004. Added: AI adoption in new creator cohort (A vs A' vs D) + audience response redesigned as within-creator variation (AI vs non-AI videos from same channel in AI census). AI census redesigned as longitudinal panel (not one-time snapshot).
+- **Post-collection deployment infrastructure** ready for another agent (handoff prompt written). Builds merge script, launchd plist, Drive sync for new cohort daily tracking. Should also include AI census launchd plist.
+
 ---
 
 ### Feb 16, 2026 — 10:37 PM [Streams B+D Collected, Stream A Launched]
