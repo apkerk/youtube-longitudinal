@@ -49,6 +49,7 @@ RACE_TYPO_MAP: Dict[str, str] = {
 # Metadata columns to extract for the lean channel_metadata.csv
 METADATA_COLUMNS: List[str] = [
     "channel_id",
+    "source",
     "perceivedGender",
     "race",
     "runBy",
@@ -150,6 +151,9 @@ def load_and_clean(
         # Apply race-specific cleaning
         if "race" in row_dict:
             row_dict["race"] = clean_race(row_dict.get("race"))
+
+        # Tag source for provenance tracking
+        row_dict["source"] = "infludata"
 
         rows.append(row_dict)
 

@@ -20,6 +20,13 @@
 
 ## Feb 2026
 
+### Feb 16, 2026 — 07:30 PM [Source Provenance Column]
+- Added `source` column to `clean_baileys.py` — all 14,169 Infludata/Bailey's channels tagged `source="infludata"`
+- Column added to both `channel_metadata.csv` (7 cols, was 6) and `gender_gap_panel_clean.csv` (31 cols, was 30)
+- Complements existing `stream_type` field in API-discovered channels (`"ai_census"`, `"stream_a"`, etc.)
+- Re-ran clean_baileys.py: all validations pass, 14,169 rows, 515 dupes removed
+- What's next: production runs still awaiting approval
+
 ### Feb 16, 2026 — 07:21 PM [Infrastructure Slide Deck — Complete]
 - Built 10-slide LaTeX Beamer deck (`output/youtube-longitudinal-infrastructure-deck.tex`) documenting the full data collection infrastructure
 - Custom theme: navy/amber/slate palette, 16:9 aspect ratio, progressive reveal overlays
