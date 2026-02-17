@@ -7,16 +7,16 @@
 
 ## Current Status (as of Feb 17, 2026)
 
-**Phase:** Production — Streams B+D collected, Stream A running. AI census scaling to 50K (running).
-**Roadmap Position:** Stream B (1,539) + Stream D (1,862) DONE. Stream A running on Mac Mini. AI census scaled from 5K→50K (31K+ and climbing as of 10:52 PM). Gender gap daily stats running.
-**Data Quality Status:** 9,760 panel channels; 9,672 return valid stats. AI census: 31K+ (scaling in progress). Stream B: 1,539. Stream D: 1,862.
+**Phase:** Production — Streams B+D collected, Stream A running. AI census COMPLETE (50,010 channels).
+**Roadmap Position:** Stream B (1,539) + Stream D (1,862) DONE. Stream A running on Mac Mini. AI census: 50,010 channels collected + channel lists extracted. Gender gap daily stats running.
+**Data Quality Status:** 9,760 panel channels; 9,672 return valid stats. AI census: 50,010 unique channels. Stream B: 1,539. Stream D: 1,862.
 **Next Steps:**
 1. Monitor Stream A completion (screen -r stream_a on Mac Mini)
-2. When AI census completes: extract channel_ids.csv, deploy daily tracking to Mac Mini
-3. Run Stream A' next day (~770K units): `python3 -m src.collection.discover_non_intent --limit 200000 --skip-first-video`
-4. Run Stream C day after (~1M units): `python3 -m src.collection.discover_random --limit 50000`
-5. After all streams: merge channel lists → deploy cohort daily stats to Mac Mini
-6. Start video enumeration for AI census channels
+2. Deploy daily AI census tracking to Mac Mini (SCP channel_ids.csv + launchd plist)
+3. Start video enumeration for AI census channels (~50K channels)
+4. Run Stream A' next day (~770K units): `python3 -m src.collection.discover_non_intent --limit 200000 --skip-first-video`
+5. Run Stream C day after (~1M units): `python3 -m src.collection.discover_random --limit 50000`
+6. After all streams: merge channel lists → deploy cohort daily stats to Mac Mini
 7. Enumeration finishes → SCP inventory → weekly video stats go live
 
 **MORNING ACTION ITEMS (Feb 17):**
