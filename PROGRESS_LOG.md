@@ -5,27 +5,35 @@
 
 ---
 
-## Current Status (as of Feb 18, 2026 — Night)
+## Current Status (as of Feb 17, 2026 — Evening)
 
-**Phase:** PRODUCTION COLLECTIONS RUNNING. Three streams launched on Mac Mini.
-**Roadmap Position:** Stream A COMPLETE (19,016). Stream D (expanded) COMPLETE (3,933). Stream B running (~4,315 at 30/122 queries). Stream A' running (~1,135 at 3/47 keywords). Stream C held for tomorrow (quota management). AI census (50,010) + gender gap panel (9,760) daily tracking LIVE.
-**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream A: 19,016 unique. Stream B: ~4,315 (running). Stream D: 3,933 (expanded, complete).
+**Phase:** PRODUCTION COLLECTIONS RUNNING. Video enumerations in progress on laptop.
+**Roadmap Position:** Stream A COMPLETE (19,016). Stream D (expanded) COMPLETE (3,933). Stream B running. Stream A' running. Stream C held (quota management). AI census (50,010) + gender gap panel (9,760) daily tracking LIVE.
+**Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream A: 19,016 unique. Stream D: 3,933 (complete).
 **What's Running:**
 - Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
 - AI census daily channel stats (Mac Mini, 9:00 UTC) — active
-- AI census video enumeration (laptop) — in progress
-- Gender gap video enumeration (laptop) — in progress
+- Gender gap video enumeration (laptop) — 96.4% complete (9,413/9,760 channels, 11M video rows, ~1.5 GB)
+- AI census video enumeration (laptop) — 22.6% complete (11,326/50,010 channels, 6M video rows), est. ~2 days remaining
 **What's Ready But Not Running:**
-- Stream B expansion (25K target, 122 queries) — code ready, needs `git pull` on Mac Mini then run
-- Stream D expansion (25K target, 37 patterns) — code ready
+- Stream B expansion (25K target, 122 queries) — code ready
 - Stream C random baseline (50K target) — script ready
 - Stream A' content-first (200K target, cross-dedup against Stream A) — script ready with `--exclude-list`
 **Next Steps:**
-1. Run production collections (priority: A' first for contemporaneity, then B, D, C)
-2. Create new cohort daily stats launchd service on Mac Mini
-3. Deploy expanded streams to Mac Mini for daily tracking
+1. Monitor video enumerations to completion
+2. Run remaining production collections (priority: A' first for contemporaneity, then B, C)
+3. Create new cohort daily stats launchd service on Mac Mini
+4. Deploy expanded streams to Mac Mini for daily tracking
 
 ---
+
+### Feb 17, 2026 — Evening [Video Enumeration Status Check + Bug Fix]
+
+- **Checked video enumeration progress** for both panels running on laptop:
+  - **Gender gap:** 96.4% complete — 9,413/9,760 channels processed, 9,030 with video rows in inventory CSV, 11,008,240 total video rows (~1.5 GB). Should finish soon.
+  - **AI census:** 22.6% complete — 11,326/50,010 channels processed, 7,340 with video rows, 6,060,363 total video rows. Estimated ~2 more days at current pace.
+- **Fixed shared checkpoint bug in `enumerate_videos.py`:** Both enumeration runs were writing to the same `.enumerate_checkpoint.json` file. Risk: when gender gap finishes, it calls `unlink()` on the checkpoint, which could briefly erase AI census progress. Fixed by deriving checkpoint filename from the output file stem (e.g., `.enumerate_gender_gap_inventory_checkpoint.json`). Fix is safe — running processes use old code in memory and are unaffected.
+- Both processes confirmed alive via `ps aux` (PIDs 5155 and 24118).
 
 ### Feb 18, 2026 — Night [Production Launches — 3 Streams on Mac Mini]
 

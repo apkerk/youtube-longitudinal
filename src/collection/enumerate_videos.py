@@ -243,7 +243,9 @@ def main():
     else:
         output_path = config.VIDEO_INVENTORY_DIR / "gender_gap_inventory.csv"
 
-    checkpoint_path = config.VIDEO_INVENTORY_DIR / ".enumerate_checkpoint.json"
+    # Derive checkpoint name from output file so parallel runs don't collide
+    checkpoint_name = f".enumerate_{output_path.stem}_checkpoint.json"
+    checkpoint_path = config.VIDEO_INVENTORY_DIR / checkpoint_name
 
     logger.info("=" * 60)
     logger.info("VIDEO INVENTORY ENUMERATION")
