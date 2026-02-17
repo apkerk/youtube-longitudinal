@@ -5,29 +5,40 @@
 
 ---
 
-## Current Status (as of Feb 18, 2026 — Night)
+## Current Status (as of Feb 17, 2026 — Evening)
 
-**Phase:** A' AND B STALLED — need restart from checkpoints. 5 future stream scripts BUILT.
-**Roadmap Position:** Stream A COMPLETE (19,016). Stream D COMPLETE (3,933). Stream B STALLED at 10,993 unique (73/122 queries). Stream A' STALLED at 2,036 unique (7/47 keywords). Stream C held (not started). AI census (50,010) + gender gap panel (9,760) daily tracking LIVE.
-**Data Quality Status:** Same as before. B and A' CSVs have heavy row duplication (74K and 15K rows respectively) — dedup at extraction like Stream A.
+**Phase:** Stream B COMPLETE. A' RUNNING (restarted from checkpoint). 3 of 5 core streams finished.
+**Roadmap Position:** Stream A COMPLETE (19,016). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream A' RUNNING (~3,400+, 19/47 keywords). Stream C not started. AI census (50,010) + gender gap panel (9,760) daily tracking LIVE.
+**Sample Size vs Targets:**
+- Stream A (Intent): 19,016 / 200K target (9.5%) — search space exhausted across 46 keywords x 8 languages
+- Stream B (Algorithm Favorites): 18,208 / 25K target (72.8%) — search space exhausted across 122 queries
+- Stream D (Casual): 3,933 / 25K target (15.7%) — search space exhausted across 37 filename patterns
+- Stream A' (Non-Intent): ~3,400+ / 200K target — still running, trending toward 8-10K
+- Stream C (Random): not started / 50K target
 **What's Running:**
+- Stream A' discovery on Mac Mini (screen `stream_a_prime`, keyword 19/47)
 - Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
 - AI census daily channel stats (Mac Mini, 9:00 UTC) — active
 - Video enumerations on laptop (gender gap near-complete, AI census ~22%)
-**What's Stalled:**
-- Stream A' screen session on Mac Mini — python process exited, bash wrapper hanging. Checkpoint intact at 7/47 keywords, 2,036 channels.
-- Stream B screen session on Mac Mini — same. Checkpoint intact at 73/122 queries, 10,993 channels.
-- Both stopped at same second (23:32:30 UTC Feb 17) — system-level event (sleep/network/power).
 **What's Ready But Not Running:**
-- Stream C random baseline (50K target) — script ready, launch after A'/B
+- Stream C random baseline (50K target) — script ready, launch after A' finishes
 - 5 future streams: topic_stratified, trending, livestream, shorts_first, creative_commons — scripts built, not yet run
 **Next Steps:**
-1. **PRIORITY:** Kill dead screen sessions, restart A' and B from checkpoints on Mac Mini
-2. After A'/B complete: extract channel_ids.csv for all completed streams
-3. Assess quota usage before launching Stream C or future streams
-4. Create new cohort daily stats launchd service on Mac Mini
+1. Wait for A' to finish, extract channel_ids.csv
+2. Assess quota usage before launching Stream C
+3. Create new cohort daily stats launchd service on Mac Mini after all streams collected
 
 ---
+
+### Feb 17, 2026 — Evening [Mac Mini Recovery — B Complete, A' Restarted]
+
+- **Stream B was NOT stalled — it COMPLETED.** Previous handoff misdiagnosed B as stalled at 73/122 queries. Log shows it finished all 122 queries (18,208 unique channels) and cleared its checkpoint. The screen session exited cleanly after completion.
+- **Stream A' genuinely stalled** at keyword 13/47 (`haul`) with `Connection reset by peer` error. Recovered briefly (collected through 2,594 channels) then python process exited. Checkpoint had 12 completed keywords (2,502 channels).
+- **Killed dead screen session + zombie python3 process.** Old python3 (PID 71510) was still alive from the stalled session despite the screen being dead. Killed it to prevent duplicate writes.
+- **Restarted A' from checkpoint.** New screen session `stream_a_prime` launched, resumed at keyword 13/47. Progressing well — at 19/47 keywords, ~3,400 channels by end of session.
+- **Extracted channel_ids.csv for Stream B** (18,208 unique) and **Stream D** (3,933 unique). Both now have canonical ID files alongside Stream A's existing one.
+- **All 5 launchd services healthy.** Gender gap (689 KB) and AI census (3.4 MB) daily stats both ran today. Exit status 0 across the board.
+- **Lesson:** `screen -X quit` kills the screen process but does NOT always kill child processes (login, bash, python). When restarting after a stall, always `ps aux | grep` to find and kill orphaned processes before launching a new instance.
 
 ### Feb 18, 2026 — Night [5 Future Stream Scripts Built + Mac Mini Status Check]
 

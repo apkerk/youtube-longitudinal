@@ -22,9 +22,9 @@
 
 ## Current Marker
 
-**Now:** A' AND B STALLED on Mac Mini — need restart from checkpoints. 5 future stream scripts BUILT and committed. Stream D COMPLETE (3,933).
-**Last Session:** Feb 18, 2026 (Night) — Built 5 future stream scripts (topic_stratified, trending, livestream, shorts, creative_commons). Discovered A' (2,036 at 7/47) and B (10,993 at 73/122) stalled since Feb 17 23:32 UTC. Checkpoints intact.
-**Next:** 1) Kill dead screen sessions, restart A'/B from checkpoints. 2) After completion: extract channel_ids.csv, assess quota usage. 3) Launch Stream C when quota allows. 4) Future streams wait for Katie's go-ahead.
+**Now:** Stream B COMPLETE (18,208). A' RUNNING (restarted, 19/47 keywords, ~3,400 channels). 3 of 5 core streams finished.
+**Last Session:** Feb 17, 2026 (Evening) — B was already complete (not stalled). Restarted A' from checkpoint. Extracted channel_ids.csv for B (18,208) and D (3,933). All launchd services healthy.
+**Next:** 1) A' finishes running, extract channel_ids.csv. 2) Assess quota usage. 3) Launch Stream C. 4) Create new cohort daily stats launchd service. 5) Future streams wait for Katie's go-ahead.
 
 ### Session Achievements (Feb 16, 2026 — Night)
 - ✅ Panel filtered to 9,760 coded channels (from 14,169). channel_ids.csv + channel_metadata.csv regenerated.
