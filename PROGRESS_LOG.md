@@ -32,6 +32,15 @@
 
 ## Feb 2026
 
+### Feb 16, 2026 — 08:42 PM [Shell Script for Channel ID Extraction]
+- **Built `scripts/extract_channel_ids.sh`** — utility script to extract channel_id column from any discovery output CSV and write clean channel list suitable for `daily_stats.py --channel-list`
+- Features: automatic column detection, deduplication, sorted output, error handling (file checks, column validation), usage message
+- Takes 2 args: INPUT_CSV and OUTPUT_CSV
+- Output format: CSV with single "channel_id" column, sorted unique IDs
+- Example usage: `./scripts/extract_channel_ids.sh data/channels/stream_b/initial_20260217.csv data/channels/stream_b/channel_ids.csv`
+- Tested: usage message displays correctly when called with no args
+- What's next: Use this script for Streams A-D channel list prep after discovery runs complete
+
 ### Feb 16, 2026 — 08:15 PM [Channel Stats Decoupled from Video Inventory]
 - **Added `--channel-list` CLI arg to `daily_stats.py`** so channel-only mode reads from `channel_ids.csv` directly, bypassing the video inventory entirely. This unblocks daily channel stats collection while video enumeration is still in progress.
 - New `load_channel_list()` method reads any CSV with a `channel_id` column. Falls back to inventory-based loading when `--channel-list` not provided (backward compatible).
