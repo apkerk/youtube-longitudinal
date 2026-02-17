@@ -31,16 +31,22 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from youtube_api import get_authenticated_service, get_all_video_ids
 import config
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(config.LOGS_DIR / f'enumerate_videos_{config.get_date_stamp()}.log')
-    ]
-)
 logger = logging.getLogger(__name__)
+
+
+def setup_logging() -> None:
+    """Configure logging with file and stream handlers."""
+    config.ensure_directories()
+    log_file = config.LOGS_DIR / f'enumerate_videos_{config.get_date_stamp()}.log'
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(log_file)
+        ]
+    )
 
 
 def load_channel_ids(filepath: Path) -> List[str]:
@@ -222,7 +228,7 @@ def main():
     parser.add_argument('--limit', type=int, default=None, help='Max channels to process')
     args = parser.parse_args()
 
-    # Ensure directories exist
+    setup_logging()
     config.ensure_directories()
 
     # Resolve paths

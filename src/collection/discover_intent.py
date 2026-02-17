@@ -43,16 +43,22 @@ from youtube_api import (
 )
 import config
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(config.LOGS_DIR / f'discover_intent_{config.get_date_stamp()}.log')
-    ]
-)
 logger = logging.getLogger(__name__)
+
+
+def setup_logging() -> None:
+    """Configure logging with file and stream handlers."""
+    config.ensure_directories()
+    log_file = config.LOGS_DIR / f'discover_intent_{config.get_date_stamp()}.log'
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(log_file)
+        ]
+    )
 
 CHECKPOINT_PATH = config.STREAM_DIRS["stream_a"] / ".discovery_checkpoint.json"
 
@@ -333,6 +339,7 @@ def main():
                         help='Skip first video enrichment (saves API quota)')
     args = parser.parse_args()
 
+    setup_logging()
     config.ensure_directories()
 
     logger.info("=" * 60)

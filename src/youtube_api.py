@@ -248,8 +248,8 @@ def get_channel_full_details(
                 part=config.CHANNEL_PARTS,
                 id=",".join(chunk)
             )
-            response = execute_request(request)
-            
+            response = execute_request(request, endpoint_name="channels.list_full")
+
             for item in response.get('items', []):
                 channel = parse_channel_response(
                     item, 
@@ -377,14 +377,17 @@ def get_channel_stats_only(youtube, channel_ids: List[str]) -> List[Dict]:
                 part="statistics,status",
                 id=",".join(chunk)
             )
-            response = execute_request(request)
-            
+            response = execute_request(request, endpoint_name="channels.list_stats")
+
+            returned_ids = set()
             for item in response.get('items', []):
                 stats = item.get('statistics', {})
                 status = item.get('status', {})
-                
+                cid = item.get('id')
+                returned_ids.add(cid)
+
                 channels_data.append({
-                    'channel_id': item.get('id'),
+                    'channel_id': cid,
                     'view_count': int(stats.get('viewCount', 0)),
                     'subscriber_count': int(stats.get('subscriberCount', 0)),
                     'video_count': int(stats.get('videoCount', 0)),
@@ -392,13 +395,10 @@ def get_channel_stats_only(youtube, channel_ids: List[str]) -> List[Dict]:
                     'status': 'active',
                     'scraped_at': datetime.utcnow().isoformat(),
                 })
-                
-            time.sleep(config.SLEEP_BETWEEN_CALLS)
-            
-        except HttpError as e:
-            if e.resp.status == 404:
-                # Channel not found - mark as deleted
-                for cid in chunk:
+
+            # Mark channels not returned by API as not_found
+            for cid in chunk:
+                if cid not in returned_ids:
                     channels_data.append({
                         'channel_id': cid,
                         'view_count': None,
@@ -408,9 +408,12 @@ def get_channel_stats_only(youtube, channel_ids: List[str]) -> List[Dict]:
                         'status': 'not_found',
                         'scraped_at': datetime.utcnow().isoformat(),
                     })
-            else:
-                logger.error(f"Error fetching channel stats: {e}")
-                
+
+            time.sleep(config.SLEEP_BETWEEN_CALLS)
+
+        except HttpError as e:
+            logger.error(f"Error fetching channel stats batch: {e}")
+
     return channels_data
 
 
@@ -439,8 +442,8 @@ def get_video_details_batch(youtube, video_ids: List[str], trigger_type: str = "
                 part=config.VIDEO_PARTS,
                 id=",".join(chunk)
             )
-            response = execute_request(request)
-            
+            response = execute_request(request, endpoint_name="videos.list_full")
+
             for item in response.get('items', []):
                 video = parse_video_response(item, trigger_type)
                 videos_data.append(video)
@@ -476,7 +479,7 @@ def get_video_stats_batch(youtube, video_ids: List[str]) -> List[Dict]:
                 part="statistics",
                 id=",".join(chunk)
             )
-            response = execute_request(request)
+            response = execute_request(request, endpoint_name="videos.list_stats")
 
             for item in response.get('items', []):
                 statistics = item.get('statistics', {})
@@ -586,19 +589,20 @@ def parse_duration(duration_iso: str) -> int:
     """
     if not duration_iso:
         return 0
-        
-    # Pattern for ISO 8601 duration
-    pattern = r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?'
+
+    # Handle day-level durations (e.g., P1DT2H3M4S for long livestreams)
+    pattern = r'P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?'
     match = re.match(pattern, duration_iso)
-    
+
     if not match:
         return 0
-        
-    hours = int(match.group(1) or 0)
-    minutes = int(match.group(2) or 0)
-    seconds = int(match.group(3) or 0)
-    
-    return hours * 3600 + minutes * 60 + seconds
+
+    days = int(match.group(1) or 0)
+    hours = int(match.group(2) or 0)
+    minutes = int(match.group(3) or 0)
+    seconds = int(match.group(4) or 0)
+
+    return days * 86400 + hours * 3600 + minutes * 60 + seconds
 
 
 def extract_hashtags(text: str) -> List[str]:
@@ -645,7 +649,7 @@ def get_oldest_video(youtube, uploads_playlist_id: str) -> Optional[Dict]:
             playlistId=uploads_playlist_id,
             maxResults=1
         )
-        response = execute_request(request)
+        response = execute_request(request, endpoint_name="playlistItems.list")
         
         # Get total results
         total = response.get('pageInfo', {}).get('totalResults', 0)
@@ -661,13 +665,14 @@ def get_oldest_video(youtube, uploads_playlist_id: str) -> Optional[Dict]:
         # For efficiency, let's just get the metadata and use the channel creation date
         # as a proxy, OR accept that we'll need multiple calls for oldest video
         
-        # Simple approach: paginate to last page (max 50 results per page)
         page_token = None
         oldest_video = None
-        
-        # Limit pagination to avoid excessive API calls
-        max_pages = min(10, (total // 50) + 1)
-        
+
+        # Allow up to 200 pages (10,000 videos) to reach the oldest
+        max_pages = min(200, (total // 50) + 1)
+        if total > 10000:
+            logger.warning(f"Channel has {total} videos; oldest-video lookup capped at 10,000")
+
         for _ in range(max_pages):
             request = youtube.playlistItems().list(
                 part="snippet",
@@ -675,7 +680,7 @@ def get_oldest_video(youtube, uploads_playlist_id: str) -> Optional[Dict]:
                 maxResults=50,
                 pageToken=page_token
             )
-            response = execute_request(request)
+            response = execute_request(request, endpoint_name="playlistItems.list")
             
             items = response.get('items', [])
             if items:
@@ -733,7 +738,7 @@ def get_all_video_ids(
                 maxResults=50,
                 pageToken=page_token
             )
-            response = execute_request(request)
+            response = execute_request(request, endpoint_name="playlistItems.list")
 
             for item in response.get('items', []):
                 snippet = item.get('snippet', {})
@@ -786,15 +791,15 @@ def get_newest_videos(youtube, uploads_playlist_id: str, max_results: int = 5) -
             playlistId=uploads_playlist_id,
             maxResults=max_results
         )
-        response = execute_request(request)
-        
+        response = execute_request(request, endpoint_name="playlistItems.list")
+
         video_ids = [
             item['contentDetails']['videoId']
             for item in response.get('items', [])
         ]
-        
+
         return video_ids
-        
+
     except Exception as e:
         logger.error(f"Error getting newest videos: {e}")
         return []
@@ -826,37 +831,39 @@ def detect_new_videos(
     Returns:
         List of new video IDs
     """
-    if current_video_count <= last_video_count:
+    # If count unchanged and no known_video_ids to diff against, skip
+    if current_video_count == last_video_count and not known_video_ids:
         return []
-        
-    # Calculate how many new videos
-    new_count = current_video_count - last_video_count
-    
-    # Fetch enough videos to capture the new ones
-    fetch_count = min(new_count + 5, 50)  # Buffer for safety
-    
+
+    # When count decreased or stayed the same, deletions may mask new uploads.
+    # If we have known_video_ids, always check the playlist to detect new ones.
+    if current_video_count <= last_video_count and not known_video_ids:
+        return []
+
+    # Fetch recent videos — enough to capture new uploads even if some were deleted
+    count_diff = max(current_video_count - last_video_count, 0)
+    fetch_count = min(count_diff + 10, 50)
+
     try:
         request = youtube.playlistItems().list(
             part="contentDetails",
             playlistId=uploads_playlist_id,
             maxResults=fetch_count
         )
-        response = execute_request(request)
-        
+        response = execute_request(request, endpoint_name="playlistItems.list")
+
         video_ids = [
             item['contentDetails']['videoId']
             for item in response.get('items', [])
         ]
-        
-        # If we have known IDs, filter to truly new videos
+
         if known_video_ids:
             known_set = set(known_video_ids)
             new_ids = [vid for vid in video_ids if vid not in known_set]
             return new_ids
         else:
-            # Return the estimated new videos (newest ones)
-            return video_ids[:new_count]
-            
+            return video_ids[:max(count_diff, 1)]
+
     except Exception as e:
         logger.error(f"Error detecting new videos for {channel_id}: {e}")
         return []
@@ -884,7 +891,7 @@ def get_channel_activities(youtube, channel_id: str, max_results: int = 5) -> Li
             channelId=channel_id,
             maxResults=max_results
         )
-        response = execute_request(request)
+        response = execute_request(request, endpoint_name="activities.list")
         
         activities = []
         for item in response.get('items', []):
@@ -956,10 +963,10 @@ def search_videos(
             kwargs['regionCode'] = region_code
             
         request = youtube.search().list(**kwargs)
-        response = execute_request(request)
-        
+        response = execute_request(request, quota_cost=100, endpoint_name="search.list")
+
         return response.get('items', [])
-        
+
     except Exception as e:
         logger.error(f"Error searching for '{query}': {e}")
         return []
@@ -1010,8 +1017,8 @@ def search_videos_paginated(
                 kwargs['pageToken'] = page_token
                 
             request = youtube.search().list(**kwargs)
-            response = execute_request(request)
-            
+            response = execute_request(request, quota_cost=100, endpoint_name="search.list")
+
             items = response.get('items', [])
             all_videos.extend(items)
             

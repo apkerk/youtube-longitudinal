@@ -40,16 +40,22 @@ from youtube_api import (
 )
 import config
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(config.LOGS_DIR / f'discover_benchmark_{config.get_date_stamp()}.log')
-    ]
-)
 logger = logging.getLogger(__name__)
+
+
+def setup_logging() -> None:
+    """Configure logging with file and stream handlers."""
+    config.ensure_directories()
+    log_file = config.LOGS_DIR / f'discover_benchmark_{config.get_date_stamp()}.log'
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(log_file)
+        ]
+    )
 
 
 def discover_benchmark_channels(
@@ -167,9 +173,10 @@ def main():
     parser.add_argument('--test', action='store_true', help='Run in test mode (50 channels)')
     parser.add_argument('--limit', type=int, default=2000, help='Target channel count')
     args = parser.parse_args()
-    
+
+    setup_logging()
     config.ensure_directories()
-    
+
     logger.info("=" * 60)
     logger.info("🚀 STREAM B: ALGORITHM FAVORITES (BENCHMARK)")
     logger.info("=" * 60)

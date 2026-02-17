@@ -318,6 +318,19 @@ AI_SEARCH_TERMS: List[str] = [
     "AI design",
 ]
 
+# Language mapping for AI search terms (non-English terms only; default is English)
+AI_SEARCH_TERM_LANGUAGES: Dict[str, str] = {
+    "IA tutorial": "Spanish",
+    "IA herramientas": "Spanish",
+    "AI教程": "Chinese",
+    "KI Tutorial": "German",
+}
+
+
+def get_ai_term_language(term: str) -> str:
+    """Return the language for an AI search term (defaults to English)."""
+    return AI_SEARCH_TERM_LANGUAGES.get(term, "English")
+
 # =============================================================================
 # AI FLAG KEYWORDS (for video title matching — adoption diffusion treatment)
 # Broader than search terms: includes abbreviations, tool names, variations.
@@ -877,5 +890,5 @@ VALIDATION_THRESHOLDS = {
 # SHORTS CLASSIFICATION
 # =============================================================================
 
-SHORTS_MAX_DURATION_SECONDS = 60  # Videos <= 60 seconds are Shorts
+SHORTS_MAX_DURATION_SECONDS = 180  # YouTube expanded Shorts to 3 min (Oct 2024)
 

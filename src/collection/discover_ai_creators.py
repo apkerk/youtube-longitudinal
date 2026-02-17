@@ -36,16 +36,22 @@ from youtube_api import (
 )
 import config
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(config.LOGS_DIR / f'discover_ai_creators_{config.get_date_stamp()}.log')
-    ]
-)
 logger = logging.getLogger(__name__)
+
+
+def setup_logging() -> None:
+    """Configure logging with file and stream handlers."""
+    config.ensure_directories()
+    log_file = config.LOGS_DIR / f'discover_ai_creators_{config.get_date_stamp()}.log'
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(log_file)
+        ]
+    )
 
 CHECKPOINT_PATH = config.AI_CENSUS_DIR / '.discover_checkpoint.json'
 
@@ -217,7 +223,7 @@ def discover_ai_creators(
                     youtube=youtube,
                     channel_ids=new_channel_ids,
                     stream_type="ai_census",
-                    discovery_language="English",
+                    discovery_language=config.get_ai_term_language(term),
                     discovery_keyword=term
                 )
 
@@ -292,6 +298,7 @@ def main() -> None:
 
     sort_orders = [s.strip() for s in args.sort_orders.split(',')]
 
+    setup_logging()
     config.ensure_directories()
 
     logger.info("=" * 60)

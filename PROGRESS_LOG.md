@@ -7,21 +7,39 @@
 
 ## Current Status (as of Feb 17, 2026)
 
-**Phase:** PAUSED — Katie auditing overall approach before further production runs. Existing automated services continue running.
-**Roadmap Position:** Stream A COMPLETE (83,825 channels). Stream B (1,539) + Stream D (1,862) DONE. AI census: 50,010 channels, daily tracking LIVE on Mac Mini. Streams A' + C NOT yet started.
+**Phase:** Audit decisions MADE. Code bug fixes DONE. Architecture table pending Katie's approval. Automated services running.
+**Roadmap Position:** Stream A COMPLETE (83,825). Streams B (1,539) + D (1,862) DONE. AI census (50,010) daily tracking LIVE. Streams A' + C APPROVED for collection. Stream B + D APPROVED for expansion.
 **Data Quality Status:** 9,760 gender gap panel channels; 9,672 return valid stats. AI census: 50,010 unique channels (50,005 return valid stats). Stream A: 83,825. Stream B: 1,539. Stream D: 1,862.
 **What's Running:**
 - Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
-- AI census daily channel stats (Mac Mini, 9:00 UTC) — active, first run 2026-02-17 produced 50,005 rows
-- AI census video enumeration (laptop) — 4,175/50,010 channels (~8.3%), ETA ~3 days
-- Gender gap video enumeration (laptop) — 5M+ rows, still running
-**Next Steps (pending Katie's audit):**
-1. Katie auditing approach — may change direction on remaining streams, AI designs, or collection strategy
-2. Verify AI census automated run (check logs after 9:00 UTC Feb 18)
-3. Monitor video enumerations (both running with checkpoint/resume)
-4. After audit: decide on Stream A' + C, AI flagger, new cohort merge
+- AI census daily channel stats (Mac Mini, 9:00 UTC) — active
+- AI census video enumeration (laptop) — in progress
+- Gender gap video enumeration (laptop) — in progress
+**Next Steps:**
+1. Katie approves unified stream architecture table (12 streams total, 5 new)
+2. Build expanded Stream B script (25K target via keyword expansion)
+3. Add ~20 new filename patterns to Stream D, re-run
+4. Run Stream C (random baseline) and Stream A' (content-first)
+5. Deploy expanded streams to Mac Mini
+6. Comment sampling: AI Census first (full pull on AI-flagged videos), then Algorithm Favorites (randomized sample)
 
 ---
+
+### Feb 17, 2026 — Night [Audit Bug Fixes + Architecture Table]
+
+- **Fixed all 8 code bugs from audit (M4-M8, m1-m3):**
+  - M4: `get_channel_stats_only` batch 404 handler — now compares requested vs returned IDs instead of marking all 50 channels in a batch as not_found
+  - M5: `detect_new_videos` deletion masking — now checks playlist when known_video_ids available, even if count decreased (deletions masking new uploads)
+  - M6: Shorts threshold updated 60s → 180s (YouTube expanded Shorts to 3 min in Oct 2024)
+  - M7: Duration regex now handles day-level ISO 8601 durations (P1DT2H3M4S for long livestreams)
+  - M8: `get_oldest_video` pagination cap raised from 10 pages (500 videos) to 200 pages (10,000 videos) with warning for larger channels
+  - m1: Fixed empty log files across 9 scripts — moved FileHandler setup into `setup_logging()` function called after `config.ensure_directories()` in `main()`
+  - m2: Added `endpoint_name` to all `execute_request()` callers in youtube_api.py (was always "unknown"). Also added `quota_cost=100` to search API calls.
+  - m3: AI census `discovery_language` no longer hardcoded to "English" — added `AI_SEARCH_TERM_LANGUAGES` mapping in config.py for Spanish, Chinese, German terms
+- **Presented unified stream architecture table** — 12 streams total (7 existing + 5 new). Filled in target sizes and cadence for new streams: Topic-Stratified (~30-40K), Trending Tracker (accumulating daily), Livestream Creators (~25K), Shorts-First (~50K), Creative Commons (~10-15K). Pending Katie's approval.
+- **Comment sampling strategy discussed:** AI Census gets full pull on AI-flagged videos (highest research value), Algorithm Favorites gets randomized sample, new creator panels deferred (too sparse for now).
+- **No production runs.** All changes are to code and documentation only.
+- What's next: Katie approves architecture table, then build expanded Stream B + D, run Stream C + A'
 
 ### Feb 17, 2026 — Evening [Strategic Design Review + Stream Architecture Overhaul]
 
