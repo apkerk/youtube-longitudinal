@@ -5,29 +5,27 @@
 
 ---
 
-## Current Status (as of Feb 17, 2026 — Late Evening)
+## Current Status (as of Feb 18, 2026 — Morning)
 
-**Phase:** TIME WINDOW OPTIMIZATION DEPLOYED. 3 of 5 core streams complete. A' running (old code). Re-runs of A and A' with 24h windows queued for 3.5x yield improvement.
-**Roadmap Position:** Stream A COMPLETE (19,016 — will re-run with 24h windows, expect 50-70K). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream A' RUNNING on Mac Mini (~3,400+, 19/47 keywords, old 48h code). Stream C not started. AI census (50,010) + gender gap panel (9,760) daily tracking LIVE.
-**Key Finding This Session:** 24h time windows + full-period lookback (Jan 1 to now) finds 3.5x more unique channels than 48h/30-day approach. Both `discover_intent.py` and `discover_non_intent.py` updated. Code committed and pushed but NOT yet pulled to Mac Mini.
+**Phase:** STREAM A AUDIT COMPLETE. Language bias identified — sample needs keyword expansion in missing languages before it can claim population representativeness.
+**Roadmap Position:** Stream A RE-RUN COMPLETE (26,327 unique, 24h windows). Stream A' RE-RUN IN PROGRESS on Mac Mini (~5,300+ and growing, 24h windows, excluding Stream A channels). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
+**Key Finding This Session:** Stream A quality audit against McGrady et al. (2023) benchmarks reveals severe language skew. Japanese 7.6x overrepresented, Korean 11.9x over, Portuguese 3.4x over. Arabic, Russian, Indonesian, Thai, Turkish completely missing. Spanish 4.1x underrepresented. Decision: ADD KEYWORDS in missing languages to approach population-representative sample. Referee evaluation requested.
 **Sample Size vs Targets:**
-- Stream A (Intent): 19,016 / 200K target (9.5%) — re-run with 24h windows expected to reach 50-70K
-- Stream B (Algorithm Favorites): 18,208 / 25K target (72.8%) — search space exhausted across 122 queries
-- Stream D (Casual): 3,933 / 25K target (15.7%) — search space exhausted across 37 filename patterns
-- Stream A' (Non-Intent): ~3,400+ / 200K target — running on Mac Mini with old code, will re-run after
+- Stream A (Intent): 26,327 / 200K target (13.2%) — audit done, needs language keyword expansion
+- Stream B (Algorithm Favorites): 18,208 / 25K target (72.8%) — search space exhausted
+- Stream D (Casual): 3,933 / 25K target (15.7%) — search space exhausted
+- Stream A' (Non-Intent): ~5,300+ / 200K target — running on Mac Mini with 24h windows + A exclusion list
 - Stream C (Random): not started / 50K target
 **What's Running:**
-- Stream A' discovery on Mac Mini (screen `stream_a_prime`, keyword 19/47, OLD 48h code)
+- Stream A' re-run on Mac Mini (screen `stream_a_prime`, 24h windows, excluding 26,327 Stream A channels, ~269K quota used)
 - Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
 - AI census daily channel stats (Mac Mini, 9:00 UTC) — active
-- Video enumerations on laptop (gender gap near-complete, AI census ~22%)
-**What's Ready But Not Running:**
-- Stream C random baseline (50K target) — script ready, launch when quota allows
-- 5 future streams: topic_stratified, trending, livestream, shorts_first, creative_commons — scripts built, not yet run
 **Next Steps:**
-1. Wait for A' to finish on Mac Mini (or kill it)
-2. Pull new code to Mac Mini (`git pull origin main`)
-3. Re-run Stream A with 24h windows (`--window-hours 24 --skip-first-video`) — ~1.5 days quota
+1. Referee evaluation of Stream A sample quality vs. McGrady benchmarks
+2. Add intent keywords in Arabic, Russian, Indonesian, Thai, Turkish, Bengali, Vietnamese + more Spanish
+3. Re-run Stream A with expanded keyword set
+4. Launch Stream C (random baseline)
+5. Merge all channel lists, create new cohort daily stats launchd service
 4. Re-run Stream A' with 24h windows + exclude list
 5. Launch Stream C
 6. Merge all channel lists, create new cohort daily stats launchd service
@@ -56,6 +54,30 @@
 - **Extracted channel_ids.csv for Stream B** (18,208 unique) and **Stream D** (3,933 unique). Both now have canonical ID files alongside Stream A's existing one.
 - **All 5 launchd services healthy.** Gender gap (689 KB) and AI census (3.4 MB) daily stats both ran today. Exit status 0 across the board.
 - **Lesson:** `screen -X quit` kills the screen process but does NOT always kill child processes (login, bash, python). When restarting after a stall, always `ps aux | grep` to find and kill orphaned processes before launching a new instance.
+
+### Feb 18, 2026 — Morning [Stream A Audit + Language Bias Discovery]
+
+- **Stream A re-run with 24h windows COMPLETE:** 26,327 unique channels (up from 19,016 with old 48h settings — 1.38x improvement, less than the 3.5x on test keywords, likely because many intent keywords were already near-saturated).
+- **Stream A' re-run launched:** 24h windows + excluding 26,327 Stream A channel_ids. Running healthy on Mac Mini, ~5,300 unique channels after ~30 min, ~269K quota used.
+- **Full quality audit of Stream A (26,327 channels):**
+  - 100% created >= 2026-01-01 (zero leakage)
+  - 80.4% have 2+ videos (active creators, not one-off uploaders)
+  - Only 1.5% completely dead (0 subs AND 0 views)
+  - Only 7 channels (0.03%) with 2+ bot risk flags — negligible contamination
+  - Median: 8 subscribers, 1,070 views (30x McGrady's random-sample median views — intent keywords select for active creators)
+  - Top topics: Lifestyle (18.8%), Gaming (10.0%), Entertainment (7.0%)
+- **Language bias identified (critical finding):**
+  - English 33.9% (vs 20.1% on platform — 1.7x over)
+  - Japanese 16.8% (vs 2.2% — 7.6x over)
+  - Portuguese 16.8% (vs 4.9% — 3.4x over)
+  - Korean 8.9% (vs 0.75% — 11.9x over)
+  - Arabic, Russian, Indonesian, Thai, Turkish, Bengali, Vietnamese: COMPLETELY MISSING despite being top-10 YouTube languages
+  - Spanish: 1.5% (vs 6.2% — 4.1x under)
+  - Cause: keyword set only covers 8 languages, and cultural specificity of keywords (e.g., Japanese 初投稿) drives overrepresentation
+- **Decision: Expand keyword set** to include missing languages and add more Spanish keywords, aiming for population-representative sample
+- **Audit script:** `temp/stream_a_audit.py` — reusable for future stream audits
+- **Reference paper:** McGrady et al. (2023) "Dialing for Videos" — random sample of ~10K YouTube videos, key benchmarks for language (English=20.1%), views (median=35), categories (People & Blogs=55.8%), subscribers (median=61)
+- **Quota consumed:** ~269K units for A' re-run (still running). Stream A re-run consumed ~2 days of quota on prior session.
 
 ### Feb 18, 2026 — Night [5 Future Stream Scripts Built + Mac Mini Status Check]
 
