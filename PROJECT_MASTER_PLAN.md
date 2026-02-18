@@ -22,9 +22,9 @@
 
 ## Current Marker
 
-**Now:** Time window optimization deployed (3.5x yield). A' running on Mac Mini (old settings). Re-runs of A and A' with 24h windows queued.
-**Last Session:** Feb 17, 2026 (Late Evening) — Tested time window configs: 24h windows + full-period lookback finds 3.5x more channels per keyword. Updated both discovery scripts. B confirmed COMPLETE (18,208). A' restarted, running ~19/47 keywords. Charter updated.
-**Next:** 1) A' finishes, pull new code to Mac Mini. 2) Re-run Stream A with 24h windows (~1.5 days quota, expect 50-70K channels). 3) Re-run A' with 24h windows. 4) Launch Stream C. 5) Merge all channel lists, create new cohort daily stats service.
+**Now:** Sample audit COMPLETE. A' count corrected to 11,303 (was miscounted as 46,607). Stream A re-run approved for Feb 19. A' expansion strategy in progress.
+**Last Session:** Feb 19, 2026 (Morning) — Full 4-stream sample quality audit. Critical finding: A' has 11,303 unique channels, not 46,607 (multiline CSV miscount). All streams clean — negligible bot contamination. A' is higher quality than A on every metric (more active, more views). 3-day quota calendar approved.
+**Next:** 1) Launch Stream A re-run with 15 languages (Feb 19). 2) A' re-run with 15 languages + expanded keywords (Feb 20). 3) Stream C (Feb 21+). 4) Merge all channel lists, create new cohort daily stats service. Katie priority: maximize A and A' sample sizes.
 
 ### Session Achievements (Feb 16, 2026 — Night)
 - ✅ Panel filtered to 9,760 coded channels (from 14,169). channel_ids.csv + channel_metadata.csv regenerated.

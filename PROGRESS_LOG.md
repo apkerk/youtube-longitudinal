@@ -5,33 +5,56 @@
 
 ---
 
-## Current Status (as of Feb 19, 2026 — Early Morning)
+## Current Status (as of Feb 19, 2026 — Late Morning)
 
-**Phase:** CODE WIRED, QUOTA EXHAUSTED. relevanceLanguage + expansion_wave wired into both discovery scripts. Mac Mini code updated. Awaiting quota reset for re-runs.
-**Roadmap Position:** Stream A needs re-run with 15 languages + relevanceLanguage. Stream A' COMPLETE (46,607 unique, 8 languages, old code). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
+**Phase:** SAMPLE AUDIT COMPLETE. Daily discovery architecture DESIGNED but not yet implemented. Next: expert panel on expansion strategy, then build daily discovery service.
+**Roadmap Position:** Stream A needs re-run with 15 languages + relevanceLanguage. Stream A' has 11,303 unique (CORRECTED from 46,607 — multiline CSV miscount). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
 **Sample Size vs Targets:**
-- Stream A (Intent): 26,327 / 200K target (13.2%) — 94 keywords across 15 languages ready, re-run needed with relevanceLanguage
-- Stream A' (Non-Intent): 46,607 / 200K target (23.3%) — COMPLETE (8 languages, old code). Re-run needed with 15 languages + relevanceLanguage
-- Stream B (Algorithm Favorites): 18,208 / 25K target (72.8%) — search space exhausted
-- Stream D (Casual): 3,933 / 25K target (15.7%) — search space exhausted
+- Stream A (Intent): 26,327 / growing target — 94 keywords across 15 languages ready, re-run approved
+- Stream A' (Non-Intent): 11,303 / growing target — Re-run needed with 15 languages. Category keyword expansion REJECTED (would introduce selection bias). Daily discovery service is the growth strategy instead.
+- Stream B (Algorithm Favorites): 18,208 — search space exhausted
+- Stream D (Casual): 3,933 — search space exhausted, median channel age ~2015
 - Stream C (Random): not started / 50K target
 **What's Running:**
-- Gender gap daily channel stats (Mac Mini, 8:00 UTC) — FAILED Feb 18 (quotaExceeded from A' overnight run), should recover Feb 19
-- AI census daily channel stats (Mac Mini, 9:00 UTC) — FAILED Feb 18 (same cause), should recover Feb 19
+- Gender gap daily channel stats (Mac Mini, 8:00 UTC) — FAILED Feb 18, should recover Feb 19
+- AI census daily channel stats (Mac Mini, 9:00 UTC) — FAILED Feb 18, should recover Feb 19
 - No discovery scripts running
-**Quota:** EXHAUSTED for Feb 18. A' consumed the full daily quota overnight (~2.35M units across ~47 keywords × ~50 time windows). Daily stats (gender gap + AI census) both failed with quotaExceeded at 8:00/9:00 UTC.
+**Quota:** Resets Feb 19. Daily discovery service would cost ~89K units/day (<9% of quota).
 **Next Steps:**
-1. **Feb 19**: Quota resets. Daily stats should auto-recover. Run sample quality audit (offline, no API). Re-run Stream A with 15 languages.
-2. **Feb 20**: Stream A finishes. Re-run A' with 15 languages + relevanceLanguage.
-3. **Feb 21+**: Launch Stream C (random baseline — biggest quota consumer, ~600-800K units).
+1. **Expert panel**: Recruit 5 YouTube API experts to evaluate sample expansion strategies
+2. **Feb 19**: Launch Stream A re-run (15 languages + relevanceLanguage) on Mac Mini
+3. **Feb 20**: A' re-run with 15 languages
+4. **Feb 21+**: Stream C (random baseline)
+5. **Build daily discovery service**: --days-back parameter + launchd plist for ongoing cohort growth
+**Key Decisions This Session:**
+- Category-specific keyword expansion for A' REJECTED (introduces topic selection bias, wouldn't pass referee scrutiny)
+- Daily discovery runs APPROVED IN PRINCIPLE (search yesterday's 24h window every day, ~89K units, grows cohort continuously through 2026)
+- Cohort extends through H1 2026 (Jan-Jun), not just channels near Jan 1
 
 ---
+
+### Feb 19, 2026 — Morning [Full 4-Stream Sample Quality Audit]
+
+- **CRITICAL CORRECTION: Stream A' has 11,303 unique channels, NOT 46,607.** Previous count was inflated 4x by multiline CSV descriptions (`wc -l` counts lines including newlines within quoted fields, not CSV records). Verified on Mac Mini with pandas: 66,470 lines → 11,303 actual records, all unique.
+- **Ran comprehensive quality audit across all 4 streams.** Key findings:
+  - All streams have negligible bot contamination (<0.05% with 2+ risk flags)
+  - Stream A (26,327): 100% created 2026+. Median 8 subs, 1,070 views, 5 videos. 80.4% have 2+ videos. Clean.
+  - Stream A' (11,303): 100% created 2026+. Median 20 subs, 9,222 views, 16 videos. 95.6% have 2+ videos. **Higher quality than A on every metric** — these are more active, more established creators.
+  - Stream B (18,208): YouTube's elite. Median 148K subs, 65.8M views. 2.8% created 2026. As expected.
+  - Stream D (3,933): Old channels (median creation 2015). 0% created 2026. 68.8% have 50+ videos.
+  - Zero overlap between A and A' (exclude list worked correctly).
+- **Katie's bot suspicion about A' was NOT confirmed.** A' is smaller than A (not larger), and higher quality. The 1.8x ratio that triggered concern was an artifact of the miscount.
+- **A' expansion strategy evaluated.** At 11,303, A' needs growth for robust subgroup analysis. Three levers: (1) 15-language re-run adds ~4-8K, (2) expanded keyword set adds ~10-15K, (3) monthly re-runs accumulate over time. Target: 25-40K.
+- **Stream A re-run APPROVED** for Feb 19. 3-day quota calendar approved.
+- **Corrected counts in:** PROGRESS_LOG.md current status, PROJECT_MASTER_PLAN.md current marker, PROJECT_CHARTER.md datasets + milestones tables, MEMORY.md current phase.
+- **Audit script:** `temp/sample_audit.py` (reusable for future streams)
+- What's next: Launch Stream A re-run on Mac Mini. Draft expanded A' keyword set. A' re-run Feb 20. Stream C Feb 21+.
 
 ### Feb 19, 2026 — Early Morning [Code Wiring + Mac Mini Diagnosis + Quota Analysis]
 
 - **Wired `relevanceLanguage` and `expansion_wave` into both discovery scripts** (`discover_intent.py`, `discover_non_intent.py`). Both now pass ISO 639-1 language code to YouTube Search API via `config.RELEVANCE_LANGUAGE_CODES` and tag each channel with `config.get_keyword_wave(language, keyword)` for provenance tracking.
 - **Mac Mini diagnosis:**
-  - Stream A' **COMPLETED**: 46,607 unique channels (66,470 CSV rows). No checkpoint = ran to exhaustion. Used OLD code (8 languages, no relevanceLanguage).
+  - Stream A' **COMPLETED**: 11,303 unique channels (66,470 lines in CSV, but multiline descriptions inflated wc -l count — previous "46,607 unique" was a parsing error). Used OLD code (8 languages, no relevanceLanguage).
   - Daily stats **FAILED Feb 18**: Both gender gap and AI census hit `quotaExceeded` at 8:00/9:00 UTC. Cause: A' ran overnight and consumed entire daily quota (~2.35M units estimated: 47 keywords × ~50 time windows × ~10 pages × 100 units/call).
   - All 5 launchd services still loaded. Should auto-recover when quota resets.
 - **Pushed code to Mac Mini via git pull** — pulled fa29f47..13337d9 (5 commits covering keyword expansion, plan-eval refinements, and relevanceLanguage wiring). Both scripts compile on Python 3.9.
