@@ -4,15 +4,15 @@ config.py
 Centralized configuration for YouTube Longitudinal Data Collection.
 
 Contains:
-- Intent keywords (8 languages) for Stream A
-- Non-intent content keywords (8 languages) for Stream A'
+- Intent keywords (15 languages) for Stream A
+- Non-intent content keywords (15 languages) for Stream A'
 - Raw file queries for Stream D (Casual)
 - API configuration strings
 - File paths and naming conventions
 - Sweep schedules
 
 Author: Katie Apker
-Last Updated: Feb 02, 2026
+Last Updated: Feb 18, 2026
 """
 
 from pathlib import Path
@@ -91,9 +91,14 @@ COHORT_CUTOFF_DATE = "2026-01-01"
 
 # =============================================================================
 # INTENT KEYWORDS (Stream A) - 15 Languages
-# Original 8 languages ordered by yield rate (EXP-006).
-# Expansion wave (Feb 2026): Arabic, Russian, Indonesian, Turkish,
-# Vietnamese, Thai, Bengali + additional Spanish keywords.
+# Wave 1 (original, Feb 2026): 8 languages ordered by yield rate (EXP-006).
+# Wave 2 (expansion, Feb 18 2026): Arabic, Russian, Indonesian, Turkish,
+#   Vietnamese, Thai, Bengali + additional Spanish keywords.
+# Selection rationale: Top 15 YouTube languages by video stock (McGrady 2023),
+#   filtered to >1% platform share, plus Bengali for South Asian coverage.
+# Polysemous keywords removed after R1 expert evaluation: Russian "Знакомство"
+#   (dating content), Indonesian "Perkenalan" (generic intro), Bengali "পরিচয়"
+#   (identity/news), Turkish "Tanışma videosu" (dating content).
 # =============================================================================
 
 INTENT_KEYWORDS: Dict[str, List[str]] = {
@@ -126,6 +131,7 @@ INTENT_KEYWORDS: Dict[str, List[str]] = {
         "Presentación de mi canal",             # Channel presentation
         "Mi primer video en YouTube",           # My first video on YouTube (more specific)
         "Hola soy nuevo en YouTube",            # Hi I'm new on YouTube (masculine)
+        "Hola soy nueva en YouTube",            # Hi I'm new on YouTube (feminine)
         "Primer vlog",                          # First vlog
     ],
     "Japanese": [
@@ -165,62 +171,74 @@ INTENT_KEYWORDS: Dict[str, List[str]] = {
     ],
     # ── Expansion wave (Feb 2026) ─────────────────────────────────────────
     "Arabic": [
-        "أول فيديو لي",                         # My first video (awwal fidyu li)
+        "أول فيديو لي",                         # My first video (MSA: awwal fidyu li)
+        "اول فيديو ليا",                        # My first video (Egyptian: awwal fidyu liyya)
         "مرحبا بكم في قناتي",                   # Welcome to my channel
         "أول فيديو على اليوتيوب",               # First video on YouTube
+        "قناتي الجديدة",                         # My new channel (pan-Arab, common debut tag)
         "تعريف بالقناة",                         # Channel introduction
-        "awwal video",                           # First video (romanized, common in titles)
+        "awwal video",                           # First video (romanized/Franco-Arabic, dialect-neutral)
     ],
     "Russian": [
         "Моё первое видео",                     # My first video
         "Первое видео на канале",               # First video on the channel
         "Добро пожаловать на канал",            # Welcome to the channel
-        "Знакомство",                           # Introduction / getting to know
+        "Обо мне",                              # About me (replaced "Знакомство" — too polysemous, matches dating content)
+        "Первый ролик",                         # First clip (common Russian YouTube term)
         "Трейлер канала",                       # Channel trailer
+        "ВЛОГ 1",                               # Vlog 1 (culturally specific Russian YouTube convention)
     ],
     "Indonesian": [
         "Video pertama saya",                    # My first video
         "Selamat datang di channel saya",       # Welcome to my channel
-        "Perkenalan",                            # Introduction
         "Video pertama di YouTube",             # First video on YouTube
-        "Perkenalan channel",                    # Channel introduction
+        "Perkenalan channel",                    # Channel introduction (kept; "Perkenalan" alone too generic)
+        "Channel baru",                          # New channel (more intent-specific than "Halo teman-teman" which is a generic greeting)
+        "Pertama kali upload",                  # First time uploading
     ],
     "Turkish": [
         "İlk videom",                           # My first video
         "Kanalıma hoş geldiniz",               # Welcome to my channel
         "İlk video",                            # First video
-        "Tanışma videosu",                      # Introduction video
+        "YouTube'da ilk videom",               # My first video on YouTube (replaced "Tanısma videosu" — dating content contamination)
         "Kendimi tanıtıyorum",                 # I'm introducing myself
+        "#ilkvideo",                            # Hashtag convention on Turkish YouTube
     ],
     "Vietnamese": [
         "Video đầu tiên của tôi",              # My first video (with diacritics)
         "Video dau tien cua toi",               # My first video (without diacritics)
-        "Chào mừng đến kênh",                  # Welcome to the channel
+        "Chào mừng đến kênh của tôi",           # Welcome to my channel (full natural form)
         "Giới thiệu bản thân",                 # Self-introduction
         "Video đầu tiên trên YouTube",         # First video on YouTube
     ],
     "Thai": [
-        "วิดีโอแรกของฉัน",                      # My first video
+        "วิดีโอแรกของเรา",                      # My first video (casual register "ของเรา" vs formal "ของฉัน")
         "ยินดีต้อนรับเข้าสู่ช่อง",              # Welcome to the channel
         "แนะนำตัว",                              # Self-introduction
         "วิดีโอแรก",                             # First video
-        "เปิดช่องใหม่",                          # Opening a new channel
+        "วีดีโอแรก",                             # First video (common alt spelling of วิดีโอ)
+        "เปิดช่องใหม่",                          # Opening a new channel (culturally specific, strong signal)
     ],
     "Bengali": [
         "আমার প্রথম ভিডিও",                    # My first video (amar prothom video)
         "Amar prothom video",                    # My first video (romanized)
         "আমার চ্যানেলে স্বাগতম",                 # Welcome to my channel
-        "পরিচয়",                                 # Introduction (porichoy)
+        "নতুন চ্যানেল",                           # New channel (notun channel — replaced "পরিচয়", too polysemous)
+        "Notun channel",                         # New channel (romanized, catches Bangladeshi creators)
         "প্রথম ভিডিও",                           # First video
+        "ইউটিউবে প্রথম ভিডিও",                   # First video on YouTube
     ],
 }
 
 # =============================================================================
-# NON-INTENT CONTENT KEYWORDS (Stream A') - 8 Languages
-# Content-focused keywords for creators who don't announce themselves
+# NON-INTENT CONTENT KEYWORDS (Stream A') - 15 Languages
+# Content-focused keywords for creators who don't announce themselves.
+# Must match INTENT_KEYWORDS language set for A vs A' comparability.
+# Wave 1 (original): 8 languages. Wave 2 (expansion, Feb 18 2026): 7 languages added.
 # =============================================================================
 
 NON_INTENT_KEYWORDS: Dict[str, List[str]] = {
+    # ── Original 8 languages ──────────────────────────────────────────────
     "Hindi": [
         "gameplay hindi",
         "tutorial hindi",
@@ -283,6 +301,56 @@ NON_INTENT_KEYWORDS: Dict[str, List[str]] = {
         "recette",
         "review français",
         "unboxing français",
+    ],
+    # ── Expansion wave (Feb 2026) — matches intent keyword languages ─────
+    "Arabic": [
+        "gameplay عربي",                        # Gameplay Arabic
+        "شرح",                                  # Tutorial/explanation
+        "وصفة",                                 # Recipe
+        "مراجعة",                               # Review
+        "فتح علبة",                             # Unboxing (literally "open box")
+    ],
+    "Russian": [
+        "геймплей",                             # Gameplay
+        "туториал",                             # Tutorial
+        "рецепт",                               # Recipe
+        "обзор",                                # Review
+        "распаковка",                           # Unboxing
+    ],
+    "Indonesian": [
+        "gameplay Indonesia",
+        "tutorial Indonesia",
+        "resep",                                # Recipe
+        "review Indonesia",
+        "unboxing Indonesia",
+    ],
+    "Turkish": [
+        "gameplay türkçe",                      # Gameplay Turkish
+        "eğitim videosu",                       # Tutorial/educational video
+        "tarif",                                # Recipe
+        "inceleme",                             # Review
+        "kutu açılımı",                         # Unboxing
+    ],
+    "Vietnamese": [
+        "gameplay tiếng việt",                  # Gameplay Vietnamese
+        "hướng dẫn",                            # Tutorial/guide
+        "công thức",                            # Recipe
+        "đánh giá",                             # Review
+        "mở hộp",                               # Unboxing
+    ],
+    "Thai": [
+        "เกมเพลย์",                             # Gameplay
+        "สอน",                                   # Tutorial/teach
+        "สูตรอาหาร",                            # Recipe
+        "รีวิว",                                 # Review
+        "แกะกล่อง",                              # Unboxing
+    ],
+    "Bengali": [
+        "gameplay বাংলা",                       # Gameplay Bengali
+        "টিউটোরিয়াল",                          # Tutorial
+        "রেসিপি",                                # Recipe
+        "রিভিউ",                                 # Review
+        "আনবক্সিং",                              # Unboxing
     ],
 }
 
@@ -549,6 +617,30 @@ TRENDING_REGION_CODES: List[str] = [
     "HU", "GR", "TR", "IL", "SA", "AE", "EG", "ZA", "KE", "NG",
     "NZ",
 ]
+
+# =============================================================================
+# RELEVANCE LANGUAGE MAPPING (ISO 639-1 codes for YouTube Search API)
+# Pass as relevanceLanguage= parameter to bias results toward the target language.
+# Reduces cross-language contamination (e.g., Arabic keywords returning English results).
+# =============================================================================
+
+RELEVANCE_LANGUAGE_CODES: Dict[str, str] = {
+    "Hindi": "hi",
+    "English": "en",
+    "Spanish": "es",
+    "Japanese": "ja",
+    "German": "de",
+    "Portuguese": "pt",
+    "Korean": "ko",
+    "French": "fr",
+    "Arabic": "ar",
+    "Russian": "ru",
+    "Indonesian": "id",
+    "Turkish": "tr",
+    "Vietnamese": "vi",
+    "Thai": "th",
+    "Bengali": "bn",
+}
 
 # =============================================================================
 # API CONFIGURATION
@@ -865,6 +957,7 @@ CHANNEL_INITIAL_FIELDS = [
     "stream_type",
     "discovery_language",
     "discovery_keyword",
+    "expansion_wave",          # wave_1_original or wave_2_expansion (provenance tracking)
     "scraped_at",
 ]
 
@@ -1030,6 +1123,33 @@ def get_daily_panel_path(panel_type: str, date_str: Optional[str] = None, panel_
     return base_dir / f"{date_str}.csv"
 
 
+# Wave membership for provenance tracking — KEYWORD-LEVEL granularity.
+# Spanish is a Wave 1 language but received 4 new keywords in Wave 2.
+# All Wave 2 languages default to wave_2; individual overrides below.
+_WAVE_2_LANGUAGES = {"Arabic", "Russian", "Indonesian", "Turkish", "Vietnamese", "Thai", "Bengali"}
+
+# Keywords added to Wave 1 languages during the expansion
+_WAVE_2_KEYWORDS_IN_WAVE_1_LANGS = {
+    "Hola soy nueva en YouTube",        # Spanish feminine variant (Wave 2)
+    "Mi primer video en YouTube",        # Spanish specificity (Wave 2)
+    "Hola soy nuevo en YouTube",         # Spanish specificity (Wave 2)
+    "Primer vlog",                       # Spanish specificity (Wave 2)
+}
+
+
+def get_keyword_wave(language: str, keyword: str = "") -> str:
+    """Return the expansion wave for a keyword.
+
+    Uses keyword-level granularity: even within Wave 1 languages,
+    individual keywords added during the expansion are tagged Wave 2.
+    """
+    if language in _WAVE_2_LANGUAGES:
+        return "wave_2_expansion"
+    if keyword in _WAVE_2_KEYWORDS_IN_WAVE_1_LANGS:
+        return "wave_2_expansion"
+    return "wave_1_original"
+
+
 def get_all_intent_keywords() -> List[tuple]:
     """Get all intent keywords as (keyword, language) tuples."""
     keywords = []
@@ -1063,4 +1183,24 @@ VALIDATION_THRESHOLDS = {
 # =============================================================================
 
 SHORTS_MAX_DURATION_SECONDS = 180  # YouTube expanded Shorts to 3 min (Oct 2024)
+
+
+# =============================================================================
+# KEYWORD COUNT VERIFICATION (run after any keyword change)
+# =============================================================================
+
+def verify_keyword_counts() -> Dict[str, Dict[str, int]]:
+    """Print and return keyword counts for all keyword dicts. Run after any edit."""
+    results = {}
+    for name, kw_dict in [
+        ("INTENT_KEYWORDS", INTENT_KEYWORDS),
+        ("NON_INTENT_KEYWORDS", NON_INTENT_KEYWORDS),
+    ]:
+        per_lang = {lang: len(kws) for lang, kws in kw_dict.items()}
+        total = sum(per_lang.values())
+        results[name] = {"per_language": per_lang, "total": total, "languages": len(kw_dict)}
+        print(f"{name}: {total} keywords across {len(kw_dict)} languages")
+        for lang, count in per_lang.items():
+            print(f"  {lang}: {count}")
+    return results
 

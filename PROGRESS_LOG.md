@@ -5,27 +5,60 @@
 
 ---
 
-## Current Status (as of Feb 18, 2026 — Late Evening)
+## Current Status (as of Feb 18, 2026 — Late Night)
 
-**Phase:** KEYWORD EXPANSION COMPLETE. Handoff written for /plan-eval on the expanded keyword set. Both McGrady papers (2023, 2025) read and integrated into evaluation context. Ready for next agent to run /plan-eval, then production re-run (pending Katie's approval).
-**Roadmap Position:** Stream A RE-RUN COMPLETE (26,327 unique, 24h windows). Stream A' RE-RUN IN PROGRESS on Mac Mini. Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
+**Phase:** PLAN-EVAL COMPLETE (66.3→76.9→79.6). Keyword expansion refined through 3-round expert review. Ready to wire improvements into discover_intent.py and re-run Stream A with 15 languages.
+**Roadmap Position:** Stream A RE-RUN COMPLETE (26,327 unique, 24h windows, 8 languages — needs re-run with 15). Stream A' RE-RUN IN PROGRESS on Mac Mini. Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
 **Sample Size vs Targets:**
-- Stream A (Intent): 26,327 / 200K target (13.2%) — keywords expanded, re-run needed
+- Stream A (Intent): 26,327 / 200K target (13.2%) — 94 keywords across 15 languages ready, re-run needed
 - Stream B (Algorithm Favorites): 18,208 / 25K target (72.8%) — search space exhausted
 - Stream D (Casual): 3,933 / 25K target (15.7%) — search space exhausted
-- Stream A' (Non-Intent): running on Mac Mini with 24h windows + A exclusion list
+- Stream A' (Non-Intent): running on Mac Mini with 24h windows + A exclusion list. NON_INTENT_KEYWORDS now expanded to 82 kw / 15 languages
 - Stream C (Random): not started / 50K target
 **What's Running:**
 - Stream A' re-run on Mac Mini (screen `stream_a_prime`, 24h windows)
 - Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
 - AI census daily channel stats (Mac Mini, 9:00 UTC) — active
 **Next Steps:**
-1. Katie approves expanded keyword set → re-run Stream A with 15 languages
-2. Push expanded config.py to Mac Mini, run expanded Stream A collection
-3. Launch Stream C (random baseline — critical for population benchmarking)
-4. Merge all channel lists, create new cohort daily stats launchd service
+1. Check Mac Mini status (A' completion, daily stats health)
+2. Wire `relevanceLanguage` and `expansion_wave` into discover_intent.py
+3. Push expanded config.py to Mac Mini, re-run Stream A with 15 languages
+4. Launch Stream C (random baseline — critical for population benchmarking)
+5. Merge all channel lists, create new cohort daily stats launchd service
 
 ---
+
+### Feb 18, 2026 — Late Night [/plan-eval: 3-Round Expert Evaluation of Keyword Expansion]
+
+- **Ran /plan-eval on expanded INTENT_KEYWORDS** — 3 rounds, 8-expert panel (cross-cultural NLP specialist, survey methodology expert, computational social scientist, population sampling theorist, platform economics researcher, PhD committee advisor, replication specialist, API integration engineer). Score trajectory: **66.3 → 76.9 → 79.6** (plateau reached at R3, +2.7 < 3-point threshold).
+- **Round 1 key fixes (66.3):**
+  - Replaced 4 polysemous keywords that would match non-debut content:
+    - Russian "Знакомство" (dating content) → "Обо мне", "Первый ролик", "ВЛОГ 1"
+    - Indonesian "Perkenalan" (generic greeting) → "Pertama kali upload"
+    - Bengali "পরিচয়" (generic intro) → "নতুন চ্যানেল", "Notun channel"
+    - Turkish "Tanışma videosu" (interview content) → "YouTube'da ilk videom", "#ilkvideo"
+  - Added Arabic dialect variants: Egyptian "اول فيديو ليا", pan-Arab "قناتي الجديدة"
+  - Added Spanish feminine variant "Hola soy nueva en YouTube"
+  - Thai: switched formal "ของฉัน" to casual "ของเรา", added alt spelling "วีดีโอแรก"
+  - Added `INTENT_KEYWORD_WAVES` dict and `get_keyword_wave()` function for provenance tracking
+  - Added `expansion_wave` field to CHANNEL_INITIAL_FIELDS schema
+  - **Expanded NON_INTENT_KEYWORDS from 8→15 languages** (47→82 keywords) to maintain A vs A' comparability
+- **Round 2 key fixes (76.9):**
+  - Fixed count error: doc said "99" but code has 94 — corrected everywhere
+  - Vietnamese "Chào mừng đến kênh" → "Chào mừng đến kênh của tôi" (was unnaturally truncated)
+  - Indonesian "Halo teman-teman" → "Channel baru" (greeting, not intent signal)
+  - Upgraded wave tracking from language-level to keyword-level (Spanish wave-2 keywords in wave-1 language were misattributed)
+  - Added `RELEVANCE_LANGUAGE_CODES` mapping (ISO 639-1 for all 15 languages)
+  - Added `verify_keyword_counts()` function — confirmed 94 intent, 82 non-intent
+  - Added limitations #11 (non-intent asymmetry) and #12 (Stream C Latin-alphabet) to SAMPLING_ARCHITECTURE.md
+- **Round 3 (79.6):** Plateau. Remaining gaps require human action, not code changes:
+  - Construct validation study (5 hours RA time, ~$100-150)
+  - Power analysis based on CH2 effect sizes
+  - Native speaker review of all 15 languages (~3.5 hours Fiverr/Prolific)
+  - Small yield experiment for Wave 2 keywords (~10 min, ~600 API calls)
+  - Pre-registration on OSF before production re-run
+- **Files modified:** `src/config.py` (keywords, wave tracking, relevance codes, verify function), `docs/SAMPLING_ARCHITECTURE.md` (sections 2.1, 2.2, 2.4, limitations, change log)
+- What's next: Wire `relevanceLanguage` and `expansion_wave` into discover_intent.py. Check Mac Mini status. Re-run Stream A with 15 languages. Launch Stream C.
 
 ### Feb 18, 2026 — Evening [Referee Evaluation + Keyword Expansion to 15 Languages]
 

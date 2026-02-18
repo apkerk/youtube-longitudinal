@@ -11,6 +11,7 @@
 | Feb 17, 2026 | Initial version consolidating all stream specs, research designs, and design decisions |
 | Feb 18, 2026 (R1) | Fixed Stream A count (83,825 raw → 19,016 unique), corrected gender/race distributions to actual 9,760 panel, added staggered DiD estimation spec, dedup protocol, Infludata sampling frame discussion, gender coding methodology, deployment constraints, pagination cap notes, safeSearch documentation, source of truth hierarchy |
 | Feb 18, 2026 (R2) | Corrected all keyword/query counts against config.py (manually verified): 46 intent, 47 non-intent, 45 AI search, 101 AI flag, 122 benchmark, 37 casual. Removed surviving "natural experiment" language from Decision 4. Added new limitations (#8-10) and open questions (#6-8). |
+| Feb 18, 2026 (R3) | Keyword expansion: 46→94 intent keywords (8→15 languages), 47→82 non-intent keywords (8→15 languages). Added Arabic, Russian, Indonesian, Turkish, Vietnamese, Thai, Bengali. Replaced 4 polysemous keywords (Russian "Знакомство", Indonesian "Perkenalan", Bengali "পরিচয়", Turkish "Tanısma videosu"). Added Arabic Egyptian dialect variant, Spanish feminine variant, culturally specific tags (Russian ВЛОГ 1, Thai เปิดช่องใหม่, etc.). Added expansion_wave field to schema. Added keyword-to-wave lookup. |
 
 ---
 
@@ -45,7 +46,7 @@ Daily tracking of 9,760 established channels from the Infludata/Bailey's dataset
 
 | # | Stream Name | Population | Target N | Status | Collection Cadence |
 |---|-------------|-----------|----------|--------|-------------------|
-| 1 | Intent Creators | New channels with entrepreneurial launch signals | 200K (actual: 19,016 unique) | COLLECTED | Daily channel stats |
+| 1 | Intent Creators | New channels with entrepreneurial launch signals | 200K (actual: 26,327 unique from 8 languages; re-run with 15 languages pending) | COLLECTED (expansion pending) | Daily channel stats |
 | 2 | Non-Intent Creators | New channels that start with content, no intro | 200K | APPROVED, not yet run | Daily channel stats |
 | 3 | Algorithm Favorites | Channels YouTube's search algorithm surfaces | 25K (actual: 1,539) | COLLECTED (expansion approved) | Monthly sweep |
 | 4 | Searchable Random | Channels found via random prefix search | 50K | APPROVED, not yet run | Monthly sweep |
@@ -69,10 +70,12 @@ Daily tracking of 9,760 established channels from the Infludata/Bailey's dataset
 **Why this stream exists:** This is the treatment group. These creators deliberately announce themselves as starting a channel. They represent the population of interest for studying early-stage creator strategy: people who treat YouTube as a project, not an accident.
 
 **Sampling method:**
-- `search.list(q=INTENT_KEYWORDS, type='video', order='date')` across 8 languages
+- `search.list(q=INTENT_KEYWORDS, type='video', order='date')` across 15 languages
 - Extract channel IDs from search results
 - Keep only channels with `published_at >= 2026-01-01`
-- 46 intent keywords across Hindi (6), English (9), Spanish (6), Japanese (5), German (5), Portuguese (5), Korean (5), French (5)
+- 94 intent keywords across 15 languages: Hindi (6), English (9), Spanish (10), Japanese (5), German (5), Portuguese (5), Korean (5), French (5), Arabic (7), Russian (7), Indonesian (6), Turkish (6), Vietnamese (5), Thai (6), Bengali (7)
+- **Expansion waves:** Wave 1 (original, 8 languages, 46 keywords). Wave 2 (Feb 18 2026, added 7 languages + Spanish/feminine variant, net 53 new keywords). Each channel tagged with `expansion_wave` for wave-effect analysis.
+- **Polysemous keyword removal (R1 expert evaluation):** Replaced Russian "Знакомство" (dating content), Indonesian "Perkenalan" (generic intro), Bengali "পরিচয়" (polysemous), Turkish "Tanışma videosu" (dating content) with more specific alternatives.
 - **Pagination cap:** YouTube search returns a maximum of ~500 results per query regardless of page tokens. Multiple keywords and languages diversify the search surface to partially circumvent this limit, but the total discoverable population per keyword is bounded by this cap.
 
 **Key design parameters:**
@@ -99,13 +102,13 @@ Daily tracking of 9,760 established channels from the Infludata/Bailey's dataset
 **Why this stream exists:** Observational comparison for the effect of intentional launching. If Stream A creators are people who "announce" their channel, Stream A' creators are people who "just start making things." Comparing their trajectories tests whether the intent signal (and the strategic behavior it proxies) predicts different outcomes. This is NOT a natural experiment — creators self-select into launch strategies — but the comparison is analytically valuable when combined with appropriate controls for content category, language, and channel age.
 
 **Sampling method:**
-- `search.list(q=CONTENT_KEYWORDS, type='video', order='date')` across 8 languages
+- `search.list(q=CONTENT_KEYWORDS, type='video', order='date')` across 15 languages
 - Same date filter (channel created >= 2026-01-01)
 - Cross-deduplication against Stream A via `--exclude-list` flag (channels already found in Stream A are excluded)
-- 47 content keywords: "gameplay," "let's play," "tutorial," "recipe," "review," "unboxing," "haul," etc., translated across all 8 languages
+- 82 content keywords: "gameplay," "let's play," "tutorial," "recipe," "review," "unboxing," "haul," etc., translated across all 15 languages (expanded from 47 keywords in 8 languages to maintain A vs. A' comparability)
 
 **Key design parameters:**
-- Same language set and date filter as Stream A for comparability
+- Same language set and date filter as Stream A for comparability (CRITICAL: must remain in sync)
 - Content keywords chosen to be orthogonal to intent signals (no overlap with "welcome"/"intro" language)
 - Lower yield rate (1.9%) means more API calls per channel found
 - Same `safeSearch=moderate` default as Stream A
@@ -165,6 +168,7 @@ Daily tracking of 9,760 established channels from the Infludata/Bailey's dataset
 - Does NOT filter by channel creation date (captures the full YouTube population, not just new channels)
 - Random prefixes avoid keyword bias entirely
 - Lowest big-channel percentage of any strategy tested
+- **Latin-alphabet limitation:** Prefix characters are `a-z0-9` (Latin alphabet + digits). Videos with exclusively non-Latin-script titles (Arabic, Thai, Bengali, etc.) may be underrepresented. The A vs. C comparison is therefore valid primarily for creators discoverable via Latin-alphabet random search. Language-specific representativeness claims require a language-specific baseline that Stream C does not provide.
 
 **Empirical validation:**
 - EXP-001/003: Median views = 305 (5,400x lower than vowel search). 39.3% big channels (vs. 94.4% for Algorithm Favorites). This is the least biased sampling strategy tested.
@@ -677,6 +681,10 @@ Full schema documented in [TECHNICAL_SPECS.md](../TECHNICAL_SPECS.md). Source of
 9. **No precision/recall validation for keyword sampling.** Intent keywords are assumed to capture entrepreneurial intent, but no manual validation study has confirmed this. A sample of 200 Stream A channels should be human-coded for actual entrepreneurial intent to estimate precision and assess whether keyword signals correlate with the construct of interest.
 
 10. **Keyword-based discovery is recall-limited.** All keyword-based streams (A, A', AI Census) can only find channels that the YouTube search API indexes and returns for specific queries. Channels that exist but are not indexed, or that use different terminology than the search terms, are systematically missed. The recall rate is fundamentally unknowable.
+
+11. **Non-intent keyword count asymmetry.** English has 10 non-intent keywords; each expansion language has only 5. This creates differential discovery surface area for Stream A' across languages. The A vs. A' comparison should be interpreted within-language where possible, and the keyword count differential documented as a limitation for pooled cross-language analyses.
+
+12. **Stream C Latin-alphabet prefix limitation.** Random Prefix Sampling uses `a-z0-9` characters. Videos with exclusively non-Latin-script titles (Arabic, Thai, Bengali, etc.) may be underrepresented in Stream C. The A vs. C representativeness comparison is primarily valid for Latin-script-discoverable content.
 
 ### Open Questions
 
