@@ -5,33 +5,53 @@
 
 ---
 
-## Current Status (as of Feb 19, 2026 — Late Morning)
+## Current Status (as of Feb 19, 2026 — Afternoon)
 
-**Phase:** SAMPLE AUDIT COMPLETE. Daily discovery architecture DESIGNED but not yet implemented. Next: expert panel on expansion strategy, then build daily discovery service.
-**Roadmap Position:** Stream A needs re-run with 15 languages + relevanceLanguage. Stream A' has 11,303 unique (CORRECTED from 46,607 — multiline CSV miscount). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
+**Phase:** EXPERT PANEL COMPLETE on API expansion strategies. 6 strategies unanimously adopted. Pending: /plan-eval from academic side, then implementation.
+**Roadmap Position:** Stream A needs re-run with 15 languages + relevanceLanguage + expansion strategies. Stream A' has 11,303 unique. Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
 **Sample Size vs Targets:**
-- Stream A (Intent): 26,327 / growing target — 94 keywords across 15 languages ready, re-run approved
-- Stream A' (Non-Intent): 11,303 / growing target — Re-run needed with 15 languages. Category keyword expansion REJECTED (would introduce selection bias). Daily discovery service is the growth strategy instead.
+- Stream A (Intent): 26,327 / growing target — projected 60-100K with expansion strategies
+- Stream A' (Non-Intent): 11,303 / growing target — projected 40-80K with expansion strategies (topicId partitioning is 2-4x multiplier)
 - Stream B (Algorithm Favorites): 18,208 — search space exhausted
 - Stream D (Casual): 3,933 — search space exhausted, median channel age ~2015
 - Stream C (Random): not started / 50K target
 **What's Running:**
-- Gender gap daily channel stats (Mac Mini, 8:00 UTC) — FAILED Feb 18, should recover Feb 19
-- AI census daily channel stats (Mac Mini, 9:00 UTC) — FAILED Feb 18, should recover Feb 19
+- Gender gap daily channel stats (Mac Mini, 8:00 UTC) — should recover Feb 19 quota reset
+- AI census daily channel stats (Mac Mini, 9:00 UTC) — should recover Feb 19 quota reset
 - No discovery scripts running
-**Quota:** Resets Feb 19. Daily discovery service would cost ~89K units/day (<9% of quota).
+**Quota:** Resets Feb 19. Daily discovery budget: ~140K units/day (Tier 1) + ~250K weekly supplement.
 **Next Steps:**
-1. **Expert panel**: Recruit 5 YouTube API experts to evaluate sample expansion strategies
-2. **Feb 19**: Launch Stream A re-run (15 languages + relevanceLanguage) on Mac Mini
-3. **Feb 20**: A' re-run with 15 languages
-4. **Feb 21+**: Stream C (random baseline)
-5. **Build daily discovery service**: --days-back parameter + launchd plist for ongoing cohort growth
-**Key Decisions This Session:**
-- Category-specific keyword expansion for A' REJECTED (introduces topic selection bias, wouldn't pass referee scrutiny)
-- Daily discovery runs APPROVED IN PRINCIPLE (search yesterday's 24h window every day, ~89K units, grows cohort continuously through 2026)
-- Cohort extends through H1 2026 (Jan-Jun), not just channels near Jan 1
+1. **Run /plan-eval**: Academic expert panel to evaluate expansion strategies for empirical research quality
+2. **Build validation checkpoints**: Ensure each expansion strategy has yield measurement and quality assurance
+3. **Feb 19**: Launch Stream A re-run (decision pending: clean re-run vs. re-run with expansion strategies)
+4. **Feb 20**: A' re-run
+5. **Feb 21+**: Stream C
+6. **Implement expansion strategies**: safeSearch, relevance second pass, topicId, regionCode, videoDuration, --days-back
+**Key Decisions Pending:**
+- Whether to apply expansion strategies to the Feb 19 re-run or keep it clean (15 lang + relevanceLanguage only) and add strategies later
+- Academic panel validation of expansion strategy impact on sample quality
 
 ---
+
+### Feb 19, 2026 — Afternoon [5-Expert Panel on API Expansion Strategies]
+
+- **Ran 5-expert YouTube API panel** (API infrastructure engineer, computational social science methodologist, information retrieval specialist, YouTube creator research academic, data pipeline architect). All 12 candidate strategies evaluated.
+- **6 strategies unanimously adopted:**
+  1. `topicId` partitioning (12 topics per keyword) — highest impact: 2-4x yield for A', 1.3-2x for A. Breaks the 500-result ceiling by creating per-topic result slots.
+  2. `order=relevance` second pass for capped queries — +15-35% unique channels.
+  3. `regionCode` matched to language — +10-40% per region for non-English. 23 regions mapped to 15 languages.
+  4. `safeSearch=none` — +5-10%, zero quota cost. Default `moderate` silently excludes beauty/fitness/gaming/comedy creators.
+  5. `videoDuration` partitioning (short/medium/long) — +50-150% for A'. Three disjoint slices triple the result ceiling.
+  6. Shorter time windows for A' (12h for capped keywords) — +30-80% for high-volume keywords.
+- **Also adopted:** Adaptive page depth (save 20-30% quota), dual daily runs (06:00+18:00 UTC, +5-15%), OR-combined keywords for daily service quota savings.
+- **4 strategies flagged for testing:** `type=channel` search, quoted vs unquoted keywords, `videoCaption` partitioning, `videoCategoryId` partitioning.
+- **5 strategies rejected:** `order=viewCount/rating/title` (useless for new content), `location+locationRadius` (geotagging rare), `channelType` (only 2 values), `maxResults` reduction (no effect), `videoDefinition` (almost all HD).
+- **Daily discovery budget designed:** Tier 1 daily service ~140K units/day (<14% quota). Tier 2 weekly supplement ~250K units. Peak ~390K, leaving 620K for daily stats.
+- **Projected yield improvement:** A from 26K → 60-100K (2.3-3.8x). A' from 11K → 40-80K (3.5-7x). A' benefits disproportionately because broad keywords hit the 500-cap harder.
+- **`--days-back` parameter planned** for both discover scripts. Generates windows for just the last N days. Daily mode: `--days-back 1` searches yesterday's 24h window. Backward-compatible: no flag = full backfill from COHORT_CUTOFF_DATE.
+- **Config additions needed:** `DISCOVERY_TOPIC_IDS` (12 topics), `LANGUAGE_REGION_MAP` (15 languages → 23 regions).
+- **No code changes this session** — research/analysis only. Implementation pending Katie's approval and academic validation.
+- What's next: /plan-eval on expansion strategy (academic panel for empirical research quality), then implement Priority 1-2 changes.
 
 ### Feb 19, 2026 — Morning [Full 4-Stream Sample Quality Audit]
 
