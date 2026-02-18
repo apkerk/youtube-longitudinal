@@ -30,6 +30,19 @@
 
 ---
 
+### Feb 17, 2026 — Late Evening [Time Window Optimization — 3.5x More Channels]
+
+- **Ran time window experiment** testing 3 configurations on 3 keywords (my first video, welcome to my channel, gameplay):
+  - Current (48h windows, 30-day lookback): baseline
+  - Extended (48h windows, full Jan 1 to now): +81% channels
+  - **Narrow (24h windows, full period): +248% channels (3.5x improvement)**
+- **Root cause of low yield:** Two independent bottlenecks. (1) 30-day lookback missed all of early January (channels uploading Jan 1-17 were invisible). (2) 48h windows hit the API's per-query result cap (~500 results), so half the videos in each window were never returned.
+- **Updated both `discover_intent.py` and `discover_non_intent.py`:** `generate_time_windows()` now defaults to 24h non-overlapping windows covering the full period from COHORT_CUTOFF_DATE to now. Added `--window-hours` CLI arg (default 24). Backward-compatible — old behavior available via `--window-hours 48`.
+- **Projected re-run yields:** If 3.5x multiplier holds across all 46 intent keywords × 8 languages, Stream A could grow from 19K to ~50-70K unique channels. Stream A' similarly.
+- **Quota estimate for re-runs:** ~2.5-3M units total (both streams), ~2.5-3 days of dedicated quota. Daily stats (~10K/day) unaffected.
+- **Updated charter** with current dataset sizes, phase, and milestones.
+- **Key finding for all cohort streams:** Only Streams A and A' filter by 2026 creation date. B, C, D and all future streams capture any-age channels.
+
 ### Feb 17, 2026 — Evening [Mac Mini Recovery — B Complete, A' Restarted]
 
 - **Stream B was NOT stalled — it COMPLETED.** Previous handoff misdiagnosed B as stalled at 73/122 queries. Log shows it finished all 122 queries (18,208 unique channels) and cleared its checkpoint. The screen session exited cleanly after completion.
