@@ -21,7 +21,7 @@
 - No discovery scripts running
 **Quota:** Daily discovery budget: ~140K units/day (Tier 1) + ~250K weekly supplement.
 **Next Steps:**
-1. **Implement expansion strategies in code** per plan at `.claude/plans/zazzy-launching-cook.md` — config.py additions, discover_intent.py + discover_non_intent.py rewiring, validate_expansion.py creation
+1. **Implement expansion strategies in code** per plan at `docs/EXPANSION_IMPLEMENTATION_PLAN.md` — config.py additions, discover_intent.py + discover_non_intent.py rewiring, validate_expansion.py creation
 2. **Run validation pilots** (~70K API units) per EXPANSION_VALIDATION_FRAMEWORK.md
 3. **Launch Stream A re-run** with expansion strategies that pass validation
 4. **A' re-run** with expansion strategies
@@ -34,7 +34,7 @@
 
 ### Feb 19, 2026 — Night [Implementation Plan for Expansion Strategies]
 
-- **Designed full implementation plan** for wiring 6 expansion strategies into discover_intent.py and discover_non_intent.py. Plan at `.claude/plans/zazzy-launching-cook.md`.
+- **Designed full implementation plan** for wiring 6 expansion strategies into discover_intent.py and discover_non_intent.py. Plan at `docs/EXPANSION_IMPLEMENTATION_PLAN.md`.
 - **Key architecture decisions:**
   - safeSearch=none is a global param swap (applied to ALL calls, not a separate pass)
   - topicId, regionCode, videoDuration are additive passes (multiply the search space)
