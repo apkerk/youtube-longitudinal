@@ -5,28 +5,39 @@
 
 ---
 
-## Current Status (as of Feb 18, 2026 — Late Night)
+## Current Status (as of Feb 19, 2026 — Early Morning)
 
-**Phase:** PLAN-EVAL COMPLETE (66.3→76.9→79.6). Keyword expansion refined through 3-round expert review. Ready to wire improvements into discover_intent.py and re-run Stream A with 15 languages.
-**Roadmap Position:** Stream A RE-RUN COMPLETE (26,327 unique, 24h windows, 8 languages — needs re-run with 15). Stream A' RE-RUN IN PROGRESS on Mac Mini. Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
+**Phase:** CODE WIRED, QUOTA EXHAUSTED. relevanceLanguage + expansion_wave wired into both discovery scripts. Mac Mini code updated. Awaiting quota reset for re-runs.
+**Roadmap Position:** Stream A needs re-run with 15 languages + relevanceLanguage. Stream A' COMPLETE (46,607 unique, 8 languages, old code). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
 **Sample Size vs Targets:**
-- Stream A (Intent): 26,327 / 200K target (13.2%) — 94 keywords across 15 languages ready, re-run needed
+- Stream A (Intent): 26,327 / 200K target (13.2%) — 94 keywords across 15 languages ready, re-run needed with relevanceLanguage
+- Stream A' (Non-Intent): 46,607 / 200K target (23.3%) — COMPLETE (8 languages, old code). Re-run needed with 15 languages + relevanceLanguage
 - Stream B (Algorithm Favorites): 18,208 / 25K target (72.8%) — search space exhausted
 - Stream D (Casual): 3,933 / 25K target (15.7%) — search space exhausted
-- Stream A' (Non-Intent): running on Mac Mini with 24h windows + A exclusion list. NON_INTENT_KEYWORDS now expanded to 82 kw / 15 languages
 - Stream C (Random): not started / 50K target
 **What's Running:**
-- Stream A' re-run on Mac Mini (screen `stream_a_prime`, 24h windows)
-- Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
-- AI census daily channel stats (Mac Mini, 9:00 UTC) — active
+- Gender gap daily channel stats (Mac Mini, 8:00 UTC) — FAILED Feb 18 (quotaExceeded from A' overnight run), should recover Feb 19
+- AI census daily channel stats (Mac Mini, 9:00 UTC) — FAILED Feb 18 (same cause), should recover Feb 19
+- No discovery scripts running
+**Quota:** EXHAUSTED for Feb 18. A' consumed the full daily quota overnight (~2.35M units across ~47 keywords × ~50 time windows). Daily stats (gender gap + AI census) both failed with quotaExceeded at 8:00/9:00 UTC.
 **Next Steps:**
-1. Check Mac Mini status (A' completion, daily stats health)
-2. Wire `relevanceLanguage` and `expansion_wave` into discover_intent.py
-3. Push expanded config.py to Mac Mini, re-run Stream A with 15 languages
-4. Launch Stream C (random baseline — critical for population benchmarking)
-5. Merge all channel lists, create new cohort daily stats launchd service
+1. **Feb 19**: Quota resets. Daily stats should auto-recover. Run sample quality audit (offline, no API). Re-run Stream A with 15 languages.
+2. **Feb 20**: Stream A finishes. Re-run A' with 15 languages + relevanceLanguage.
+3. **Feb 21+**: Launch Stream C (random baseline — biggest quota consumer, ~600-800K units).
 
 ---
+
+### Feb 19, 2026 — Early Morning [Code Wiring + Mac Mini Diagnosis + Quota Analysis]
+
+- **Wired `relevanceLanguage` and `expansion_wave` into both discovery scripts** (`discover_intent.py`, `discover_non_intent.py`). Both now pass ISO 639-1 language code to YouTube Search API via `config.RELEVANCE_LANGUAGE_CODES` and tag each channel with `config.get_keyword_wave(language, keyword)` for provenance tracking.
+- **Mac Mini diagnosis:**
+  - Stream A' **COMPLETED**: 46,607 unique channels (66,470 CSV rows). No checkpoint = ran to exhaustion. Used OLD code (8 languages, no relevanceLanguage).
+  - Daily stats **FAILED Feb 18**: Both gender gap and AI census hit `quotaExceeded` at 8:00/9:00 UTC. Cause: A' ran overnight and consumed entire daily quota (~2.35M units estimated: 47 keywords × ~50 time windows × ~10 pages × 100 units/call).
+  - All 5 launchd services still loaded. Should auto-recover when quota resets.
+- **Pushed code to Mac Mini via git pull** — pulled fa29f47..13337d9 (5 commits covering keyword expansion, plan-eval refinements, and relevanceLanguage wiring). Both scripts compile on Python 3.9.
+- **Quota calendar planned**: Feb 19 = re-run A (15 lang), Feb 20 = re-run A', Feb 21+ = Stream C.
+- **Sample quality audit queued**: Offline analysis of all existing stream CSVs while waiting on quota. Bot detection, language distribution, creation date patterns.
+- What's next: Run sample audit (no API needed), then re-run Stream A with 15 languages on Mac Mini.
 
 ### Feb 18, 2026 — Late Night [/plan-eval: 3-Round Expert Evaluation of Keyword Expansion]
 
