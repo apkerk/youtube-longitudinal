@@ -5,9 +5,9 @@
 
 ---
 
-## Current Status (as of Feb 19, 2026 — Evening)
+## Current Status (as of Feb 19, 2026 — Night)
 
-**Phase:** EXPANSION STRATEGY FULLY EVALUATED. Validation framework built. /plan-eval scored 81.5/100 (63→76→82). Ready for implementation.
+**Phase:** IMPLEMENTATION PLAN WRITTEN. Expansion strategies designed, charter-aligned, ready for coding.
 **Roadmap Position:** Stream A needs re-run with 15 languages + relevanceLanguage + expansion strategies. Stream A' has 11,303 unique. Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
 **Sample Size vs Targets:**
 - Stream A (Intent): 26,327 / growing target — projected 60-100K with expansion strategies
@@ -16,19 +16,37 @@
 - Stream D (Casual): 3,933 — search space exhausted, median channel age ~2015
 - Stream C (Random): not started / 50K target
 **What's Running:**
-- Gender gap daily channel stats (Mac Mini, 8:00 UTC) — should recover Feb 19 quota reset
-- AI census daily channel stats (Mac Mini, 9:00 UTC) — should recover Feb 19 quota reset
+- Gender gap daily channel stats (Mac Mini, 8:00 UTC) — should have recovered with Feb 19 quota reset
+- AI census daily channel stats (Mac Mini, 9:00 UTC) — should have recovered with Feb 19 quota reset
 - No discovery scripts running
-**Quota:** Resets Feb 19. Daily discovery budget: ~140K units/day (Tier 1) + ~250K weekly supplement.
+**Quota:** Daily discovery budget: ~140K units/day (Tier 1) + ~250K weekly supplement.
 **Next Steps:**
-1. **Run validation pilots** (~70K API units) per EXPANSION_VALIDATION_FRAMEWORK.md before production deployment
-2. **Feb 19/20**: Launch Stream A re-run with expansion strategies that pass validation
-3. **Feb 20/21**: A' re-run with expansion strategies
-4. **Feb 21+**: Stream C (random baseline — load-bearing for coverage calibration)
-5. **Implement expansion strategies in code**: safeSearch, relevance second pass, topicId, regionCode, videoDuration, --days-back
+1. **Implement expansion strategies in code** per plan at `.claude/plans/zazzy-launching-cook.md` — config.py additions, discover_intent.py + discover_non_intent.py rewiring, validate_expansion.py creation
+2. **Run validation pilots** (~70K API units) per EXPANSION_VALIDATION_FRAMEWORK.md
+3. **Launch Stream A re-run** with expansion strategies that pass validation
+4. **A' re-run** with expansion strategies
+5. **Stream C** (random baseline — load-bearing for coverage calibration)
 **Key Decisions Pending:**
 - Validation pilot results determine which strategies reach production (GO/NO-GO per framework)
 - Stream C collection timing (needed for coverage calibration protocol)
+
+---
+
+### Feb 19, 2026 — Night [Implementation Plan for Expansion Strategies]
+
+- **Designed full implementation plan** for wiring 6 expansion strategies into discover_intent.py and discover_non_intent.py. Plan at `.claude/plans/zazzy-launching-cook.md`.
+- **Key architecture decisions:**
+  - safeSearch=none is a global param swap (applied to ALL calls, not a separate pass)
+  - topicId, regionCode, videoDuration are additive passes (multiply the search space)
+  - order=relevance is a conditional pass (only re-runs capped queries)
+  - 12h windows is a window modification (A'-only)
+  - Each expansion pass is independently checkpointed via `keyword|language|pass_name` keys
+  - New `--strategies` CLI flag selects which strategies to enable (default: base,safesearch)
+  - New `--days-back` CLI flag for daily discovery service (generates windows for last N days only)
+- **Charter alignment verified.** Expansion strategies = charter action #2 ("time-window optimization to maximize cohort yield"). --days-back = charter action #3 (daily discovery service). Stream C unblocked by this work.
+- **4 files to modify:** config.py (DISCOVERY_TOPIC_IDS, LANGUAGE_REGION_MAP, 8 new schema fields), discover_intent.py (search loop rewrite + CLI args), discover_non_intent.py (same), validate_expansion.py (new file).
+- **No code written this session** — planning only, handed off for implementation.
+- **Quota consumed:** 0 API units (no API calls)
 
 ---
 
