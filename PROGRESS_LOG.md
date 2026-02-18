@@ -5,9 +5,9 @@
 
 ---
 
-## Current Status (as of Feb 19, 2026 — Afternoon)
+## Current Status (as of Feb 19, 2026 — Evening)
 
-**Phase:** EXPERT PANEL COMPLETE on API expansion strategies. 6 strategies unanimously adopted. Pending: /plan-eval from academic side, then implementation.
+**Phase:** EXPANSION STRATEGY FULLY EVALUATED. Validation framework built. /plan-eval scored 81.5/100 (63→76→82). Ready for implementation.
 **Roadmap Position:** Stream A needs re-run with 15 languages + relevanceLanguage + expansion strategies. Stream A' has 11,303 unique. Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
 **Sample Size vs Targets:**
 - Stream A (Intent): 26,327 / growing target — projected 60-100K with expansion strategies
@@ -21,15 +21,34 @@
 - No discovery scripts running
 **Quota:** Resets Feb 19. Daily discovery budget: ~140K units/day (Tier 1) + ~250K weekly supplement.
 **Next Steps:**
-1. **Run /plan-eval**: Academic expert panel to evaluate expansion strategies for empirical research quality
-2. **Build validation checkpoints**: Ensure each expansion strategy has yield measurement and quality assurance
-3. **Feb 19**: Launch Stream A re-run (decision pending: clean re-run vs. re-run with expansion strategies)
-4. **Feb 20**: A' re-run
-5. **Feb 21+**: Stream C
-6. **Implement expansion strategies**: safeSearch, relevance second pass, topicId, regionCode, videoDuration, --days-back
+1. **Run validation pilots** (~70K API units) per EXPANSION_VALIDATION_FRAMEWORK.md before production deployment
+2. **Feb 19/20**: Launch Stream A re-run with expansion strategies that pass validation
+3. **Feb 20/21**: A' re-run with expansion strategies
+4. **Feb 21+**: Stream C (random baseline — load-bearing for coverage calibration)
+5. **Implement expansion strategies in code**: safeSearch, relevance second pass, topicId, regionCode, videoDuration, --days-back
 **Key Decisions Pending:**
-- Whether to apply expansion strategies to the Feb 19 re-run or keep it clean (15 lang + relevanceLanguage only) and add strategies later
-- Academic panel validation of expansion strategy impact on sample quality
+- Validation pilot results determine which strategies reach production (GO/NO-GO per framework)
+- Stream C collection timing (needed for coverage calibration protocol)
+
+---
+
+### Feb 19, 2026 — Evening [Validation Framework + Academic /plan-eval]
+
+- **Built EXPANSION_VALIDATION_FRAMEWORK.md**: Per-strategy pilot experiments for all 6 adopted expansion strategies. ~70,300 total API units (~7% daily quota). Each strategy has: yield metric, quality check, overlap metric, diminishing returns test, and GO/NO-GO thresholds. Execution order: safeSearch → regionCode → topicId → videoDuration → relevance → 12h windows.
+- **Built EXPANSION_STRATEGY_FOR_EVAL.md**: Full academic evaluation document covering scope of inference, selection models per strategy, power analysis, pre-registration plan, robustness protocol, and strategy risk tiering.
+- **Ran /plan-eval with 8-expert academic panel**: Econometrician, Sampling Methodologist, Reviewer 2, Sociologist, Power Statistician, API Measurement Specialist, Open Science Specialist, Labor Econ/IO. Three rounds:
+  - **R1 (63.1/100):** No power analysis, no scope of inference, no pre-registration, no selection models. Five major structural gaps.
+  - **R2 (75.9/100):** Added selection models, power analysis with MDE tables, pre-registration plan, three-version robustness protocol, covariate balance protocol, construct validity test, discoverability index, strategy risk matrix with Tier 1/2/3 hierarchy.
+  - **R3 (81.5/100):** Formalized DiD identification with DAG + Callaway & Sant'Anna estimator specification + Rambachan & Roth sensitivity + falsification test. Operationalized Stream C coverage calibration with formula + cell sizes + Latin-alphabet caveat. Pre-committed 12 analytical thresholds with citations and justifications.
+- **Key analytical decisions in the evaluated document:**
+  - Tier 1 (primary): base + safeSearch + regionCode + 12h windows
+  - Tier 2 (robustness): + topicId + videoDuration
+  - Tier 3 (sensitivity only): + order=relevance
+  - BH-FDR at q=0.05 for multiple testing
+  - Remedial analyses REPLACE naive analyses when thresholds trigger
+  - Stream C is load-bearing for representativeness claims
+- **Remaining weaknesses identified by panel** (not fixable in this document): AI adoption measurement needs validation pipeline, effective N under serial correlation needs ICC from panel data, A vs. A' needs named theoretical framework for journal positioning.
+- **Quota consumed this session:** 0 API units (document creation and evaluation only)
 
 ---
 
