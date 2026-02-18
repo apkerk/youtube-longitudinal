@@ -49,6 +49,7 @@
   - Stream C is load-bearing for representativeness claims
 - **Remaining weaknesses identified by panel** (not fixable in this document): AI adoption measurement needs validation pipeline, effective N under serial correlation needs ICC from panel data, A vs. A' needs named theoretical framework for journal positioning.
 - **Quota consumed this session:** 0 API units (document creation and evaluation only)
+- **Cleanup:** Moved stray `PR_4_Channel_id-->Deep_YT_API_Data.py` to archive/ (original lives in DISSERTATION/CH2/.../YT_v1/code/). Fixed /handoff skill bug: Write tool requires Read-first on existing files; patched `~/.claude/skills/handoff/SKILL.md`.
 
 ---
 
