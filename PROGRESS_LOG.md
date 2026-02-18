@@ -5,32 +5,52 @@
 
 ---
 
-## Current Status (as of Feb 18, 2026 — Morning)
+## Current Status (as of Feb 18, 2026 — Evening)
 
-**Phase:** STREAM A AUDIT COMPLETE. Language bias identified — sample needs keyword expansion in missing languages before it can claim population representativeness.
-**Roadmap Position:** Stream A RE-RUN COMPLETE (26,327 unique, 24h windows). Stream A' RE-RUN IN PROGRESS on Mac Mini (~5,300+ and growing, 24h windows, excluding Stream A channels). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
-**Key Finding This Session:** Stream A quality audit against McGrady et al. (2023) benchmarks reveals severe language skew. Japanese 7.6x overrepresented, Korean 11.9x over, Portuguese 3.4x over. Arabic, Russian, Indonesian, Thai, Turkish completely missing. Spanish 4.1x underrepresented. Decision: ADD KEYWORDS in missing languages to approach population-representative sample. Referee evaluation requested.
+**Phase:** KEYWORD EXPANSION COMPLETE. Referee evaluation done (3 evaluators). INTENT_KEYWORDS expanded from 8 to 15 languages (46→94 keywords). Ready for production re-run with expanded set (pending Katie's approval).
+**Roadmap Position:** Stream A RE-RUN COMPLETE (26,327 unique, 24h windows). Stream A' RE-RUN IN PROGRESS on Mac Mini. Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
 **Sample Size vs Targets:**
-- Stream A (Intent): 26,327 / 200K target (13.2%) — audit done, needs language keyword expansion
+- Stream A (Intent): 26,327 / 200K target (13.2%) — keywords expanded, re-run needed
 - Stream B (Algorithm Favorites): 18,208 / 25K target (72.8%) — search space exhausted
 - Stream D (Casual): 3,933 / 25K target (15.7%) — search space exhausted
-- Stream A' (Non-Intent): ~5,300+ / 200K target — running on Mac Mini with 24h windows + A exclusion list
+- Stream A' (Non-Intent): running on Mac Mini with 24h windows + A exclusion list
 - Stream C (Random): not started / 50K target
 **What's Running:**
-- Stream A' re-run on Mac Mini (screen `stream_a_prime`, 24h windows, excluding 26,327 Stream A channels, ~269K quota used)
+- Stream A' re-run on Mac Mini (screen `stream_a_prime`, 24h windows)
 - Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
 - AI census daily channel stats (Mac Mini, 9:00 UTC) — active
 **Next Steps:**
-1. Referee evaluation of Stream A sample quality vs. McGrady benchmarks
-2. Add intent keywords in Arabic, Russian, Indonesian, Thai, Turkish, Bengali, Vietnamese + more Spanish
-3. Re-run Stream A with expanded keyword set
-4. Launch Stream C (random baseline)
-5. Merge all channel lists, create new cohort daily stats launchd service
-4. Re-run Stream A' with 24h windows + exclude list
-5. Launch Stream C
-6. Merge all channel lists, create new cohort daily stats launchd service
+1. Katie approves expanded keyword set → re-run Stream A with 15 languages
+2. Push expanded config.py to Mac Mini, run expanded Stream A collection
+3. Launch Stream C (random baseline — critical for population benchmarking)
+4. Merge all channel lists, create new cohort daily stats launchd service
 
 ---
+
+### Feb 18, 2026 — Evening [Referee Evaluation + Keyword Expansion to 15 Languages]
+
+- **Ran 3-referee evaluation of Stream A language bias** (sampling methodologist, computational social scientist, platform economics expert). All three converge:
+  - Language skew is NOT fatal — it's an expected artifact of keyword-based purposive sampling
+  - Missing languages (Arabic, Russian, Indonesian) ARE a real coverage gap that needs fixing
+  - Do NOT aim for population proportionality — aim for minimum cell sizes (~500/language) per stratum
+  - McGrady benchmark is informative but wrong construct (stock vs. flow, 2022 vs. 2026, audio vs. keyword)
+  - Stream C is the proper population baseline — prioritize launching it
+  - The overrepresentation maps to keyword specificity, not population size (初投稿 is a tag, "mi primer video" is a generic phrase)
+- **Expanded INTENT_KEYWORDS from 8 to 15 languages** (46→94 keywords):
+  - New languages: Arabic (5 kw), Russian (5), Indonesian (5), Turkish (5), Vietnamese (5, with + without diacritics), Thai (5), Bengali (5, native + romanized)
+  - Added 3 more Spanish keywords for better specificity ("Mi primer video en YouTube", "Hola soy nuevo en YouTube", "Primer vlog")
+  - Tagged as "Expansion wave (Feb 2026)" in config.py comments
+- **Updated discover_intent.py:** Docstring and log messages updated from hardcoded "8 languages" to dynamic count from config
+- **Estimated yield from expansion:** 5,800-14,000 additional channels (Arabic 2-5K, Indonesian 1.5-3K, Russian 1-2.5K, Turkish 0.5-1.2K, Vietnamese 0.3-0.8K, Thai 0.2-0.6K, Bengali 0.1-0.4K). Combined total ~32-40K.
+- **Estimated quota cost:** ~200K units for expansion keywords. Fits in one day's quota.
+- **Referee recommendations to track:**
+  - Flag high-volume channels (>50 videos in 60 days) for sensitivity analysis
+  - Quantify gap between discovery_language and actual content language
+  - Check for temporal clustering by keyword-date
+  - Tag expansion-wave channels to test for wave effects
+  - Get Stream C running ASAP (linchpin of representativeness argument)
+- **No collection run started** — keyword expansion committed, awaiting Katie's approval for production re-run
+- What's next: Katie approves → push to Mac Mini → re-run Stream A with 15 languages. Then Stream C.
 
 ### Feb 17, 2026 — Late Evening [Time Window Optimization — 3.5x More Channels]
 

@@ -4,14 +4,15 @@ discover_intent.py
 Stream A: Intent Creators Collection
 
 Discovers new YouTube channels created in 2026 that are intentionally starting
-their creator journey. Uses intent keywords across 8 languages to find channels
+their creator journey. Uses intent keywords across 15 languages to find channels
 that explicitly introduce themselves ("Welcome to my channel", "My first video").
 
 Supports checkpoint/resume: progress is saved after each keyword batch so
 interrupted runs can continue without re-consuming API quota.
 
 Target: 200,000 channels
-Languages: Hindi, English, Spanish, Japanese, German, Portuguese, Korean, French
+Languages: Hindi, English, Spanish, Japanese, German, Portuguese, Korean, French,
+           Arabic, Russian, Indonesian, Turkish, Vietnamese, Thai, Bengali
 Filter: Channel created >= Jan 1, 2026
 
 Usage:
@@ -124,7 +125,7 @@ def discover_intent_channels(
     window_hours: int = 24,
 ) -> List[Dict]:
     """
-    Discover intent-signaling new creators across 8 languages.
+    Discover intent-signaling new creators across 15 languages.
 
     Writes channels incrementally to output_path after each keyword batch.
     Supports checkpoint/resume via CHECKPOINT_PATH.
@@ -160,7 +161,7 @@ def discover_intent_channels(
     per_keyword_target = max(10, target_count // len(intent_keywords))
 
     logger.info(f"Target: {target_count} channels")
-    logger.info(f"Keywords: {len(intent_keywords)} across 8 languages")
+    logger.info(f"Keywords: {len(intent_keywords)} across {len(config.INTENT_KEYWORDS)} languages")
     logger.info(f"Time windows: {len(time_windows)} x {window_hours}h (from {config.COHORT_CUTOFF_DATE})")
     logger.info(f"Per-keyword target: {per_keyword_target}")
     logger.info(f"Already collected: {len(channels_by_id)} channels")

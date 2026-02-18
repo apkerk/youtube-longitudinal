@@ -90,11 +90,14 @@ SWEEP_FREQUENCY = {
 COHORT_CUTOFF_DATE = "2026-01-01"
 
 # =============================================================================
-# INTENT KEYWORDS (Stream A) - 8 Languages
-# Ordered by yield rate (highest first based on EXP-006)
+# INTENT KEYWORDS (Stream A) - 15 Languages
+# Original 8 languages ordered by yield rate (EXP-006).
+# Expansion wave (Feb 2026): Arabic, Russian, Indonesian, Turkish,
+# Vietnamese, Thai, Bengali + additional Spanish keywords.
 # =============================================================================
 
 INTENT_KEYWORDS: Dict[str, List[str]] = {
+    # ── Original 8 languages ──────────────────────────────────────────────
     "Hindi": [
         "Mere channel mein aapka swagat hai",  # Welcome to my channel
         "Mera pehla video",                     # My first video
@@ -121,6 +124,9 @@ INTENT_KEYWORDS: Dict[str, List[str]] = {
         "Vlog 1 español",
         "Conóceme",                             # Get to know me
         "Presentación de mi canal",             # Channel presentation
+        "Mi primer video en YouTube",           # My first video on YouTube (more specific)
+        "Hola soy nuevo en YouTube",            # Hi I'm new on YouTube (masculine)
+        "Primer vlog",                          # First vlog
     ],
     "Japanese": [
         "チャンネル登録よろしく",                # Please subscribe
@@ -156,6 +162,56 @@ INTENT_KEYWORDS: Dict[str, List[str]] = {
         "Introduction",
         "Présentation",                         # Presentation
         "Trailer de la chaîne",
+    ],
+    # ── Expansion wave (Feb 2026) ─────────────────────────────────────────
+    "Arabic": [
+        "أول فيديو لي",                         # My first video (awwal fidyu li)
+        "مرحبا بكم في قناتي",                   # Welcome to my channel
+        "أول فيديو على اليوتيوب",               # First video on YouTube
+        "تعريف بالقناة",                         # Channel introduction
+        "awwal video",                           # First video (romanized, common in titles)
+    ],
+    "Russian": [
+        "Моё первое видео",                     # My first video
+        "Первое видео на канале",               # First video on the channel
+        "Добро пожаловать на канал",            # Welcome to the channel
+        "Знакомство",                           # Introduction / getting to know
+        "Трейлер канала",                       # Channel trailer
+    ],
+    "Indonesian": [
+        "Video pertama saya",                    # My first video
+        "Selamat datang di channel saya",       # Welcome to my channel
+        "Perkenalan",                            # Introduction
+        "Video pertama di YouTube",             # First video on YouTube
+        "Perkenalan channel",                    # Channel introduction
+    ],
+    "Turkish": [
+        "İlk videom",                           # My first video
+        "Kanalıma hoş geldiniz",               # Welcome to my channel
+        "İlk video",                            # First video
+        "Tanışma videosu",                      # Introduction video
+        "Kendimi tanıtıyorum",                 # I'm introducing myself
+    ],
+    "Vietnamese": [
+        "Video đầu tiên của tôi",              # My first video (with diacritics)
+        "Video dau tien cua toi",               # My first video (without diacritics)
+        "Chào mừng đến kênh",                  # Welcome to the channel
+        "Giới thiệu bản thân",                 # Self-introduction
+        "Video đầu tiên trên YouTube",         # First video on YouTube
+    ],
+    "Thai": [
+        "วิดีโอแรกของฉัน",                      # My first video
+        "ยินดีต้อนรับเข้าสู่ช่อง",              # Welcome to the channel
+        "แนะนำตัว",                              # Self-introduction
+        "วิดีโอแรก",                             # First video
+        "เปิดช่องใหม่",                          # Opening a new channel
+    ],
+    "Bengali": [
+        "আমার প্রথম ভিডিও",                    # My first video (amar prothom video)
+        "Amar prothom video",                    # My first video (romanized)
+        "আমার চ্যানেলে স্বাগতম",                 # Welcome to my channel
+        "পরিচয়",                                 # Introduction (porichoy)
+        "প্রথম ভিডিও",                           # First video
     ],
 }
 
