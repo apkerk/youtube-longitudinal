@@ -958,6 +958,17 @@ CHANNEL_INITIAL_FIELDS = [
     "discovery_language",
     "discovery_keyword",
     "expansion_wave",          # wave_1_original or wave_2_expansion (provenance tracking)
+
+    # Discovery provenance (expansion strategies)
+    "discovery_method",        # base, topicid, regioncode, duration, relevance
+    "discovery_topic_id",      # /m/04rlf etc. (topicId strategy only)
+    "discovery_topic_name",    # Music, Gaming etc. (topicId strategy only)
+    "discovery_region_code",   # MX, BR etc. (regionCode strategy only)
+    "discovery_order",         # date, relevance
+    "discovery_safesearch",    # moderate, none
+    "discovery_duration",      # any, short, medium, long
+    "discovery_window_hours",  # 24, 12
+
     "scraped_at",
 ]
 
@@ -1183,6 +1194,55 @@ VALIDATION_THRESHOLDS = {
 # =============================================================================
 
 SHORTS_MAX_DURATION_SECONDS = 180  # YouTube expanded Shorts to 3 min (Oct 2024)
+
+
+# =============================================================================
+# EXPANSION STRATEGY CONFIGURATION
+# =============================================================================
+
+# Valid expansion strategy names for --strategies CLI flag
+EXPANSION_STRATEGIES = {"base", "safesearch", "regioncode", "topicid", "duration", "relevance", "windows"}
+DEFAULT_STRATEGIES = {"base", "safesearch"}
+
+# 12 highest-coverage parent topics for topicId partitioning.
+# Each creates a separate search pass with its own ~500-result ceiling.
+DISCOVERY_TOPIC_IDS = {
+    "/m/04rlf": "Music",
+    "/m/0bzvm2": "Gaming",
+    "/m/02jjt": "Entertainment",
+    "/m/019_rr": "Lifestyle",
+    "/m/07c1v": "Technology",
+    "/m/01k8wb": "Knowledge",
+    "/m/098wr": "Society",
+    "/m/06ntj": "Sports",
+    "/m/09kqc": "Humor",
+    "/m/027x7n": "Fitness",
+    "/m/02wbm": "Food",
+    "/m/05qjc": "Performing arts",
+}  # type: Dict[str, str]
+
+# Language → region codes for regionCode partitioning.
+# Each region accesses different YouTube index servers, finding region-specific creators.
+LANGUAGE_REGION_MAP = {
+    "Hindi": ["IN"],
+    "English": ["US", "GB", "AU"],
+    "Spanish": ["MX", "ES", "AR", "CO"],
+    "Japanese": ["JP"],
+    "German": ["DE", "AT"],
+    "Portuguese": ["BR", "PT"],
+    "Korean": ["KR"],
+    "French": ["FR"],
+    "Arabic": ["SA", "EG"],
+    "Russian": ["RU"],
+    "Indonesian": ["ID"],
+    "Turkish": ["TR"],
+    "Vietnamese": ["VN"],
+    "Thai": ["TH"],
+    "Bengali": ["BD"],
+}  # type: Dict[str, List[str]]
+
+# videoDuration values for duration partitioning
+DISCOVERY_DURATIONS = ["short", "medium", "long"]  # type: List[str]
 
 
 # =============================================================================

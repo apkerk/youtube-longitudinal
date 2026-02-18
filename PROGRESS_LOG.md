@@ -5,10 +5,10 @@
 
 ---
 
-## Current Status (as of Feb 19, 2026 — Night)
+## Current Status (as of Feb 19, 2026 — Late Night)
 
-**Phase:** IMPLEMENTATION PLAN WRITTEN. Expansion strategies designed, charter-aligned, ready for coding.
-**Roadmap Position:** Stream A needs re-run with 15 languages + relevanceLanguage + expansion strategies. Stream A' has 11,303 unique. Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
+**Phase:** EXPANSION STRATEGIES IMPLEMENTED. Code written for all 6 strategies. Needs verification + validation pilots before production.
+**Roadmap Position:** Stream A needs re-run with expansion strategies (code ready). Stream A' has 11,303 unique (code ready for re-run). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
 **Sample Size vs Targets:**
 - Stream A (Intent): 26,327 / growing target — projected 60-100K with expansion strategies
 - Stream A' (Non-Intent): 11,303 / growing target — projected 40-80K with expansion strategies (topicId partitioning is 2-4x multiplier)
@@ -16,21 +16,39 @@
 - Stream D (Casual): 3,933 — search space exhausted, median channel age ~2015
 - Stream C (Random): not started / 50K target
 **What's Running:**
-- Gender gap daily channel stats (Mac Mini, 8:00 UTC) — should have recovered with Feb 19 quota reset
-- AI census daily channel stats (Mac Mini, 9:00 UTC) — should have recovered with Feb 19 quota reset
+- Gender gap daily channel stats (Mac Mini, 8:00 UTC)
+- AI census daily channel stats (Mac Mini, 9:00 UTC)
 - No discovery scripts running
 **Quota:** Daily discovery budget: ~140K units/day (Tier 1) + ~250K weekly supplement.
 **Next Steps:**
-1. **Implement expansion strategies in code** per plan at `docs/EXPANSION_IMPLEMENTATION_PLAN.md` — config.py additions, discover_intent.py + discover_non_intent.py rewiring, validate_expansion.py creation
-2. **Run validation pilots** (~70K API units) per EXPANSION_VALIDATION_FRAMEWORK.md
-3. **Launch Stream A re-run** with expansion strategies that pass validation
-4. **A' re-run** with expansion strategies
-5. **Stream C** (random baseline — load-bearing for coverage calibration)
+1. **Run verification steps** — keyword count check, schema field check, --dry-run on validate_expansion.py, Python 3.9 compat check
+2. **Clean up dead code** — unused `_run_search_pass_over_windows()` helper in discover_non_intent.py
+3. **Run validation pilots** (~70K API units) per EXPANSION_VALIDATION_FRAMEWORK.md
+4. **Launch Stream A re-run** with expansion strategies that pass validation
+5. **A' re-run** with expansion strategies
+6. **Stream C** (random baseline — load-bearing for coverage calibration)
 **Key Decisions Pending:**
 - Validation pilot results determine which strategies reach production (GO/NO-GO per framework)
 - Stream C collection timing (needed for coverage calibration protocol)
 
 ---
+
+### Feb 19, 2026 — Late Night [Expansion Strategy Code Implementation]
+
+- **Implemented all 6 expansion strategies** into discover_intent.py and discover_non_intent.py per `docs/EXPANSION_IMPLEMENTATION_PLAN.md`:
+  1. safeSearch=none (global param swap on all passes)
+  2. topicId partitioning (12 topics from DISCOVERY_TOPIC_IDS)
+  3. regionCode matching (23 regions from LANGUAGE_REGION_MAP)
+  4. videoDuration partitioning (short/medium/long)
+  5. order=relevance conditional pass (re-runs capped queries only)
+  6. 12h windows (A'-only, triggers when >50% of base windows are capped)
+- **config.py additions:** EXPANSION_STRATEGIES set, DEFAULT_STRATEGIES set, DISCOVERY_TOPIC_IDS (12 topics), LANGUAGE_REGION_MAP (15 languages → 23 regions), DISCOVERY_DURATIONS list, 8 new provenance fields in CHANNEL_INITIAL_FIELDS (now 42 fields total)
+- **New architecture:** `generate_search_passes()` function creates named pass configs with extra_params, provenance tags, and max_pages. Main loop changed from keyword→window to keyword→pass→window. Checkpoint key format: `keyword|language|pass_name` (backward compatible with old `keyword|language` keys).
+- **New CLI args:** `--strategies` (comma-separated list, default: base,safesearch) and `--days-back` (for daily discovery service)
+- **Created src/validation/validate_expansion.py** — per-strategy validation pilots with M1-M4 metrics, GO/NO-GO thresholds, --dry-run mode, CSV output
+- **All 4 files pass syntax check** (ast.parse verified)
+- **NOT YET DONE:** verification steps (keyword count check, schema field check, Python 3.9 compat, test mode dry runs), cleanup of unused `_run_search_pass_over_windows()` helper in discover_non_intent.py
+- **Quota consumed:** 0 API units (code-only session, quota was exhausted)
 
 ### Feb 19, 2026 — Night [Implementation Plan for Expansion Strategies]
 
