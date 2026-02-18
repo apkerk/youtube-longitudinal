@@ -5,28 +5,32 @@
 
 ---
 
-## Current Status (as of Feb 17, 2026 — Evening)
+## Current Status (as of Feb 17, 2026 — Late Evening)
 
-**Phase:** Stream B COMPLETE. A' RUNNING (restarted from checkpoint). 3 of 5 core streams finished.
-**Roadmap Position:** Stream A COMPLETE (19,016). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream A' RUNNING (~3,400+, 19/47 keywords). Stream C not started. AI census (50,010) + gender gap panel (9,760) daily tracking LIVE.
+**Phase:** TIME WINDOW OPTIMIZATION DEPLOYED. 3 of 5 core streams complete. A' running (old code). Re-runs of A and A' with 24h windows queued for 3.5x yield improvement.
+**Roadmap Position:** Stream A COMPLETE (19,016 — will re-run with 24h windows, expect 50-70K). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream A' RUNNING on Mac Mini (~3,400+, 19/47 keywords, old 48h code). Stream C not started. AI census (50,010) + gender gap panel (9,760) daily tracking LIVE.
+**Key Finding This Session:** 24h time windows + full-period lookback (Jan 1 to now) finds 3.5x more unique channels than 48h/30-day approach. Both `discover_intent.py` and `discover_non_intent.py` updated. Code committed and pushed but NOT yet pulled to Mac Mini.
 **Sample Size vs Targets:**
-- Stream A (Intent): 19,016 / 200K target (9.5%) — search space exhausted across 46 keywords x 8 languages
+- Stream A (Intent): 19,016 / 200K target (9.5%) — re-run with 24h windows expected to reach 50-70K
 - Stream B (Algorithm Favorites): 18,208 / 25K target (72.8%) — search space exhausted across 122 queries
 - Stream D (Casual): 3,933 / 25K target (15.7%) — search space exhausted across 37 filename patterns
-- Stream A' (Non-Intent): ~3,400+ / 200K target — still running, trending toward 8-10K
+- Stream A' (Non-Intent): ~3,400+ / 200K target — running on Mac Mini with old code, will re-run after
 - Stream C (Random): not started / 50K target
 **What's Running:**
-- Stream A' discovery on Mac Mini (screen `stream_a_prime`, keyword 19/47)
+- Stream A' discovery on Mac Mini (screen `stream_a_prime`, keyword 19/47, OLD 48h code)
 - Gender gap daily channel stats (Mac Mini, 8:00 UTC) — active
 - AI census daily channel stats (Mac Mini, 9:00 UTC) — active
 - Video enumerations on laptop (gender gap near-complete, AI census ~22%)
 **What's Ready But Not Running:**
-- Stream C random baseline (50K target) — script ready, launch after A' finishes
+- Stream C random baseline (50K target) — script ready, launch when quota allows
 - 5 future streams: topic_stratified, trending, livestream, shorts_first, creative_commons — scripts built, not yet run
 **Next Steps:**
-1. Wait for A' to finish, extract channel_ids.csv
-2. Assess quota usage before launching Stream C
-3. Create new cohort daily stats launchd service on Mac Mini after all streams collected
+1. Wait for A' to finish on Mac Mini (or kill it)
+2. Pull new code to Mac Mini (`git pull origin main`)
+3. Re-run Stream A with 24h windows (`--window-hours 24 --skip-first-video`) — ~1.5 days quota
+4. Re-run Stream A' with 24h windows + exclude list
+5. Launch Stream C
+6. Merge all channel lists, create new cohort daily stats launchd service
 
 ---
 
