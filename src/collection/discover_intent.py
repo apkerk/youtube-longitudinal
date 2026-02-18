@@ -19,7 +19,7 @@ Usage:
     python -m src.collection.discover_intent [--test] [--limit N] [--skip-first-video]
 
 Author: Katie Apker
-Last Updated: Feb 17, 2026
+Last Updated: Feb 18, 2026
 """
 
 import argparse
@@ -175,7 +175,12 @@ def discover_intent_channels(
         if keyword_key in completed_keywords:
             continue
 
-        logger.info(f"[{idx+1}/{len(intent_keywords)}] Searching: '{keyword}' ({language})")
+        # Look up ISO 639-1 code for relevanceLanguage parameter
+        relevance_lang = config.RELEVANCE_LANGUAGE_CODES.get(language)
+        expansion_wave = config.get_keyword_wave(language, keyword)
+
+        logger.info(f"[{idx+1}/{len(intent_keywords)}] Searching: '{keyword}' ({language}, "
+                     f"relevanceLanguage={relevance_lang}, wave={expansion_wave})")
 
         batch_new_channels: List[Dict] = []
         keyword_channels = 0
@@ -185,13 +190,19 @@ def discover_intent_channels(
                 break
 
             try:
+                # Build extra params for search API
+                search_extra = {}
+                if relevance_lang:
+                    search_extra['relevanceLanguage'] = relevance_lang
+
                 search_results = search_videos_paginated(
                     youtube=youtube,
                     query=keyword,
                     published_after=window_start,
                     published_before=window_end,
                     max_pages=3 if test_mode else 10,
-                    order="date"
+                    order="date",
+                    **search_extra
                 )
 
                 if not search_results:
@@ -222,6 +233,7 @@ def discover_intent_channels(
                 for channel in new_channels:
                     cid = channel['channel_id']
                     if cid not in channels_by_id:
+                        channel['expansion_wave'] = expansion_wave
                         channels_by_id[cid] = channel
                         seen_channel_ids.add(cid)
                         batch_new_channels.append(channel)

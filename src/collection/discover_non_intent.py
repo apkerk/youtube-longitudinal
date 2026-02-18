@@ -5,7 +5,7 @@ Stream A': Non-Intent Creators Collection
 
 Discovers new YouTube channels created in 2026 that began uploading without
 explicitly signaling intent. Uses content keywords (gameplay, tutorial, recipe)
-across 8 languages to find channels that jumped straight into content creation.
+across 15 languages to find channels that jumped straight into content creation.
 
 This serves as a comparison group for Stream A (Intent Creators) for causal
 inference about the effects of intentional channel launching.
@@ -14,14 +14,15 @@ Supports checkpoint/resume: progress is saved after each keyword batch so
 interrupted runs can continue without re-consuming API quota.
 
 Target: 200,000 channels
-Languages: Hindi, English, Spanish, Japanese, German, Portuguese, Korean, French
+Languages: Hindi, English, Spanish, Japanese, German, Portuguese, Korean, French,
+           Arabic, Russian, Indonesian, Turkish, Vietnamese, Thai, Bengali
 Filter: Channel created >= Jan 1, 2026
 
 Usage:
     python -m src.collection.discover_non_intent [--test] [--limit N] [--skip-first-video]
 
 Author: Katie Apker
-Last Updated: Feb 17, 2026
+Last Updated: Feb 18, 2026
 """
 
 import argparse
@@ -182,7 +183,7 @@ def discover_non_intent_channels(
     per_keyword_target = max(10, target_count // len(non_intent_keywords))
 
     logger.info(f"Target: {target_count} channels")
-    logger.info(f"Keywords: {len(non_intent_keywords)} across 8 languages")
+    logger.info(f"Keywords: {len(non_intent_keywords)} across {len(config.NON_INTENT_KEYWORDS)} languages")
     logger.info(f"Time windows: {len(time_windows)} x {window_hours}h (from {config.COHORT_CUTOFF_DATE})")
     logger.info(f"Per-keyword target: {per_keyword_target}")
     logger.info(f"Already collected: {len(channels_by_id)} channels")
@@ -196,7 +197,12 @@ def discover_non_intent_channels(
         if keyword_key in completed_keywords:
             continue
 
-        logger.info(f"[{idx+1}/{len(non_intent_keywords)}] Searching: '{keyword}' ({language})")
+        # Look up ISO 639-1 code for relevanceLanguage parameter
+        relevance_lang = config.RELEVANCE_LANGUAGE_CODES.get(language)
+        expansion_wave = config.get_keyword_wave(language, keyword)
+
+        logger.info(f"[{idx+1}/{len(non_intent_keywords)}] Searching: '{keyword}' ({language}, "
+                     f"relevanceLanguage={relevance_lang}, wave={expansion_wave})")
 
         batch_new_channels: List[Dict] = []
         keyword_channels = 0
@@ -206,13 +212,19 @@ def discover_non_intent_channels(
                 break
 
             try:
+                # Build extra params for search API
+                search_extra = {}
+                if relevance_lang:
+                    search_extra['relevanceLanguage'] = relevance_lang
+
                 search_results = search_videos_paginated(
                     youtube=youtube,
                     query=keyword,
                     published_after=window_start,
                     published_before=window_end,
                     max_pages=3 if test_mode else 10,
-                    order="date"
+                    order="date",
+                    **search_extra
                 )
 
                 if not search_results:
@@ -243,6 +255,7 @@ def discover_non_intent_channels(
                 for channel in new_channels:
                     cid = channel['channel_id']
                     if cid not in channels_by_id:
+                        channel['expansion_wave'] = expansion_wave
                         channels_by_id[cid] = channel
                         seen_channel_ids.add(cid)
                         batch_new_channels.append(channel)
