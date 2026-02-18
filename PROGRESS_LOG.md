@@ -5,9 +5,9 @@
 
 ---
 
-## Current Status (as of Feb 18, 2026 — Evening)
+## Current Status (as of Feb 18, 2026 — Late Evening)
 
-**Phase:** KEYWORD EXPANSION COMPLETE. Referee evaluation done (3 evaluators). INTENT_KEYWORDS expanded from 8 to 15 languages (46→94 keywords). Ready for production re-run with expanded set (pending Katie's approval).
+**Phase:** KEYWORD EXPANSION COMPLETE. Handoff written for /plan-eval on the expanded keyword set. Both McGrady papers (2023, 2025) read and integrated into evaluation context. Ready for next agent to run /plan-eval, then production re-run (pending Katie's approval).
 **Roadmap Position:** Stream A RE-RUN COMPLETE (26,327 unique, 24h windows). Stream A' RE-RUN IN PROGRESS on Mac Mini. Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
 **Sample Size vs Targets:**
 - Stream A (Intent): 26,327 / 200K target (13.2%) — keywords expanded, re-run needed
@@ -50,7 +50,9 @@
   - Tag expansion-wave channels to test for wave effects
   - Get Stream C running ASAP (linchpin of representativeness argument)
 - **No collection run started** — keyword expansion committed, awaiting Katie's approval for production re-run
-- What's next: Katie approves → push to Mac Mini → re-run Stream A with 15 languages. Then Stream C.
+- **Read both McGrady papers in full** (Zotero keys YN2WMFM7 and EHGWS6HY). Key insight from 2025 paper: Hindi YouTube exploded post-TikTok ban (50.92% of Hindi videos uploaded in 2023 alone). This means our 9.9% Hindi share may be an *undercount* for new 2026 channels, not an overcount. The "platform benchmark" is a fast-moving target.
+- **Wrote /plan-eval handoff** at `~/.claude/handoffs/stream_a_keyword_expansion_eval.md`. Includes full project context, both McGrady papers summarized, exact expanded keywords, yield estimates, and 7 specific pressure points for evaluators (translation accuracy, keyword specificity, missing romanized variants, dialectal coverage, missing languages, stock-vs-flow recalibration, A' language mismatch).
+- What's next: Run /plan-eval on the handoff. Then Katie approves → push to Mac Mini → re-run Stream A with 15 languages. Then Stream C.
 
 ### Feb 17, 2026 — Late Evening [Time Window Optimization — 3.5x More Channels]
 
