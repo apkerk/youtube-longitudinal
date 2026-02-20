@@ -9,10 +9,11 @@
 
 | Field | Value |
 |-------|-------|
-| **Current phase** | A (Infrastructure Recovery) |
-| **Next executable step** | A.1: SSH to Mac Mini, git pull, verify ethernet |
-| **Blocking prerequisite** | None — ethernet swapped, code pushed (2fcb503) |
-| **Daily stats status** | BROKEN (Feb 18 + 19 missed). Code fix deployed, backfill next. |
+| **Current phase** | A COMPLETE — ready for Phase B |
+| **Next executable step** | B.1: Stream A re-run with expansion strategies `[KATIE-APPROVE]` |
+| **Blocking prerequisite** | Katie's approval for production collection run |
+| **Daily stats status** | RECOVERED. Feb 18+19+20 backfilled. Health check plist deployed. Services loaded. |
+| **Mac Mini network** | WiFi (192.168.86.34) via Nest mesh. Ethernet idle (modem bridge mode). Call Spectrum to fix. |
 | **Key constraint** | One discovery script at a time. Kill if >800K quota by 07:00 UTC. |
 
 ---

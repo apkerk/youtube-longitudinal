@@ -5,11 +5,49 @@
 
 ---
 
-## Current Status (as of Feb 20, 2026 — Evening)
+## Current Status (as of Feb 20, 2026 — Early Morning)
 
-**Phase:** Phase A.0 COMPLETE. Phase A (infrastructure recovery) ready to execute.
-**Roadmap Position:** Code prerequisites deployed (commit 2fcb503). Mac Mini now on direct ethernet to modem (bypassing Google Nest mesh). Next: SSH to Mac Mini, git pull, verify network, backfill Feb 18+19.
-**Next Executable Step:** Phase A.1 — SSH to Mac Mini (IP may have changed with new network topology), git pull, verify ethernet with `ping -c 100`, then A.2 backfill.
+**Phase:** Phase A COMPLETE. Ready for Phase B (Stream A re-run) pending Katie's approval.
+**Roadmap Position:** Infrastructure recovered. Daily stats backfilled. Health check deployed. Mac Mini on WiFi (192.168.86.34) through Nest mesh — ethernet idle (Spectrum modem in bridge mode). Call Spectrum to enable router mode for permanent ethernet fix.
+**Next Executable Step:** Phase B.1 — Stream A re-run with expansion strategies `[KATIE-APPROVE]`.
+
+---
+
+## 2026-02-20 06:00 [Phase A: Infrastructure Recovery — COMPLETE]
+
+### Network Discovery & Fix
+- Mac Mini ethernet setup (modem → switch → Mac Mini) physically correct but Spectrum modem is in bridge mode — no DHCP, Mac Mini gets no IP via ethernet
+- Investigated Nest mesh history: Nest WiFi NAT table drops confirmed as root cause of Cloudflare tunnel instability (every 1-18 min). This is documented extensively in Second Brain MAC_MINI_SETUP.md.
+- Enabled Mac Mini WiFi (en1) via physical keyboard access — Mac Mini now at 192.168.86.34 on Nest mesh
+- WiFi is sufficient for YouTube API calls (short HTTP requests + retry logic). Cloudflare tunnel (Pat dashboard) still drops on Nest mesh — needs the Spectrum bridge mode fix.
+- **Permanent fix:** Call Spectrum (833-267-6094, 24/7) to disable bridge mode. Then Mac Mini ethernet gets a real IP, bypasses Nest mesh entirely.
+- Wrote connectivity report to Second Brain inbox (quick-notes.md) for Pat System agent.
+
+### Phase A Execution
+- A.1: SSH established, git pull successful (c1a837b → fd30974). Network test: DNS resolves, HTTPS 200 to google.com, gateway ping 0% loss. API test: 9,760 channels collected in 47 seconds.
+- A.2: Backfilled all 4 missing collections:
+  - Gender gap Feb 18: 9,760 channels ✓
+  - Gender gap Feb 19: 9,760 channels ✓
+  - AI census Feb 18: 50,010 channels ✓
+  - AI census Feb 19: 50,010 channels ✓
+  - (Also got Feb 20 gender gap during API test: 9,760 channels)
+- A.3: Health check plist deployed and loaded. All 6 YouTube launchd services confirmed loaded:
+  - com.youtube-longitudinal.daily-channel-stats
+  - com.youtube.ai-census-daily-channel-stats
+  - com.youtube-longitudinal.weekly-video-stats
+  - com.youtube-longitudinal.sync-to-drive
+  - com.youtube-longitudinal.health-check
+  - com.youtube.daily-health-check (NEW — from Phase A.0)
+- Deployment plan status table updated: Phase A → COMPLETE.
+
+### Key Findings
+- AI census panel is 50,010 channels (larger than expected — noted for quota awareness)
+- `--limit` flag in daily_stats.py does not limit channel count — minor code issue, does not affect production
+- Mac Mini WiFi interface is en1 (not en0). `networksetup -setairportpower Wi-Fi on` works universally.
+
+### What's Next
+- Call Spectrum to disable bridge mode (non-urgent for YouTube collection, needed for Pat dashboard)
+- Phase B: Stream A re-run with expansion strategies (requires Katie's approval)
 
 ---
 
