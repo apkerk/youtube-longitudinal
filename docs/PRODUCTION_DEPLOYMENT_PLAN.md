@@ -9,12 +9,12 @@
 
 | Field | Value |
 |-------|-------|
-| **Current phase** | B RUNNING — Stream A re-run + Stream C launched |
-| **Next executable step** | Monitor A/C progress. After C completes: extract channel_ids.csv. After A completes: B.4 validation, then Phase C (A' re-run). |
-| **Blocking prerequisite** | None — both streams running autonomously |
-| **Daily stats status** | RECOVERED. Feb 18+19+20 backfilled. Health check plist deployed. Services loaded. |
-| **Mac Mini network** | WiFi (192.168.86.34) via Nest mesh. Ethernet idle (modem bridge mode). Call Spectrum to fix. |
-| **Key constraint** | Two discovery scripts running concurrently (A + C). C will finish today (~50K units). A runs ~15 days. Kill A if >800K quota by 07:00 UTC. |
+| **Current phase** | B — Stream A paused (quota), Stream C COMPLETE, AI census enum ready |
+| **Next executable step** | After 3:00 AM EST: relaunch Stream A + launch AI census enumeration. Both can run concurrently. |
+| **Blocking prerequisite** | Quota reset at 3:00 AM EST (midnight Pacific) |
+| **Daily stats status** | Gender gap Feb 20 collected. AI census Feb 20 missed (quota). Services loaded. |
+| **Mac Mini network** | WiFi (192.168.86.34) via Nest mesh. Ethernet idle. TP-Link A6 router arriving today. |
+| **Key constraint** | No processes running. Need manual relaunch of Stream A + enumeration after quota reset. |
 
 ---
 
@@ -373,8 +373,8 @@ Update this section as phases complete. Each entry records: completion date, act
 | A.2 Backfill | DONE | Feb 20 | Feb 18+19+20 backfilled: gender gap 9,760 ea, AI census 50,010 ea | ~20K | Backfill captures current stats labeled as past dates |
 | A.3 Verify daily stats | DONE | Feb 20 | All 6 services loaded and running. Health check plist deployed. | 0 | |
 | B.0 Dry-run | DONE | Feb 20 | --dry-run flag missing. Manual estimate: ~83K queries, ~12M units, ~15 days at 800K/day. Accepted. | 0 | TopicId is 67% of query cost |
-| B.1 Stream A re-run | RUNNING | Feb 20 | Launched 06:50 UTC. screen=discover_a. All 6 strategies. 3K+ channels after 2/94 kw. | TBD | ~15 day runtime expected |
-| B.2 Stream C | RUNNING | Feb 20 | Launched 06:53 UTC. screen=discover_c. 12.9K channels after 550/3333 prefixes. | TBD | Expected done today |
+| B.1 Stream A re-run | PAUSED | Feb 20 | Quota exhausted at 07:37 EST. Keyword 5/94, 6,785 unique channels. Checkpoint intact (.discovery_checkpoint.json, 78 passes). Relaunch after 3 AM EST. | ~1M | Screen killed accidentally; needs manual relaunch |
+| B.2 Stream C | DONE | Feb 20 | 50,022 unique channels. 3,333 prefixes searched. channel_ids.csv extracted. | ~50K | Above 50K target |
 | B.3 Gate 2 test | PASS | Feb 20 | Keyword 1: base=374, expansion=+729 (1.96x multiplier). Well above 80% threshold. | 0 | Piggybacked on B.1 first keyword |
 | B.4 Validation | NOT STARTED | — | — | 0 | |
 | C.1 Stream A' re-run | NOT STARTED | — | — | — | |

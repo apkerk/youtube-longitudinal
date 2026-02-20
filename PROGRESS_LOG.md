@@ -5,16 +5,55 @@
 
 ---
 
-## Current Status (as of Feb 20, 2026 — Morning)
+## Current Status (as of Feb 20, 2026 — Late Morning)
 
-**Phase:** Phase B RUNNING. Stream A re-run + Stream C active on Mac Mini.
-**Roadmap Position:** Stream A re-run running with all 6 expansion strategies (~8 day estimate). Stream C (random baseline) ~54% done, will finish within the hour. Daily stats healthy — both scheduled to run today at 8:00/9:00 AM EST.
+**Phase:** Phase B — Stream A paused (quota), Stream C COMPLETE, AI census enum ready for relaunch.
+**Roadmap Position:** Stream A re-run at keyword 5/94, checkpoint intact. Stream C DONE (50,022 unique). AI census enumeration files transferred to Mac Mini, checkpoint ready. All need quota reset (3:00 AM EST) to resume.
 **What's Running on Mac Mini:**
-- `screen -r discover_a` — Stream A re-run, keyword 5/94 (Hindi), 5,047 channels, 381K quota consumed
-- `screen -r discover_c` — Stream C random baseline, prefix 1,800/3,333, 41,442 channels
-- 6 launchd services (daily stats × 2, weekly video stats, sync, health check × 2)
-**Video Enumeration:** NOT running. Gender gap 98.3% (effectively done). AI census 73.2% (stalled, needs restart on Mac Mini — Katie approved).
-**Next Executable Step:** 1) SCP ai_census_inventory.csv to Mac Mini + create checkpoint + launch enumeration. 2) Wait for Stream C to finish → extract channel_ids.csv. 3) Stream A runs autonomously.
+- NO active screen sessions. All killed (Stream A quota-stalled, Stream C finished).
+- 6 launchd services still loaded (daily stats × 2, weekly video stats, sync, health check × 2).
+**Video Enumeration:** AI census 73.3% done (36,634/50,010), CSV + checkpoint on Mac Mini, needs relaunch after quota reset. Gender gap 98.3% (effectively done).
+**Next Executable Step:** After 3:00 AM EST quota reset: 1) Relaunch Stream A in screen. 2) Launch AI census enumeration in screen. Both can run concurrently (different API endpoints).
+
+---
+
+## 2026-02-20 08:00 [AI Census Enumeration Setup + Stream C Complete + Stream A Cleanup]
+
+### AI Census Video Enumeration — Setup Complete, Waiting on Quota
+- SCP'd 3.1 GB `ai_census_inventory.csv` from laptop to Mac Mini (took ~3 min over WiFi)
+- Created checkpoint JSON from existing CSV: 36,634 completed channels (3 more than expected — possibly a few channels completed in the 1s before quota errors hit)
+- Launched enumeration in screen session — immediately hit quotaExceeded (Stream A consumed full daily quota by 07:37 EST)
+- **Critical bug found:** `enumerate_videos.py` marks channels as "completed" in checkpoint even when API calls fail (line 198: `completed_set.add(channel_id)` is unconditional after the try/except). 17 channels were falsely marked before I killed the process.
+- Regenerated checkpoint from CSV data (36,634 channels). Clean state ready.
+- **Status:** CSV + checkpoint on Mac Mini. Launch after 3:00 AM EST quota reset. ~27K API units needed (negligible).
+
+### Stream C — COMPLETE
+- Finished during this session. Screen session auto-exited on completion.
+- **50,022 unique channels** (above 50K target). File: `data/channels/stream_c/initial_20260220.csv` (42.7 MB)
+- Extracted `channel_ids.csv` with 50,022 entries
+- Random prefix sampling: 3,333 prefixes searched, ~15 channels/prefix average
+
+### Stream A Discovery — Paused on Quota, Checkpoint Intact
+- Python process (PID 5376) was in quota retry loop since 07:37 EST. Not making progress but alive.
+- **Mistake:** I killed the parent processes (bash/tee/screen) thinking the python process was already dead. The `ps aux | grep python3` pattern didn't match the macOS binary name (`Python` not `python3`). Lesson: always use `ps aux | grep Python` (capital P) on macOS.
+- Checkpoint intact: `.discovery_checkpoint.json` with 78 completed keyword-pass combos across keywords 1-5, 6,785 unique channels in `initial_20260220.csv`
+- **Status:** Needs relaunch after 3:00 AM EST. Will resume from keyword 5/94, pass ~10/17.
+
+### Daily Stats
+- Gender gap Feb 20: collected (file exists, 694 KB)
+- AI census Feb 20: MISSED (quota exhausted by Stream A before 9:00 AM EST run). Expected, acceptable.
+
+### Mistakes Made
+1. Killed Stream A's live python process by accident (grep pattern mismatch on macOS)
+2. Launched enumeration without checking quota first (quota was already exhausted)
+3. enumerate_videos.py design flaw: marks failed channels as complete (needs code fix for quota-error handling)
+
+### What's Next
+1. **After 3:00 AM EST:** Relaunch Stream A discovery: `screen -dmS discover_a bash -c "cd /Users/katieapker/.youtube-longitudinal/repo && python3 -m src.collection.discover_intent --strategies base,safesearch,topicid,regioncode,duration,windows 2>&1 | tee data/logs/discover_a_rerun.log"`
+2. **After 3:00 AM EST:** Launch AI census enumeration: `screen -dmS enumerate_ai bash -c "cd /Users/katieapker/.youtube-longitudinal/repo && python3 -m src.collection.enumerate_videos --channel-list data/channels/ai_census/channel_ids.csv --output data/video_inventory/ai_census_inventory.csv 2>&1 | tee data/logs/enumerate_ai_run.log"`
+3. Both can run concurrently (different API endpoints, enumeration uses ~27K units total)
+4. Monitor daily stats at 8:00/9:00 AM EST — both should succeed with fresh quota
+5. Consider code fix for enumerate_videos.py: don't mark channels as complete when API call fails with quotaExceeded
 
 ---
 
