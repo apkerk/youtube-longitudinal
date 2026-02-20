@@ -5,33 +5,54 @@
 
 ---
 
-## Current Status (as of Feb 19, 2026 — Late Night)
+## Current Status (as of Feb 20, 2026 — Early Morning)
 
-**Phase:** EXPANSION STRATEGIES VERIFIED. All 6 strategies coded and verified. Daily discovery service plists drafted. Awaiting validation pilots + Mac Mini deployment.
-**Roadmap Position:** Stream A needs re-run with expansion strategies (code ready). Stream A' has 11,303 unique (code ready for re-run). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
+**Phase:** VALIDATION PILOTS COMPLETE. 4 GO, 1 CONDITIONAL, 1 NO-GO. Production deployment plan written. Ready for re-runs.
+**Roadmap Position:** Stream A needs re-run with 5 validated strategies. Stream A' needs re-run. Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started. Daily stats broken (Feb 18-19).
 **Sample Size vs Targets:**
 - Stream A (Intent): 26,327 / growing target — projected 60-100K with expansion strategies
-- Stream A' (Non-Intent): 11,303 / growing target — projected 40-80K with expansion strategies (topicId partitioning is 2-4x multiplier)
+- Stream A' (Non-Intent): 11,303 / growing target — projected 40-80K with expansion strategies
 - Stream B (Algorithm Favorites): 18,208 — search space exhausted
 - Stream D (Casual): 3,933 — search space exhausted, median channel age ~2015
 - Stream C (Random): not started / 50K target
+- 5 expansion streams (Trending, Shorts, Livestream, Topic-Stratified, Creative Commons): scripts built, not run
 **What's Running:**
-- Gender gap daily channel stats (Mac Mini, 8:00 UTC)
-- AI census daily channel stats (Mac Mini, 9:00 UTC)
+- Gender gap daily channel stats (Mac Mini, 8:00 UTC) — FAILED Feb 18 (quota) + Feb 19 (timeout). Needs ethernet fix + backfill.
+- AI census daily channel stats (Mac Mini, 9:00 UTC) — same failures
 - No discovery scripts running
-**Quota:** Daily discovery budget: ~140K units/day (Tier 1) + ~250K weekly supplement.
+**Quota:** ~61K consumed on validation pilots today. ~810K remaining.
 **Next Steps:**
-1. **Run verification steps** — keyword count check, schema field check, --dry-run on validate_expansion.py, Python 3.9 compat check
-2. **Clean up dead code** — unused `_run_search_pass_over_windows()` helper in discover_non_intent.py
-3. **Run validation pilots** (~70K API units) per EXPANSION_VALIDATION_FRAMEWORK.md
-4. **Launch Stream A re-run** with expansion strategies that pass validation
-5. **A' re-run** with expansion strategies
-6. **Stream C** (random baseline — load-bearing for coverage calibration)
-**Key Decisions Pending:**
-- Validation pilot results determine which strategies reach production (GO/NO-GO per framework)
-- Stream C collection timing (needed for coverage calibration protocol)
+1. **Plan-eval** on `docs/PRODUCTION_DEPLOYMENT_PLAN.md` (next agent)
+2. **Fix Mac Mini ethernet** (Katie has hardware)
+3. **Backfill daily stats** for Feb 18 + Feb 19
+4. **Launch Stream A re-run** with `base,safesearch,topicid,regioncode,duration,windows`
+5. **Stream A' re-run**, then Stream C
+6. **Deploy daily discovery plists** with Tier 1 strategies
+**Key Decisions Made:**
+- Production re-runs: all 5 passing strategies (including CONDITIONAL duration)
+- Daily discovery service: Tier 1 only (base,safesearch,regioncode,windows) — topicId/duration too expensive for daily
+- order=relevance: EXCLUDED (NO-GO confirmed, surfaces old channels)
 
 ---
+
+### Feb 20, 2026 — Early Morning [Validation Pilots Complete + Production Plan]
+
+- **Ran all 6 validation pilots on Mac Mini** (~61K API units consumed):
+  - **safeSearch=none → GO.** +504 net new (37.2% marginal). GRWM 25→202 (8x), gameplay 71→250 (3.5x). Zero extra quota.
+  - **topicId → GO.** 2.42x yield multiplier. All 12/12 topics productive. 76.6% marginal new. Lifestyle (497), Entertainment (435), Music (331) top producers.
+  - **regionCode → GO.** +428 net new (56.9% marginal). All 9/9 regions productive. Arabic standout: EG (231), SA (199).
+  - **videoDuration → CONDITIONAL.** 1.44x yield (threshold 1.5x, missed by 0.06x). All 3/3 slices productive. 75.7% marginal new. Long (532) > medium (490) > short (165).
+  - **order=relevance → NO-GO.** 14.8% survival rate (threshold >=50%). Median subs 12.1K vs 5.6K baseline. Overlap 63.9%. Surfaces old established channels. Correctly excluded.
+  - **12h windows → GO.** 37.9% improvement (threshold 30%). 1,080 unique channels missed by 24h windows.
+- **Fixed bug in validate_expansion.py:** `order` kwarg collision in `run_search()` — popping from `extra_params` (original) instead of `search_extra` (copy). Committed c1a837b.
+- **Daily stats BROKEN for 2 days:** Feb 18 failed (quotaExceeded from A' overnight run), Feb 19 failed (socket timeout). All 5 launchd services still loaded. Likely network instability — Katie has ethernet hardware ready.
+- **Wrote production deployment plan:** `docs/PRODUCTION_DEPLOYMENT_PLAN.md`. Covers strategy selection, phased execution (infra recovery → A re-run → A' re-run → Stream C → daily discovery deployment), quota management, risk register.
+- **Production decisions:**
+  - Re-runs: `base,safesearch,topicid,regioncode,duration,windows` (all passing, including CONDITIONAL duration)
+  - Daily discovery: `base,safesearch,regioncode,windows` (Tier 1 only — topicId/duration too expensive for daily)
+  - order=relevance: EXCLUDED
+- **Quota consumed:** ~61K API units (validation pilots) + ~200 (dry-run, misc)
+- What's next: /plan-eval on PRODUCTION_DEPLOYMENT_PLAN.md, fix ethernet, backfill daily stats, launch Stream A re-run.
 
 ### Feb 19, 2026 — Late Night [Expansion Code Verification + Daily Discovery Service]
 
