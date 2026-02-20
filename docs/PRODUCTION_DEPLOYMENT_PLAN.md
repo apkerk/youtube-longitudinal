@@ -9,12 +9,12 @@
 
 | Field | Value |
 |-------|-------|
-| **Current phase** | A COMPLETE — ready for Phase B |
-| **Next executable step** | B.1: Stream A re-run with expansion strategies `[KATIE-APPROVE]` |
-| **Blocking prerequisite** | Katie's approval for production collection run |
+| **Current phase** | B RUNNING — Stream A re-run + Stream C launched |
+| **Next executable step** | Monitor A/C progress. After C completes: extract channel_ids.csv. After A completes: B.4 validation, then Phase C (A' re-run). |
+| **Blocking prerequisite** | None — both streams running autonomously |
 | **Daily stats status** | RECOVERED. Feb 18+19+20 backfilled. Health check plist deployed. Services loaded. |
 | **Mac Mini network** | WiFi (192.168.86.34) via Nest mesh. Ethernet idle (modem bridge mode). Call Spectrum to fix. |
-| **Key constraint** | One discovery script at a time. Kill if >800K quota by 07:00 UTC. |
+| **Key constraint** | Two discovery scripts running concurrently (A + C). C will finish today (~50K units). A runs ~15 days. Kill A if >800K quota by 07:00 UTC. |
 
 ---
 
@@ -369,13 +369,13 @@ Update this section as phases complete. Each entry records: completion date, act
 | Phase | Status | Completed | Result | Quota | Notes |
 |-------|--------|-----------|--------|-------|-------|
 | A.0 Code prereqs | DONE | Feb 20 | --date flag, retry (30/120/480s), sentinel, health check, plist | 0 | Commit 2fcb503 |
-| A.1 Ethernet | NOT STARTED | — | — | 0 | |
-| A.2 Backfill | NOT STARTED | — | — | — | |
-| A.3 Verify daily stats | NOT STARTED | — | — | 0 | |
-| B.0 Dry-run | NOT STARTED | — | — | 0 | |
-| B.1 Stream A re-run | NOT STARTED | — | — | — | |
-| B.2 Stream C | NOT STARTED | — | — | — | |
-| B.3 Gate 2 test | NOT STARTED | — | — | — | |
+| A.1 Network fix | DONE | Feb 20 | WiFi via Nest mesh (192.168.86.34). Ethernet deferred (modem bridge mode). WiFi sufficient for YouTube API. | 0 | Spectrum call needed for ethernet |
+| A.2 Backfill | DONE | Feb 20 | Feb 18+19+20 backfilled: gender gap 9,760 ea, AI census 50,010 ea | ~20K | Backfill captures current stats labeled as past dates |
+| A.3 Verify daily stats | DONE | Feb 20 | All 6 services loaded and running. Health check plist deployed. | 0 | |
+| B.0 Dry-run | DONE | Feb 20 | --dry-run flag missing. Manual estimate: ~83K queries, ~12M units, ~15 days at 800K/day. Accepted. | 0 | TopicId is 67% of query cost |
+| B.1 Stream A re-run | RUNNING | Feb 20 | Launched 06:50 UTC. screen=discover_a. All 6 strategies. 3K+ channels after 2/94 kw. | TBD | ~15 day runtime expected |
+| B.2 Stream C | RUNNING | Feb 20 | Launched 06:53 UTC. screen=discover_c. 12.9K channels after 550/3333 prefixes. | TBD | Expected done today |
+| B.3 Gate 2 test | PASS | Feb 20 | Keyword 1: base=374, expansion=+729 (1.96x multiplier). Well above 80% threshold. | 0 | Piggybacked on B.1 first keyword |
 | B.4 Validation | NOT STARTED | — | — | 0 | |
 | C.1 Stream A' re-run | NOT STARTED | — | — | — | |
 | C.2 Cross-stream dedup | NOT STARTED | — | — | 0 | |

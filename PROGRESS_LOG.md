@@ -5,11 +5,49 @@
 
 ---
 
-## Current Status (as of Feb 20, 2026 — Early Morning)
+## Current Status (as of Feb 20, 2026 — Evening)
 
-**Phase:** Phase A COMPLETE. Ready for Phase B (Stream A re-run) pending Katie's approval.
-**Roadmap Position:** Infrastructure recovered. Daily stats backfilled. Health check deployed. Mac Mini on WiFi (192.168.86.34) through Nest mesh. TP-Link Archer A6 router ordered (arrives Feb 21) to replace switch and fix ethernet — Spectrum modem is bridge-mode only. Switch returned.
-**Next Executable Step:** Phase B.1 — Stream A re-run with expansion strategies `[KATIE-APPROVE]`.
+**Phase:** Phase B RUNNING. Stream A re-run + Stream C launched on Mac Mini.
+**Roadmap Position:** Stream A re-run running with all 6 expansion strategies (~15 day runtime). Stream C (random baseline) running concurrently, will finish today. Gate 2 combined effect test PASSED. Daily stats healthy.
+**What's Running on Mac Mini:**
+- `screen -r discover_a` — Stream A re-run (all 6 strategies, 94 kw × 15 lang)
+- `screen -r discover_c` — Stream C random baseline (3,333 prefixes, ~50K target)
+- 6 launchd services (daily stats × 2, weekly video stats, sync, health check × 2)
+**Video Enumeration:** NOT running. Gender gap 98.3% (effectively done). AI census 73.2% (stalled, needs restart on Mac Mini).
+**Next Executable Step:** Monitor Stream C completion → extract channel_ids.csv. Restart AI census enumeration on Mac Mini. After Stream A completes: validation → Phase C (A' re-run).
+
+---
+
+## 2026-02-20 18:50 [Phase B Launched — Stream A Re-Run + Stream C]
+
+### Phase B Execution
+- **B.0 Dry-run:** `--dry-run` flag doesn't exist in discover_intent.py. Calculated manually: 94 kw × 15 lang × ~18 passes × ~50 windows = ~83K minimum queries = ~12M units. At 800K/day = ~15 days. Katie accepted the timeline.
+- **B.1 Stream A re-run:** Launched at 06:50 UTC in `screen -S discover_a`. Command: `python3 -m src.collection.discover_intent --strategies base,safesearch,topicid,regioncode,duration,windows`. After 10 min: 3,042 channels from 2/94 keywords. Keyword 1 ("Mere channel mein aapka swagat hai"): base=374, topicId=~546, regionCode=103, duration=80 → total 1,103. Keyword 2 ("Mera pehla video"): base=1,746 in first pass.
+- **B.2 Stream C:** Launched at 06:53 UTC in `screen -S discover_c`. After 10 min: 12,908 channels from 550/3,333 prefixes. ~24 channels/prefix. On track to finish in ~1 hour.
+- **B.3 Gate 2:** PASS. First keyword showed 1.96x multiplier from expansion strategies. Well above the 80% threshold.
+- **Git pulled Mac Mini** from fd30974 → 80530e1 (2 commits behind at session start).
+
+### Video Enumeration Status (Discovered)
+- Gender gap inventory: 9,591/9,760 channels (98.3%), 11.6M video rows, 1.69 GB. Last modified Feb 17. NOT running. Missing ~169 channels are likely terminated/empty. Effectively complete.
+- AI census inventory: 36,631/50,010 channels (73.2%), 20.9M video rows, 3.35 GB. Last modified Feb 20 02:45. NOT running. Stalled — laptop process died (sleep or network).
+- Both were laptop processes. No checkpoint files remain (deleted on completion or lost).
+- Recommendation: Restart AI census enumeration on Mac Mini (always-on). Quota cost is negligible (~27K units for playlistItems.list at 1 unit/call). SCP existing file to Mac Mini first. Run in screen session.
+
+### Key Decisions
+- Full strategy set accepted despite 15-day timeline (Katie's choice: maximize sample over speed)
+- Deployment plan status tracking updated: A.0-A.3 DONE, B.0-B.3 DONE/RUNNING/PASS
+- Concurrent A + C running is safe: C is small (~50K units) and uses different API endpoints (no keyword overlap)
+
+### Quota
+- Session consumed: minimal (git pull, process checks). Stream A and C now consuming actively.
+- Estimated daily: Stream A ~500-800K/day + Stream C ~50K today only + daily stats ~20K = well within 1M limit
+
+### What's Next
+1. Monitor Stream C completion (today). Extract channel_ids.csv when done.
+2. Restart AI census video enumeration on Mac Mini (SCP file, run in screen).
+3. Stream A runs autonomously for ~15 days with checkpoint/resume.
+4. After Stream A: B.4 validation → Phase C (A' re-run with same strategies).
+5. Call Spectrum to disable bridge mode (non-blocking for YouTube, needed for Cloudflare tunnel).
 
 ---
 
