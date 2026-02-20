@@ -5,16 +5,47 @@
 
 ---
 
-## Current Status (as of Feb 20, 2026 — Evening)
+## Current Status (as of Feb 20, 2026 — Morning)
 
-**Phase:** Phase B RUNNING. Stream A re-run + Stream C launched on Mac Mini.
-**Roadmap Position:** Stream A re-run running with all 6 expansion strategies (~15 day runtime). Stream C (random baseline) running concurrently, will finish today. Gate 2 combined effect test PASSED. Daily stats healthy.
+**Phase:** Phase B RUNNING. Stream A re-run + Stream C active on Mac Mini.
+**Roadmap Position:** Stream A re-run running with all 6 expansion strategies (~8 day estimate). Stream C (random baseline) ~54% done, will finish within the hour. Daily stats healthy — both scheduled to run today at 8:00/9:00 AM EST.
 **What's Running on Mac Mini:**
-- `screen -r discover_a` — Stream A re-run (all 6 strategies, 94 kw × 15 lang)
-- `screen -r discover_c` — Stream C random baseline (3,333 prefixes, ~50K target)
+- `screen -r discover_a` — Stream A re-run, keyword 5/94 (Hindi), 5,047 channels, 381K quota consumed
+- `screen -r discover_c` — Stream C random baseline, prefix 1,800/3,333, 41,442 channels
 - 6 launchd services (daily stats × 2, weekly video stats, sync, health check × 2)
-**Video Enumeration:** NOT running. Gender gap 98.3% (effectively done). AI census 73.2% (stalled, needs restart on Mac Mini).
-**Next Executable Step:** Monitor Stream C completion → extract channel_ids.csv. Restart AI census enumeration on Mac Mini. After Stream A completes: validation → Phase C (A' re-run).
+**Video Enumeration:** NOT running. Gender gap 98.3% (effectively done). AI census 73.2% (stalled, needs restart on Mac Mini — Katie approved).
+**Next Executable Step:** 1) SCP ai_census_inventory.csv to Mac Mini + create checkpoint + launch enumeration. 2) Wait for Stream C to finish → extract channel_ids.csv. 3) Stream A runs autonomously.
+
+---
+
+## 2026-02-20 07:30 [Phase B Morning Monitor — Status Check + Enumeration Plan]
+
+### Monitoring Results
+- **Stream A:** 5,047 channels at keyword 5/94 (all Hindi so far). Running 17 passes per keyword (base + 12 topicId + regionCode + 3 duration). ~81K quota per keyword. 381K of ~1M daily quota consumed. Will stall ~8:28 AM EST when quota exhausts. Resumes from checkpoint after 3:00 AM EST reset. Estimated ~8 days to complete all 94 keywords.
+- **Stream C:** 41,442 channels at prefix 1,800/3,333 (~54%). ~23 channels/prefix. Projected total ~77K (above 50K target). ETA ~30 min from now.
+- **Daily stats:** Both scheduled for today at 8:00 AM (gender gap) and 9:00 AM (AI census) EST. Gender gap will succeed (quota still available). AI census at 9:00 AM may fail if Stream A exhausts quota by 8:28 AM. One-day miss is acceptable.
+- **Health checks:** No FAILED sentinel files. Last health check ran Feb 19 (today's at 12:00 UTC hasn't triggered yet).
+- **All Python processes confirmed alive** (PIDs 5376 for Stream A, 5653 for Stream C).
+
+### AI Census Video Enumeration Plan
+- Katie approved restart on Mac Mini. Plan:
+  1. SCP 3.35 GB `ai_census_inventory.csv` from laptop to Mac Mini
+  2. Create checkpoint JSON from existing CSV (script uses checkpoint, NOT CSV-based resume — handoff was wrong about this)
+  3. Launch in `screen -S enumerate_ai` on Mac Mini
+  4. Quota cost: ~27K units (negligible — playlistItems.list = 1 unit/call)
+- Key finding: `enumerate_videos.py` line 82-97 shows checkpoint stores `completed_channels` list in JSON. Without the checkpoint, script would overwrite the 3.35 GB file. MUST create checkpoint before launching.
+
+### Clarification on Stream C Methodology
+- Random Prefix Sampling (Zhou et al., 2011) — not the McGrady "Dialing for Videos" brute-force ID enumeration
+- Stream C uses random 3-char alphanumeric search queries via search.list API
+- McGrady generates random video IDs directly (true uniform random, but ~0.02% hit rate — infeasible at our quota)
+- Stream C is biased toward searchable content but is the least biased Search API method available
+
+### What's Next
+1. [NEXT AGENT] SCP + checkpoint + launch AI census video enumeration on Mac Mini
+2. [NEXT AGENT] When Stream C finishes: count unique channels with pandas, extract channel_ids.csv
+3. Stream A continues autonomously (~8 days). Monitor daily for quota stalls and checkpoint integrity.
+4. After Stream A: B.4 validation → Phase C (A' re-run with same strategies)
 
 ---
 
