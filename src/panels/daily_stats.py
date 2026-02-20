@@ -33,7 +33,9 @@ import argparse
 import csv
 import json
 import logging
+import socket
 import sys
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -51,6 +53,41 @@ from youtube_api import (
 import config
 
 logger = logging.getLogger(__name__)
+
+# Retry backoff schedule: 30s, 120s, 480s (per deployment plan A.0.2)
+_RETRY_BACKOFF = (30, 120, 480)
+
+
+def _call_with_retry(fn, description="API call", max_retries=3):
+    """Retry fn() on transient network errors with exponential backoff.
+
+    Catches socket.timeout, ConnectionError, and OSError (network-level failures
+    that execute_request in youtube_api.py does not handle).
+    HTTP-level errors (403, 503, etc.) are handled by execute_request's own retry.
+    """
+    for attempt in range(max_retries + 1):
+        try:
+            return fn()
+        except (socket.timeout, ConnectionError, OSError) as e:
+            if attempt < max_retries:
+                wait = _RETRY_BACKOFF[attempt]
+                logger.warning(
+                    "%s: %s, retry %d/%d in %ds",
+                    description, type(e).__name__, attempt + 1, max_retries, wait,
+                )
+                time.sleep(wait)
+                continue
+            raise
+
+
+def _write_sentinel(date_str, error_msg):
+    """Write a failure sentinel file for the health check to detect."""
+    sentinel_path = config.LOGS_DIR / "daily_stats_FAILED_{}.flag".format(date_str)
+    sentinel_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(sentinel_path, 'w', encoding='utf-8') as f:
+        f.write("Failed at: {}\n".format(datetime.utcnow().isoformat()))
+        f.write("Error: {}\n".format(error_msg))
+    logger.error("Wrote failure sentinel: %s", sentinel_path)
 
 
 def setup_logging() -> None:
@@ -82,6 +119,7 @@ class DailyStatsCollector:
         inventory_path: Optional[Path] = None,
         channel_list_path: Optional[Path] = None,
         panel_name: Optional[str] = None,
+        date_override: Optional[str] = None,
     ):
         """
         Args:
@@ -92,12 +130,15 @@ class DailyStatsCollector:
             panel_name: Optional panel subdirectory name (e.g., 'new_cohort').
                 When set, output goes to channel_stats/{panel_name}/YYYY-MM-DD.csv.
                 When None, uses the flat default (backwards compatible).
+            date_override: Override collection date (YYYY-MM-DD) for backfilling.
+                When set, output files use this date instead of today.
         """
         self.youtube = youtube
         self.inventory_path = inventory_path
         self.channel_list_path = channel_list_path
         self.panel_name = panel_name
-        self.today = datetime.utcnow().strftime("%Y-%m-%d")
+        self.date_override = date_override
+        self.today = date_override if date_override else datetime.utcnow().strftime("%Y-%m-%d")
         checkpoint_suffix = f"_{panel_name}" if panel_name else ""
         self.checkpoint_path = config.DAILY_PANELS_DIR / f".daily_stats_checkpoint{checkpoint_suffix}.json"
 
@@ -230,7 +271,10 @@ class DailyStatsCollector:
         for batch_idx in range(start_batch, total_batches):
             batch = batches[batch_idx]
             try:
-                batch_stats = get_video_stats_batch(self.youtube, batch)
+                batch_stats = _call_with_retry(
+                    lambda b=batch: get_video_stats_batch(self.youtube, b),
+                    description="video stats batch {}/{}".format(batch_idx + 1, total_batches),
+                )
                 all_stats.extend(batch_stats)
             except Exception as e:
                 logger.error(f"Error fetching video stats batch {batch_idx}: {e}")
@@ -250,7 +294,10 @@ class DailyStatsCollector:
 
     def collect_channel_stats(self, channel_ids: List[str]) -> List[Dict]:
         """
-        Fetch channel statistics. get_channel_stats_only handles batching internally.
+        Fetch channel statistics with retry on transient network errors.
+
+        get_channel_stats_only handles batching internally. On network failure,
+        the entire call is retried (acceptable: ~196 API calls for 9,760 channels).
 
         Args:
             channel_ids: List of channel IDs
@@ -259,7 +306,10 @@ class DailyStatsCollector:
             List of channel stats dicts
         """
         logger.info(f"Collecting channel stats for {len(channel_ids)} channels")
-        stats = get_channel_stats_only(self.youtube, channel_ids)
+        stats = _call_with_retry(
+            lambda: get_channel_stats_only(self.youtube, channel_ids),
+            description="channel stats ({} channels)".format(len(channel_ids)),
+        )
         logger.info(f"Collected stats for {len(stats)} channels")
         return stats
 
@@ -471,9 +521,9 @@ class DailyStatsCollector:
                     writer.writerow(row)
             logger.info(f"Saved {len(channel_stats)} channel stats to {channel_path.name}")
 
-        # Step 6: Detect new videos (only when collecting channel stats)
+        # Step 6: Detect new videos (skip on backfill — stats are current, not historical)
         new_videos = []
-        if collect_channels and not checkpoint.get('new_video_detection_done', False):
+        if collect_channels and self.date_override is None and not checkpoint.get('new_video_detection_done', False):
             yesterday_str = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
             prev_channel_path = config.get_daily_panel_path('channel_stats', yesterday_str, panel_name=self.panel_name)
 
@@ -521,7 +571,17 @@ def main():
         help='Panel subdirectory name (e.g., new_cohort). Output goes to channel_stats/{name}/.')
     parser.add_argument('--test', action='store_true', help='Test mode (limit to 250 video IDs)')
     parser.add_argument('--limit', type=int, default=None, help='Max video IDs to process')
+    parser.add_argument('--date', type=str, default=None,
+        help='Override collection date (YYYY-MM-DD) for backfilling missed days')
     args = parser.parse_args()
+
+    # Validate --date format
+    if args.date:
+        try:
+            datetime.strptime(args.date, "%Y-%m-%d")
+        except ValueError:
+            print("Error: --date must be YYYY-MM-DD format", file=sys.stderr)
+            sys.exit(1)
 
     setup_logging()
     config.ensure_directories()
@@ -575,6 +635,8 @@ def main():
     logger.info(f"Test mode: {args.test}")
     if args.limit:
         logger.info(f"Limit: {args.limit}")
+    if args.date:
+        logger.info(f"Date override: {args.date}")
     logger.info("=" * 60)
 
     try:
@@ -586,6 +648,7 @@ def main():
             inventory_path=inventory_path,
             channel_list_path=channel_list_path,
             panel_name=args.panel_name,
+            date_override=args.date,
         )
         summary = collector.run(mode=args.mode, test_mode=args.test, limit=args.limit)
 
@@ -603,6 +666,8 @@ def main():
 
     except Exception as e:
         logger.error(f"Daily collection failed: {e}")
+        date_for_sentinel = args.date or datetime.utcnow().strftime("%Y-%m-%d")
+        _write_sentinel(date_for_sentinel, str(e))
         raise
 
 
