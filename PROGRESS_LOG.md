@@ -8,7 +8,7 @@
 ## Current Status (as of Feb 20, 2026 — Early Morning)
 
 **Phase:** Phase A COMPLETE. Ready for Phase B (Stream A re-run) pending Katie's approval.
-**Roadmap Position:** Infrastructure recovered. Daily stats backfilled. Health check deployed. Mac Mini on WiFi (192.168.86.34) through Nest mesh — ethernet idle (Spectrum modem in bridge mode). Call Spectrum to enable router mode for permanent ethernet fix.
+**Roadmap Position:** Infrastructure recovered. Daily stats backfilled. Health check deployed. Mac Mini on WiFi (192.168.86.34) through Nest mesh. TP-Link Archer A6 router ordered (arrives Feb 21) to replace switch and fix ethernet — Spectrum modem is bridge-mode only. Switch returned.
 **Next Executable Step:** Phase B.1 — Stream A re-run with expansion strategies `[KATIE-APPROVE]`.
 
 ---
