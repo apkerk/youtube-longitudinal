@@ -705,6 +705,8 @@ def main():
     parser.add_argument('--strategies', type=str, default='base,safesearch',
                         help='Comma-separated expansion strategies: %s (default: base,safesearch)'
                              % ",".join(sorted(config.EXPANSION_STRATEGIES)))
+    parser.add_argument('--output', type=str, default=None,
+                        help='Output CSV path (default: auto-generated with date stamp)')
     args = parser.parse_args()
 
     setup_logging()
@@ -726,7 +728,10 @@ def main():
         if args.exclude_list:
             exclude_ids = load_exclude_list(Path(args.exclude_list))
 
-        output_path = config.get_output_path("stream_a_prime", "initial")
+        if args.output:
+            output_path = Path(args.output)
+        else:
+            output_path = config.get_output_path("stream_a_prime", "initial")
 
         channels = discover_non_intent_channels(
             youtube=youtube,

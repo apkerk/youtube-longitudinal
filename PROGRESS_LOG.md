@@ -7,7 +7,7 @@
 
 ## Current Status (as of Feb 19, 2026 — Late Night)
 
-**Phase:** EXPANSION STRATEGIES IMPLEMENTED. Code written for all 6 strategies. Needs verification + validation pilots before production.
+**Phase:** EXPANSION STRATEGIES VERIFIED. All 6 strategies coded and verified. Daily discovery service plists drafted. Awaiting validation pilots + Mac Mini deployment.
 **Roadmap Position:** Stream A needs re-run with expansion strategies (code ready). Stream A' has 11,303 unique (code ready for re-run). Stream B COMPLETE (18,208). Stream D COMPLETE (3,933). Stream C not started.
 **Sample Size vs Targets:**
 - Stream A (Intent): 26,327 / growing target — projected 60-100K with expansion strategies
@@ -32,6 +32,23 @@
 - Stream C collection timing (needed for coverage calibration protocol)
 
 ---
+
+### Feb 19, 2026 — Late Night [Expansion Code Verification + Daily Discovery Service]
+
+- **Verification complete — all checks passed:**
+  - 94 intent / 82 non-intent keywords across 15 languages (confirmed)
+  - 42 fields in CHANNEL_INITIAL_FIELDS, all 8 provenance fields present
+  - `validate_expansion.py --dry-run` works (prints quota estimate, no API calls)
+  - All 4 modified files are Python 3.9.6 compatible (no walrus, no union types, no match/case)
+- **Removed dead code:** `_run_search_pass_over_windows()` in discover_non_intent.py (defined but never called, 85 lines)
+- **Added `--output` flag** to both discover_intent.py and discover_non_intent.py. Required for daily discovery service: persistent output file ensures `seen_channel_ids` dedup works across days (date-stamped filenames would reset dedup daily).
+- **Drafted 2 daily discovery launchd plists:**
+  - `com.youtube.daily-discovery-intent.plist` — 05:00 UTC, `--days-back 1 --strategies base,safesearch --output data/channels/stream_a/daily_discovery.csv`
+  - `com.youtube.daily-discovery-non-intent.plist` — 14:00 UTC, same flags + `--exclude-list` pointing to A's daily_discovery.csv for cross-stream dedup
+  - Strategies set to `base,safesearch` (conservative). Upgrade to Tier 1 after validation pilots pass.
+- **Reviewed Stream C** — expansion strategies don't apply (random prefix sampling, not keyword-based). Script already uses CHANNEL_INITIAL_FIELDS; new provenance fields will be empty (expected).
+- **Quota consumed:** 0 API units (verification + infrastructure only)
+- **Deployment note:** When on Mac Mini Wi-Fi: `git pull`, then `launchctl load ~/Library/LaunchAgents/com.youtube.daily-discovery-intent.plist` (and non-intent). Don't deploy until validation pilots pass.
 
 ### Feb 19, 2026 — Late Night [Expansion Strategy Code Implementation]
 

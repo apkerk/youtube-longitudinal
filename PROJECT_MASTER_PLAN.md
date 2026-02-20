@@ -22,9 +22,9 @@
 
 ## Current Marker
 
-**Now:** Sample audit COMPLETE. A' count corrected to 11,303 (was miscounted as 46,607). Stream A re-run approved for Feb 19. A' expansion strategy in progress.
-**Last Session:** Feb 19, 2026 (Morning) — Full 4-stream sample quality audit. Critical finding: A' has 11,303 unique channels, not 46,607 (multiline CSV miscount). All streams clean — negligible bot contamination. A' is higher quality than A on every metric (more active, more views). 3-day quota calendar approved.
-**Next:** 1) Launch Stream A re-run with 15 languages (Feb 19). 2) A' re-run with 15 languages + expanded keywords (Feb 20). 3) Stream C (Feb 21+). 4) Merge all channel lists, create new cohort daily stats service. Katie priority: maximize A and A' sample sizes.
+**Now:** Expansion strategies IMPLEMENTED and VERIFIED. All 6 strategies coded, syntax-checked, Python 3.9-compatible. Daily discovery launchd plists drafted. Awaiting validation pilots on Mac Mini.
+**Last Session:** Feb 19, 2026 (Night) — Expansion code committed (40f075a). Verification passed: 94/82 keywords, 42 fields with 8 provenance, dry-run works, Python 3.9 clean. Dead code removed (83213ae). Daily discovery plists + --output flag added for persistent output files.
+**Next:** 1) Run 6 validation pilots on Mac Mini (~70K API units). 2) Launch Stream A re-run with validated strategies. 3) A' re-run. 4) Stream C. 5) Deploy daily discovery launchd services on Mac Mini.
 
 ### Session Achievements (Feb 16, 2026 — Night)
 - ✅ Panel filtered to 9,760 coded channels (from 14,169). channel_ids.csv + channel_metadata.csv regenerated.

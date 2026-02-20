@@ -599,6 +599,8 @@ def main():
     parser.add_argument('--strategies', type=str, default='base,safesearch',
                         help='Comma-separated expansion strategies: %s (default: base,safesearch)'
                              % ",".join(sorted(config.EXPANSION_STRATEGIES)))
+    parser.add_argument('--output', type=str, default=None,
+                        help='Output CSV path (default: auto-generated with date stamp)')
     args = parser.parse_args()
 
     setup_logging()
@@ -616,7 +618,10 @@ def main():
         logger.info("Authenticated with YouTube API")
 
         # Determine output path upfront (needed for checkpoint)
-        output_path = config.get_output_path("stream_a", "initial")
+        if args.output:
+            output_path = Path(args.output)
+        else:
+            output_path = config.get_output_path("stream_a", "initial")
 
         # Discover channels (writes incrementally with checkpoint)
         channels = discover_intent_channels(
