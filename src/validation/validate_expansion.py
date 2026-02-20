@@ -190,7 +190,7 @@ def run_search(youtube, keyword, language, window, max_pages=10, extra_params=No
     if relevance_lang:
         search_extra["relevanceLanguage"] = relevance_lang
 
-    order = extra_params.pop("order", "date") if "order" in extra_params else "date"
+    order = search_extra.pop("order", "date")
 
     search_results = search_videos_paginated(
         youtube=youtube,
