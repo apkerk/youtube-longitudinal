@@ -5,6 +5,32 @@
 
 ---
 
+## Current Status (as of Feb 20, 2026 — Morning)
+
+**Phase:** DEPLOYMENT PLAN EVALUATED (87.4/100). Production-ready. Phase A.0 (code prerequisites) is next executable step.
+**Roadmap Position:** Same as below. Deployment plan now has full phasing, delegation markers, handoff points, and status tracking.
+**Next Executable Step:** Phase A.0.1 — add `--date` flag to daily_stats.py (blocks backfill). Then A.0.2 (retry logic), A.0.3 (health check). Katie must swap ethernet cable before A.2 (backfill).
+
+---
+
+### Feb 20, 2026 — Morning [Plan-Eval on Production Deployment Plan]
+
+- **Ran /plan-eval** with 8-expert panel (Systems Architect, Operations Engineer, Reliability Engineer, Quota/Cost Analyst, Data Pipeline Architect, Sampling Methodologist, Documentation Reviewer, Second Brain / AI Executability). Three rounds:
+  - **R1 (70.4/100):** 10 structural issues — no automated quota monitoring, strategy interaction model undefined, no retry logic, no session continuity, Stream C sequenced last, no --date flag for backfill, no rollback procedure, no delegation markers, no Gate 2 failure handling, no data merge protocol.
+  - **R2 (83.2/100):** All 10 resolved. Added Phase A.0 code prerequisites, handoff points with reporting specs, status tracking table, ADDITIVE strategy model with pass-count math, Gate 2 pass/fail/investigate criteria with thresholds, plist backup/rollback procedure.
+  - **R3 (87.4/100):** Refinements — Quick Status header, pinned output filenames, backfill data limitation acknowledgment, per-call retry granularity, corrected quota monitoring (reads `data/logs/quota_YYYYMMDD.csv`, not checkpoint).
+- **Key code-level discoveries during eval:**
+  - `daily_stats.py` has NO `--date` flag — backfill step was unimplementable as written. Added to Phase A.0.1.
+  - Checkpoint files don't track quota. Quota is logged to `data/logs/quota_YYYYMMDD.csv` with `cumulative_daily_total` column.
+  - Strategies are ADDITIVE (~18 passes/keyword-language), not multiplicative (324). Timeline is 2-4 days, not weeks.
+  - `generate_search_passes()` creates: 1 base (10pp) + 12 topicId (5pp) + 1-4 regionCode (5pp) + 3 duration (5pp).
+- **Stream C moved concurrent with Phase B** (was sequenced last). It's the random baseline needed for coverage calibration — should run before or alongside A/A' re-runs, not after. Costs only ~50K units.
+- **Evaluation record appended** to bottom of `docs/PRODUCTION_DEPLOYMENT_PLAN.md`.
+- **Quota consumed:** 0 API units (evaluation and documentation only)
+- What's next: Katie swaps ethernet cable → agent executes Phase A.0 (code prereqs) → A.1-A.3 (backfill, verify) → Phase B (Stream A re-run + Stream C).
+
+---
+
 ## Current Status (as of Feb 20, 2026 — Early Morning)
 
 **Phase:** VALIDATION PILOTS COMPLETE. 4 GO, 1 CONDITIONAL, 1 NO-GO. Production deployment plan written. Ready for re-runs.
