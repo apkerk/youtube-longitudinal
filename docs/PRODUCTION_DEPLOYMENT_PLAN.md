@@ -9,10 +9,10 @@
 
 | Field | Value |
 |-------|-------|
-| **Current phase** | A.0 (Code Prerequisites) |
-| **Next executable step** | A.0.1: Add `--date` flag to daily_stats.py |
-| **Blocking prerequisite** | Katie must swap ethernet cable (A.1) before backfill |
-| **Daily stats status** | BROKEN (Feb 18 + 19 missed). Ethernet fix pending. |
+| **Current phase** | A (Infrastructure Recovery) |
+| **Next executable step** | A.1: SSH to Mac Mini, git pull, verify ethernet |
+| **Blocking prerequisite** | None — ethernet swapped, code pushed (2fcb503) |
+| **Daily stats status** | BROKEN (Feb 18 + 19 missed). Code fix deployed, backfill next. |
 | **Key constraint** | One discovery script at a time. Kill if >800K quota by 07:00 UTC. |
 
 ---
@@ -367,7 +367,7 @@ Update this section as phases complete. Each entry records: completion date, act
 
 | Phase | Status | Completed | Result | Quota | Notes |
 |-------|--------|-----------|--------|-------|-------|
-| A.0 Code prereqs | NOT STARTED | — | — | 0 | |
+| A.0 Code prereqs | DONE | Feb 20 | --date flag, retry (30/120/480s), sentinel, health check, plist | 0 | Commit 2fcb503 |
 | A.1 Ethernet | NOT STARTED | — | — | 0 | |
 | A.2 Backfill | NOT STARTED | — | — | — | |
 | A.3 Verify daily stats | NOT STARTED | — | — | 0 | |

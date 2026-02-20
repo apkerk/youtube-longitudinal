@@ -5,11 +5,25 @@
 
 ---
 
-## Current Status (as of Feb 20, 2026 — Morning)
+## Current Status (as of Feb 20, 2026 — Evening)
 
-**Phase:** DEPLOYMENT PLAN EVALUATED (87.4/100). Production-ready. Phase A.0 (code prerequisites) is next executable step.
-**Roadmap Position:** Same as below. Deployment plan now has full phasing, delegation markers, handoff points, and status tracking.
-**Next Executable Step:** Phase A.0.1 — add `--date` flag to daily_stats.py (blocks backfill). Then A.0.2 (retry logic), A.0.3 (health check). Katie must swap ethernet cable before A.2 (backfill).
+**Phase:** Phase A.0 COMPLETE. Phase A (infrastructure recovery) ready to execute.
+**Roadmap Position:** Code prerequisites deployed (commit 2fcb503). Mac Mini now on direct ethernet to modem (bypassing Google Nest mesh). Next: SSH to Mac Mini, git pull, verify network, backfill Feb 18+19.
+**Next Executable Step:** Phase A.1 — SSH to Mac Mini (IP may have changed with new network topology), git pull, verify ethernet with `ping -c 100`, then A.2 backfill.
+
+---
+
+### Feb 20, 2026 — Evening [Phase A.0 Code Prerequisites Complete]
+
+- **Executed Phase A.0** (all 5 steps) — code changes on laptop, committed and pushed:
+  - **A.0.1:** Added `--date YYYY-MM-DD` flag to `src/panels/daily_stats.py`. Overrides `self.today` for output path and checkpoint date. Skips new video detection on backfill (stats are current, not historical).
+  - **A.0.2:** Added `_call_with_retry()` wrapper — 3 retries with 30s/120s/480s backoff on `socket.timeout`, `ConnectionError`, `OSError`. Wraps both `collect_channel_stats` (entire call) and `collect_video_stats` (per-batch). Added `_write_sentinel()` — writes `data/logs/daily_stats_FAILED_{date}.flag` on any fatal error. 403 quota errors propagate through execute_request's own retry and then fail fast (no extra retry layer).
+  - **A.0.3:** Created `src/validation/check_daily_health.py` — lightweight 70-line script checking: gender gap CSV exists + row count within 5% of 9,760, AI census CSV exists, no FAILED sentinel files. Writes report to `data/logs/health_check_{date}.txt` on failure.
+  - **A.0.4:** Created `config/launchd/com.youtube.daily-health-check.plist` targeting 10:30 UTC.
+  - **A.0.5:** Committed as `2fcb503`, pushed to origin.
+- **Katie swapped Mac Mini ethernet** — now connected directly to modem (bypassing Google Nest mesh). IP may have changed from 192.168.86.48 since DHCP reassignment is likely with new network topology.
+- **Quota consumed:** 0 API units (code changes only)
+- What's next: SSH to Mac Mini (find new IP), git pull, verify network stability, backfill Feb 18+19, deploy health check plist.
 
 ---
 
