@@ -5,15 +5,57 @@
 
 ---
 
-## Current Status (as of Feb 20, 2026 — Late Morning)
+## Current Status (as of Feb 22, 2026 — 1:30 PM)
 
-**Phase:** Phase B — Stream A paused (quota), Stream C COMPLETE, AI census enum ready for relaunch.
-**Roadmap Position:** Stream A re-run at keyword 5/94, checkpoint intact. Stream C DONE (50,022 unique). AI census enumeration files transferred to Mac Mini, checkpoint ready. All need quota reset (3:00 AM EST) to resume.
-**What's Running on Mac Mini:**
-- NO active screen sessions. All killed (Stream A quota-stalled, Stream C finished).
-- 6 launchd services still loaded (daily stats × 2, weekly video stats, sync, health check × 2).
-**Video Enumeration:** AI census 73.3% done (36,634/50,010), CSV + checkpoint on Mac Mini, needs relaunch after quota reset. Gender gap 98.3% (effectively done).
-**Next Executable Step:** After 3:00 AM EST quota reset: 1) Relaunch Stream A in screen. 2) Launch AI census enumeration in screen. Both can run concurrently (different API endpoints).
+**Phase:** Phase B — Stream A RUNNING (keyword 6/94), AI census enum RUNNING (13,375 remaining).
+**Roadmap Position:** Stream A resumed from checkpoint with all 6 strategies. AI census enumeration resumed (36,635/50,010 done). Stream C DONE (50,022 unique). Daily stats backfilled and current.
+**What's Running on Mac Mini (192.168.86.36 — Nest mesh ethernet):**
+- `screen -S discover_a`: Stream A re-run (PID 10587). Keyword 6/94, ~8,500+ channels.
+- `screen -S enumerate_ai`: AI census video enumeration (PID 12372). 36,635 done, 13,375 remaining. ~4-6 hours to finish.
+- 6 launchd services loaded (daily stats × 2, weekly video stats, sync, health check × 2).
+**Daily Stats:** Gender gap current through Feb 22. AI census current through Feb 22. Backfilled Feb 21-22 (gender gap) and Feb 20-22 (AI census) — missed due to Mac Mini network transition (Archer A6 → Nest mesh ethernet).
+**Next Steps:** 1) Monitor Stream A (~8 more days). 2) AI census enum finishes today. 3) Stream A quota stall expected tonight, auto-resumes tomorrow.
+
+---
+
+## 2026-02-22 13:30 [Phase B Relaunch — Stream A + AI Census Enum + Daily Stats Backfill]
+
+### Network Change
+- Mac Mini moved from TP-Link Archer A6 router to Google Nest mesh ethernet during a separate SB session today.
+- New IP: **192.168.86.36** (was 192.168.86.34 on WiFi, briefly 192.168.0.200 on Archer A6).
+- SSH alias `ssh macmini` configured on laptop.
+- Root cause of tunnel drops was Mac Mini **sleep**, not network. `pmset` fixed. Archer A6 unnecessary, can be returned.
+
+### Daily Stats Backfill
+- Gender gap: Feb 21 + Feb 22 backfilled (9,760 channels each). Current-snapshot data.
+- AI census: Feb 20 + Feb 21 + Feb 22 backfilled (50,010 channels each). Current-snapshot data.
+- Gap caused by 2 days of network transition (Feb 21: Archer A6 issues, Feb 22 AM: no internet until ~1 PM switch).
+- Daily stats services are still loaded and will fire at 8:00/9:00 AM EST tomorrow.
+
+### Stream A Re-Run — Resumed
+- Checkpoint: 78 completed keyword-pass combos, 6,942 unique channels.
+- Launched in `screen -S discover_a` at 1:21 PM EST.
+- Immediately resumed at keyword 5, pass 10. By 1:31 PM: on keyword 6/94, 1,562 new channels added.
+- All 6 strategies active: base, safesearch, topicId (7+ topics), regionCode (IN), duration (short/medium/long), windows.
+- Expected to run ~8 more days, stalling each night when quota exhausts.
+
+### AI Census Video Enumeration — Resumed
+- Checkpoint: 36,635/50,010 channels done (13,375 remaining).
+- Launched in `screen -S enumerate_ai` at 1:31 PM EST.
+- Correctly resumed from checkpoint. Processing at ~1 channel/sec. ETA: 4-6 hours.
+- Uses playlistItems.list (1 unit/call), safe to run concurrently with Stream A.
+
+### Quota
+- Backfills consumed ~7K units (negligible: 200 calls × 5 runs for gender gap + 1,000 calls × 3 runs for AI census).
+- Stream A will consume ~800K units today (starting late, so partial day).
+- AI census enum ~27K units total.
+- Plenty of headroom.
+
+### What's Next
+1. AI census enum finishes tonight — verify channel count matches 50,010 when done.
+2. Stream A runs autonomously. Monitor tomorrow AM for progress.
+3. Daily stats should fire normally at 8:00/9:00 AM EST tomorrow (network is stable, pmset sleep disabled).
+4. After Stream A completes (~8 days): B.4 validation → Phase C (A' re-run).
 
 ---
 
