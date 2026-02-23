@@ -5,17 +5,39 @@
 
 ---
 
-## Current Status (as of Feb 23, 2026 — Evening)
+## Current Status (as of Feb 23, 2026 — Afternoon)
 
-**Phase:** Phase B — Stream A and AI census enum screen sessions DEAD (Mac Mini went offline ~8:30pm Feb 22). Daily stats still collecting via launchd.
-**Roadmap Position:** Stream A checkpoint intact (keyword 6/94). AI census enum checkpoint intact. Stream C DONE (50,022 unique). Daily stats current through Feb 23.
+**Phase:** Phase B — Both screen sessions relaunched 12:57 PM EST. Both confirmed running and collecting.
+**Roadmap Position:** Stream A at 38,964 channels (existing CSV) + ~15,370+ new (this run), keyword ~17/94. AI census enum at 38,183/50,010 channels done, ~2h to completion.
 **What's Running on Mac Mini (192.168.86.36 — Nest mesh ethernet):**
-- `screen -S discover_a`: DEAD. Needs relaunch after quota reset.
-- `screen -S enumerate_ai`: DEAD. Needs relaunch.
+- `screen -S discover_a`: LIVE. Running since 12:57 PM. Strategies: base,safesearch,topicid,regioncode,duration. Output: initial_20260222.csv.
+- `screen -S enumerate_ai`: LIVE. Running since 14:26 PM. Checkpoint: 38,183 done, 11,827 remaining. ~2h to completion.
 - 6 launchd services loaded (daily stats × 2, weekly video stats, sync, health check × 2). All firing normally.
+- Monitor logs: `/tmp/discover_a_20260223.log`, `/tmp/enumerate_ai_20260223.log`
 **Daily Stats:** Gender gap + AI census current through Feb 23 (launchd survived the outage; screen sessions did not).
 **Daily Stats Validator:** `src/validation/validate_daily_stats.py` DEPLOYED. Wired into Pat heartbeat for Telegram alerts at 12pm daily.
 **Next Steps:** 1) Relaunch Stream A + AI census enum in screen sessions. 2) Monitor validator alerts via Telegram. 3) Stream A runs ~8 more days → B.4 validation → Phase C (A' re-run).
+
+---
+
+## 2026-02-23 14:30 [Relaunch: Stream A + AI Census Enum]
+
+- **Context:** Mac Mini went offline ~8:30pm Feb 22. Both screen sessions died; launchd daily stats survived. Mac Mini came back online by Feb 23; screens needed manual relaunch.
+- **Key finding:** Stream A had actually run FAR longer than the last handoff implied. Checkpoint timestamp was 06:44 AM Feb 23 (not killed at 8:30pm Feb 22 — the screen sessions survived the brief network event and kept running overnight). Channel count: **38,964 unique** (up from 6,942 at last session). AI census enum: **38,183/50,010** done (up from 36,635).
+- **Pre-launch checks:**
+  - Verified no zombie Python processes (only Pat dashboard processes running)
+  - Quota test: PASS (got 144K results for test query)
+  - Both checkpoint files intact and valid
+- **Stream A relaunched 12:57 PM EST:**
+  - Command: `python3 -m src.collection.discover_intent --strategies base,safesearch,topicid,regioncode,duration --output /Users/katieapker/.youtube-longitudinal/repo/data/channels/stream_a/initial_20260222.csv`
+  - Resumed at keyword combo 187+ (186 combos correctly skipped by checkpoint)
+  - **Note:** CSV has no header row — DictReader couldn't load existing 38,964 channels for in-memory dedup. New channels will append to existing file; deduplicate at analysis time. Not a data loss issue.
+  - By 14:27 PM: 15,370+ new channels collected, at keyword 17/94 (Spanish).
+- **AI census enum relaunched 14:26 PM EST:**
+  - Resumed from checkpoint: 38,183 done, 11,827 remaining (~76.4% complete)
+  - File growing at ~9.7 MB/min. ETA: ~2 hours (~4:15 PM EST)
+  - Current file size: 3.51 GB (21.8M video records)
+- **What's next:** Enum finishes ~4:15 PM. Stream A continues autonomously ~8 more days → B.4 validation → Phase C (A' re-run).
 
 ---
 
