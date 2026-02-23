@@ -18,6 +18,26 @@
 
 ---
 
+## 2026-02-22 20:30 [Daily Stats Validator + Heartbeat Integration]
+
+- **Built `src/validation/validate_daily_stats.py`** — lightweight post-collection validator
+  - Checks: row count (±1%), null channel_ids, required columns, negative values, dtype validation, subscriber drops >50% vs previous day
+  - Supports `--panel gender_gap` and `--panel ai_census` flags, `--date` override, `--test` mode
+  - Exit codes: 0=PASS, 1=WARNINGS, 2=ERRORS
+  - Saves reports to `data/logs/daily_stats_validation_{panel}_{YYYYMMDD}.log`
+  - Python 3.9.6 compatible (no walrus operators, no union types)
+- **Tested on Mac Mini against live data** — both panels pass clean (9,760 gender gap, 50,010 AI census)
+- **Modified Pat heartbeat** (`~/.pat-system/heartbeat.sh` on Mac Mini):
+  - Added `check_yt_health()` function: runs health_check.py + validate_daily_stats.py for both panels
+  - Wired into 12pm midday block — sends Telegram alert only if DEGRADED/FAILING/ERRORS detected
+  - Fixed `status` variable collision (renamed to `yt_status`)
+  - Backup at `~/.pat-system/heartbeat.sh.bak.20260222`
+- **PENDING**: Need to add `--date "$TODAY"` to validator calls in heartbeat (Mac Mini went offline before this change was applied). Without this fix, the validator defaults to UTC date which can mismatch local time after midnight UTC.
+- Mac Mini went unreachable at ~8:30pm EST — likely sleep or network issue. Running scripts (Stream A, AI census enum) may have been interrupted.
+- **What's next**: When Mac Mini comes back: (1) apply `--date "$TODAY"` fix to heartbeat, (2) verify running screen sessions, (3) backfill any missed daily stats
+
+---
+
 ## 2026-02-22 13:30 [Phase B Relaunch — Stream A + AI Census Enum + Daily Stats Backfill]
 
 ### Network Change
