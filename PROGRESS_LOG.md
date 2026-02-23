@@ -5,16 +5,17 @@
 
 ---
 
-## Current Status (as of Feb 22, 2026 — 1:30 PM)
+## Current Status (as of Feb 23, 2026 — Evening)
 
-**Phase:** Phase B — Stream A RUNNING (keyword 6/94), AI census enum RUNNING (13,375 remaining).
-**Roadmap Position:** Stream A resumed from checkpoint with all 6 strategies. AI census enumeration resumed (36,635/50,010 done). Stream C DONE (50,022 unique). Daily stats backfilled and current.
+**Phase:** Phase B — Stream A and AI census enum screen sessions DEAD (Mac Mini went offline ~8:30pm Feb 22). Daily stats still collecting via launchd.
+**Roadmap Position:** Stream A checkpoint intact (keyword 6/94). AI census enum checkpoint intact. Stream C DONE (50,022 unique). Daily stats current through Feb 23.
 **What's Running on Mac Mini (192.168.86.36 — Nest mesh ethernet):**
-- `screen -S discover_a`: Stream A re-run (PID 10587). Keyword 6/94, ~8,500+ channels.
-- `screen -S enumerate_ai`: AI census video enumeration (PID 12372). 36,635 done, 13,375 remaining. ~4-6 hours to finish.
-- 6 launchd services loaded (daily stats × 2, weekly video stats, sync, health check × 2).
-**Daily Stats:** Gender gap current through Feb 22. AI census current through Feb 22. Backfilled Feb 21-22 (gender gap) and Feb 20-22 (AI census) — missed due to Mac Mini network transition (Archer A6 → Nest mesh ethernet).
-**Next Steps:** 1) Monitor Stream A (~8 more days). 2) AI census enum finishes today. 3) Stream A quota stall expected tonight, auto-resumes tomorrow.
+- `screen -S discover_a`: DEAD. Needs relaunch after quota reset.
+- `screen -S enumerate_ai`: DEAD. Needs relaunch.
+- 6 launchd services loaded (daily stats × 2, weekly video stats, sync, health check × 2). All firing normally.
+**Daily Stats:** Gender gap + AI census current through Feb 23 (launchd survived the outage; screen sessions did not).
+**Daily Stats Validator:** `src/validation/validate_daily_stats.py` DEPLOYED. Wired into Pat heartbeat for Telegram alerts at 12pm daily.
+**Next Steps:** 1) Relaunch Stream A + AI census enum in screen sessions. 2) Monitor validator alerts via Telegram. 3) Stream A runs ~8 more days → B.4 validation → Phase C (A' re-run).
 
 ---
 
@@ -32,9 +33,10 @@
   - Wired into 12pm midday block — sends Telegram alert only if DEGRADED/FAILING/ERRORS detected
   - Fixed `status` variable collision (renamed to `yt_status`)
   - Backup at `~/.pat-system/heartbeat.sh.bak.20260222`
-- **PENDING**: Need to add `--date "$TODAY"` to validator calls in heartbeat (Mac Mini went offline before this change was applied). Without this fix, the validator defaults to UTC date which can mismatch local time after midnight UTC.
-- Mac Mini went unreachable at ~8:30pm EST — likely sleep or network issue. Running scripts (Stream A, AI census enum) may have been interrupted.
-- **What's next**: When Mac Mini comes back: (1) apply `--date "$TODAY"` fix to heartbeat, (2) verify running screen sessions, (3) backfill any missed daily stats
+- **RESOLVED**: Applied `--date "$TODAY"` fix to validator calls in heartbeat.sh on Mac Mini. Without this, the validator defaults to UTC date which can mismatch local time after midnight UTC. Fix confirmed working.
+- Mac Mini went unreachable at ~8:30pm EST — sleep or network event. Both screen sessions (Stream A, AI census enum) died. Launchd services survived and collected Feb 23 daily stats normally.
+- Mac Mini back online by Feb 23. Both panels validated clean against Feb 23 data.
+- **Still needed**: Relaunch Stream A and AI census enum screen sessions (checkpoints intact, will resume from where they left off).
 
 ---
 
