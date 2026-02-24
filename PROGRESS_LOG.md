@@ -5,18 +5,33 @@
 
 ---
 
-## Current Status (as of Feb 23, 2026 — Afternoon)
+## Current Status (as of Feb 24, 2026 — Morning)
 
-**Phase:** Phase B — Both screen sessions relaunched 12:57 PM EST. Both confirmed running and collecting.
-**Roadmap Position:** Stream A at 38,964 channels (existing CSV) + ~15,370+ new (this run), keyword ~17/94. AI census enum at 38,183/50,010 channels done, ~2h to completion.
+**Phase:** Phase B — PAUSED. Both collection jobs killed after quota exhaustion + enum checkpoint corruption.
+**Roadmap Position:** Stream A: 38,964+ channels in CSV, checkpoint at keyword combo ~200+, resumes cleanly. AI census enum: 39,839/50,010 channels (checkpoint REBUILT from CSV — 2,913 false completions removed). 10,171 channels still need enumeration.
 **What's Running on Mac Mini (192.168.86.36 — Nest mesh ethernet):**
-- `screen -S discover_a`: LIVE. Running since 12:57 PM. Strategies: base,safesearch,topicid,regioncode,duration. Output: initial_20260222.csv.
-- `screen -S enumerate_ai`: LIVE. Running since 14:26 PM. Checkpoint: 38,183 done, 11,827 remaining. ~2h to completion.
-- 6 launchd services loaded (daily stats × 2, weekly video stats, sync, health check × 2). All firing normally.
-- Monitor logs: `/tmp/discover_a_20260223.log`, `/tmp/enumerate_ai_20260223.log`
-**Daily Stats:** Gender gap + AI census current through Feb 23 (launchd survived the outage; screen sessions did not).
-**Daily Stats Validator:** `src/validation/validate_daily_stats.py` DEPLOYED. Wired into Pat heartbeat for Telegram alerts at 12pm daily.
-**Next Steps:** 1) Relaunch Stream A + AI census enum in screen sessions. 2) Monitor validator alerts via Telegram. 3) Stream A runs ~8 more days → B.4 validation → Phase C (A' re-run).
+- `screen -S discover_a`: DEAD (killed Feb 24 morning). Checkpoint intact, resumes from last completed keyword combo.
+- `screen -S enumerate_ai`: DEAD (killed Feb 24 morning). Checkpoint rebuilt from CSV: 39,839 legitimate completions.
+- 6 launchd services: LIVE. Daily stats Feb 24 not yet run (8am/9am EST). Quota exhausted as of ~6am — Feb 24 daily stats will likely FAIL.
+**Daily Stats:** Current through Feb 23. Feb 24 will likely fail (quota burned by Stream A + enum overnight before daily stats window).
+**INCIDENT:** Running Stream A (topicId strategies) + enum concurrently exhausted 1,010,000 quota units in ~3 hours after the 3am reset. The enumerate_videos.py bug marked 2,913 channels as "done" with no data. Checkpoint rebuilt from CSV. Both jobs killed to protect tomorrow's daily stats.
+**Next Steps:** (1) Do NOT relaunch either script until daily stats runs successfully (8am/9am tomorrow). (2) Relaunch enum ALONE first — finishes in ~3h on ~10K units. (3) Only then relaunch Stream A — NEVER run them simultaneously. (4) Fix enumerate_videos.py line 198 bug before next run.
+
+---
+
+## 2026-02-24 05:50 [Quota Exhaustion Incident + Enum Checkpoint Repair]
+
+- **INCIDENT:** Running Stream A (all strategies including topicId) + AI census enum concurrently burned through the full 1,010,000 daily quota in ~3 hours after the 3am EST reset.
+- **Enum bug triggered:** `enumerate_videos.py` line 198 bug (unconditional `completed_set.add`) marked 2,913 channels as "done" with 0 video rows. Video count in CSV was frozen at 745,860 while channels kept incrementing — the tell-tale sign.
+- **Actions taken:**
+  - Killed `enumerate_ai` immediately upon detecting frozen video count
+  - Killed `discover_a` to prevent tomorrow's daily stats from failing (Stream A would burn quota again at 3am before the 8am daily stats window)
+  - **Rebuilt enum checkpoint from CSV:** 39,839 legitimate channels (those with ≥1 video row in CSV). Corrupted checkpoint backed up at `.enumerate_ai_census_inventory_checkpoint.json.corrupted_backup`.
+- **Current state:** 10,171 channels still need enumeration. Checkpoint is clean.
+- **Feb 24 daily stats:** Will likely FAIL — quota was already exhausted (~6am EST) before the 8am/9am launchd runs. One-day miss, acceptable.
+- **Root cause:** topicId strategy is far more quota-intensive than estimated. Combined quota consumption with enum was ~335K units/hour — way above the "33K/hour" working estimate. NEVER run Stream A with topicId + any other collection job simultaneously.
+- **Fix needed:** enumerate_videos.py line 198 — move `completed_set.add(channel_id)` inside the `try` block, after successful enumeration. Do this BEFORE next run.
+- **Relaunch plan:** After Feb 25 daily stats confirm PASS: (1) enum alone first (~3h, trivial quota), then (2) Stream A alone. Monitor quota consumption rate for the first keyword with topicId active.
 
 ---
 
