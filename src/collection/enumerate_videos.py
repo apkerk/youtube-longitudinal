@@ -191,13 +191,13 @@ def enumerate_all_channels(
 
                 total_videos += len(videos)
 
+                # Mark channel as done and checkpoint (only on success)
+                completed_set.add(channel_id)
+                checkpoint['completed_channels'] = list(completed_set)
+                save_checkpoint(checkpoint_path, checkpoint)
+
             except Exception as e:
                 logger.error(f"Error enumerating {channel_id}: {e}")
-
-            # Mark channel as done and checkpoint
-            completed_set.add(channel_id)
-            checkpoint['completed_channels'] = list(completed_set)
-            save_checkpoint(checkpoint_path, checkpoint)
 
             # Progress logging every 100 channels
             channels_done = len(completed_set)

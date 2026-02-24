@@ -5,17 +5,30 @@
 
 ---
 
-## Current Status (as of Feb 24, 2026 — Morning)
+## Current Status (as of Feb 24, 2026 — Late Morning)
 
-**Phase:** Phase B — PAUSED. Both collection jobs killed after quota exhaustion + enum checkpoint corruption.
-**Roadmap Position:** Stream A: 38,964+ channels in CSV, checkpoint at keyword combo ~200+, resumes cleanly. AI census enum: 39,839/50,010 channels (checkpoint REBUILT from CSV — 2,913 false completions removed). 10,171 channels still need enumeration.
+**Phase:** Phase B — PAUSED. Awaiting Feb 25 daily stats gate before relaunching collection.
+**Roadmap Position:** Stream A: 38,964+ channels in CSV, checkpoint at keyword combo ~200+, resumes cleanly. AI census enum: 39,839/50,010 channels (checkpoint rebuilt from CSV). 10,171 channels still need enumeration.
 **What's Running on Mac Mini (192.168.86.36 — Nest mesh ethernet):**
-- `screen -S discover_a`: DEAD (killed Feb 24 morning). Checkpoint intact, resumes from last completed keyword combo.
-- `screen -S enumerate_ai`: DEAD (killed Feb 24 morning). Checkpoint rebuilt from CSV: 39,839 legitimate completions.
-- 6 launchd services: LIVE. Daily stats Feb 24 not yet run (8am/9am EST). Quota exhausted as of ~6am — Feb 24 daily stats will likely FAIL.
-**Daily Stats:** Current through Feb 23. Feb 24 will likely fail (quota burned by Stream A + enum overnight before daily stats window).
-**INCIDENT:** Running Stream A (topicId strategies) + enum concurrently exhausted 1,010,000 quota units in ~3 hours after the 3am reset. The enumerate_videos.py bug marked 2,913 channels as "done" with no data. Checkpoint rebuilt from CSV. Both jobs killed to protect tomorrow's daily stats.
-**Next Steps:** (1) Do NOT relaunch either script until daily stats runs successfully (8am/9am tomorrow). (2) Relaunch enum ALONE first — finishes in ~3h on ~10K units. (3) Only then relaunch Stream A — NEVER run them simultaneously. (4) Fix enumerate_videos.py line 198 bug before next run.
+- `screen -S discover_a`: DEAD. Checkpoint intact, resumes from last completed keyword combo.
+- `screen -S enumerate_ai`: DEAD. Checkpoint rebuilt from CSV: 39,839 legitimate completions.
+- 6 launchd services: LIVE. Feb 24 daily stats: likely FAIL (quota exhausted before 8am window). One-day miss, acceptable.
+**Daily Stats:** Current through Feb 23. Feb 24 likely miss. Feb 25 is the gate — do not relaunch collection until both panels PASS.
+**Bug Fixed:** `enumerate_videos.py` line 198 bug resolved — `completed_set.add()` moved inside `try` block so only successful enumerations are checkpointed.
+**Next Steps:** (1) Wait for Feb 25 daily stats (8am/9am EST). (2) Validate both panels: `python3 -m src.validation.validate_daily_stats --panel gender_gap --date 2026-02-25` + ai_census. (3) Relaunch enum ALONE. (4) After enum completes (~3h), relaunch Stream A alone. NEVER concurrent.
+
+---
+
+## 2026-02-24 10:00 [Bug Fix: enumerate_videos.py Checkpoint Logic]
+
+- **Fixed `src/collection/enumerate_videos.py` line 198 bug:** Moved `completed_set.add(channel_id)` and `save_checkpoint()` inside the `try` block (after `total_videos += len(videos)`). Previously these ran unconditionally after the try/except, so quota-failed channels were permanently marked done with 0 video data — the root cause of the 2,913 false completions in the incident.
+- **Effect:** Channels that raise an exception (403 quotaExceeded, network error, etc.) are now skipped silently and left in the "remaining" set, so the next run picks them up.
+- **Relaunch gate:** Do NOT relaunch enum or Stream A until Feb 25 daily stats confirm PASS on both panels.
+- **Relaunch order (MANDATORY — never concurrent):**
+  1. Validate Feb 25 daily stats: `python3 -m src.validation.validate_daily_stats --panel gender_gap --date 2026-02-25` + same for ai_census
+  2. Enum alone: `screen -dmS enumerate_ai bash -c 'cd /Users/katieapker/.youtube-longitudinal/repo && python3 -m src.collection.enumerate_videos --channel-list data/channels/ai_census/channel_ids.csv --output data/video_inventory/ai_census_inventory.csv 2>&1 | tee /tmp/enumerate_ai_20260225.log'`
+  3. After enum completes (~3h): Stream A alone: `screen -dmS discover_a bash -c 'cd /Users/katieapker/.youtube-longitudinal/repo && python3 -m src.collection.discover_intent --strategies base,safesearch,topicid,regioncode,duration --output /Users/katieapker/.youtube-longitudinal/repo/data/channels/stream_a/initial_20260222.csv 2>&1 | tee /tmp/discover_a_20260225.log'`
+- **MEMORY updated:** "NEVER run Stream A (topicId strategies) + enumerate_videos.py concurrently" added to lessons learned.
 
 ---
 
