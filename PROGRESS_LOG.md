@@ -5,17 +5,37 @@
 
 ---
 
-## Current Status (as of Feb 24, 2026 — Late Morning)
+## Current Status (as of Feb 25, 2026 — Morning)
 
-**Phase:** Phase B — PAUSED. Awaiting Feb 25 daily stats gate before relaunching collection.
-**Roadmap Position:** Stream A: 38,964+ channels in CSV, checkpoint at keyword combo ~200+, resumes cleanly. AI census enum: 39,839/50,010 channels (checkpoint rebuilt from CSV). 10,171 channels still need enumeration.
+**Phase:** Phase B — ACTIVE. AI census enum relaunched. Stream A waiting on enum completion.
+**Roadmap Position:** Stream A: 38,964+ channels in CSV, checkpoint at keyword combo ~200+, resumes cleanly. AI census enum: 40,475/50,010 done (9,535 remaining), running in screen session on Mac Mini.
 **What's Running on Mac Mini (192.168.86.36 — Nest mesh ethernet):**
-- `screen -S discover_a`: DEAD. Checkpoint intact, resumes from last completed keyword combo.
-- `screen -S enumerate_ai`: DEAD. Checkpoint rebuilt from CSV: 39,839 legitimate completions.
-- 6 launchd services: LIVE. Feb 24 daily stats: likely FAIL (quota exhausted before 8am window). One-day miss, acceptable.
-**Daily Stats:** Current through Feb 23. Feb 24 likely miss. Feb 25 is the gate — do not relaunch collection until both panels PASS.
-**Bug Fixed:** `enumerate_videos.py` line 198 bug resolved — `completed_set.add()` moved inside `try` block so only successful enumerations are checkpointed.
-**Next Steps:** (1) Wait for Feb 25 daily stats (8am/9am EST). (2) Validate both panels: `python3 -m src.validation.validate_daily_stats --panel gender_gap --date 2026-02-25` + ai_census. (3) Relaunch enum ALONE. (4) After enum completes (~3h), relaunch Stream A alone. NEVER concurrent.
+- `screen -S enumerate_ai`: LIVE (PID 19715). 40,475/50,010 channels at 13:48 EST. ~7.9 channels/min. ETA ~9-10 AM EST Feb 26.
+- `screen -S discover_a`: NOT LAUNCHED. Waiting for enum to complete. NEVER run concurrently.
+- 6 launchd services: LIVE. Feb 25 daily stats: PASS (both panels, 6/6 checks each).
+**Daily Stats:** Feb 25 PASS. Feb 24 missed (quota exhaustion, expected). Series: Feb 18-23 + Feb 25 present.
+**Next Steps:** (1) Wait for enum to complete (~9-10 AM Feb 26). (2) Verify 50,010 channels done. (3) Launch Stream A alone. (4) Monitor Stream A for 5 min.
+
+---
+
+## 2026-02-25 09:15 [Relaunch Gate Check + AI Census Enum Launched]
+
+- **Feb 25 daily stats validated:** Both panels PASS (6/6 checks). Gender gap: 9,760 rows. AI census: 50,010 rows. Subscriber drops check skipped (Feb 24 data missing, expected).
+- **No zombie processes:** Only Pat dashboard services running (PIDs 791, 37953, 42101). No orphan collection scripts.
+- **AI census enum launched at 12:27 PM EST** in `screen -S enumerate_ai`:
+  - Command: `python3 -m src.collection.enumerate_videos --channel-list data/channels/ai_census/channel_ids.csv --output data/video_inventory/ai_census_inventory.csv`
+  - Checkpoint loaded: 39,839 done, 10,171 remaining
+  - By 13:48 EST: 40,475 done (+636), CSV at 3.5 GB
+  - Throughput: ~7.9 channels/min (slower than the ~60/min seen Feb 22 — likely due to checkpoint save overhead with 40K+ entries in the JSON)
+  - Estimated completion: ~9-10 AM EST Feb 26
+  - Quota impact: negligible (playlistItems.list = 1 unit/call). Daily stats tomorrow will be fine.
+- **Stream A NOT launched** — per handoff rule, never run concurrently with enum. Will launch after enum completes.
+- **Throughput note:** The Feb 24 handoff estimated ~3h for enum. Actual throughput is ~8 channels/min, projecting ~20h. The bottleneck appears to be checkpoint save I/O (writing 40K+ channel IDs to JSON after every channel). Consider optimizing to save every N channels in a future code update.
+
+### Stream A Relaunch Command (for next session)
+```
+screen -dmS discover_a bash -c 'cd /Users/katieapker/.youtube-longitudinal/repo && python3 -m src.collection.discover_intent --strategies base,safesearch,topicid,regioncode,duration --output /Users/katieapker/.youtube-longitudinal/repo/data/channels/stream_a/initial_20260222.csv 2>&1 | tee /tmp/discover_a_20260226.log'
+```
 
 ---
 
