@@ -5,18 +5,30 @@
 
 ---
 
-## Current Status (as of Feb 26, 2026 — Morning)
+## Current Status (as of Feb 26, 2026 — Afternoon)
 
-**Phase:** Phase B — ACTIVE. AI census enum COMPLETE. Stream A running.
-**Roadmap Position:** AI census enum: 50,010/50,010 DONE (5,341,296 videos, 4.2 GB CSV). Stream A: keyword 27/94, 490 combos done, 38,964+ existing + 417 new channels.
+**Phase:** Phase B — ACTIVE. Stream A migrated to launchd.
+**Roadmap Position:** AI census enum: DONE. Stream A: 635 keyword combos done, now running as launchd service (fires 3:15 AM daily).
 **What's Running on Mac Mini (192.168.86.36 — Nest mesh ethernet):**
-- `screen -S discover_a`: LIVE (PID 46629). Keyword 27/94 (Japanese "初投稿"). 490/~1,692 keyword combos done. Resuming from checkpoint. ~6-7 more days to complete.
-- `screen -S enumerate_ai`: DONE. Completed 10:56 PM EST Feb 25. Checkpoint cleared.
-- 6 launchd services: LIVE. Feb 25 + Feb 26 daily stats: PASS (both panels, 6/6 checks each).
-**Daily Stats:** Feb 25 + Feb 26 PASS. Feb 24 missed (quota exhaustion, expected). Series: Feb 18-23 + Feb 25-26 present.
-**Next Steps:** (1) Stream A runs autonomously ~6-7 more days. (2) Monitor daily for quota stalls. (3) After Stream A completes: B.4 validation → Phase C (A' re-run).
+- `com.youtube.stream-a-rerun`: NEW launchd service. Fires 3:15 AM EST daily, 4h max runtime. First run tonight.
+- 7 launchd services total: stream-a-rerun + 6 existing. All loaded.
+- No screen sessions. All collection now via launchd.
+**Daily Stats:** Feb 25 + Feb 26 PASS. Series: Feb 18-23 + Feb 25-26 present.
+**Next Steps:** (1) Verify Stream A launchd run tomorrow morning (check logs at data/logs/stream_a_rerun_stderr.log). (2) After Stream A completes all 94 keywords: retire plist, B.4 validation, Phase C (A' re-run + same QuotaExhaustedError fix).
 
 ---
+
+## 2026-02-26 13:49 [Stream A Migrated to Launchd Service]
+
+- **Killed screen session** — was stuck in cascading 403 quotaExceeded retries (visible in log). Verified no orphan Python processes.
+- **Code changes (commit d8c31c5):**
+  - `youtube_api.py`: Added `QuotaExhaustedError` class. Detects `quotaExceeded` reason in `execute_request` (parses `e.content` JSON), raises immediately with no retries. Added re-raise before bare `except Exception` in `search_videos_paginated` and `get_channel_full_details`.
+  - `discover_intent.py`: Added `--max-runtime` (launchd exit guard), `--max-consecutive-errors` (circuit breaker), PID lockfile via `fcntl.flock` (prevents concurrent instances), completion-safe exit (no checkpoint + data exists = skip), `_flush_batch` helper for mid-loop CSV writes. QuotaExhaustedError handling in both main and relevance window loops with checkpoint save (pass key intentionally NOT added).
+  - New plist: `com.youtube.stream-a-rerun.plist` — 3:15 AM EST, 4h max-runtime, strategies=base,safesearch,topicid,regioncode,duration.
+- **Plan-eval:** R1 80.8 → R2 90.5/100 (10-expert infrastructure panel, 2 rounds). Key fixes: exact quota detection code, mid-pass checkpoint logic, completion-safe exit, rollback section, lockfile path spec.
+- **Deployment:** Git pull on Mac Mini, plist copied to ~/Library/LaunchAgents/, loaded via `launchctl load`. Verified with `launchctl list | grep stream-a`. Checkpoint at 635 completed keywords, output path matches plist.
+- **Checkpoint state:** 635 keyword combos done, output at `data/channels/stream_a/initial_20260222.csv`.
+- What's next: Verify first launchd run tomorrow AM. Monitor for clean exit message ("Max runtime reached" or "Quota exhausted").
 
 ## 2026-02-26 09:44 [Stream A Launched After Enum Completion]
 
