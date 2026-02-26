@@ -5,16 +5,30 @@
 
 ---
 
-## Current Status (as of Feb 25, 2026 — Morning)
+## Current Status (as of Feb 26, 2026 — Morning)
 
-**Phase:** Phase B — ACTIVE. AI census enum relaunched. Stream A waiting on enum completion.
-**Roadmap Position:** Stream A: 38,964+ channels in CSV, checkpoint at keyword combo ~200+, resumes cleanly. AI census enum: 40,475/50,010 done (9,535 remaining), running in screen session on Mac Mini.
+**Phase:** Phase B — ACTIVE. AI census enum COMPLETE. Stream A running.
+**Roadmap Position:** AI census enum: 50,010/50,010 DONE (5,341,296 videos, 4.2 GB CSV). Stream A: keyword 27/94, 490 combos done, 38,964+ existing + 417 new channels.
 **What's Running on Mac Mini (192.168.86.36 — Nest mesh ethernet):**
-- `screen -S enumerate_ai`: LIVE (PID 19715). 40,475/50,010 channels at 13:48 EST. ~7.9 channels/min. ETA ~9-10 AM EST Feb 26.
-- `screen -S discover_a`: NOT LAUNCHED. Waiting for enum to complete. NEVER run concurrently.
-- 6 launchd services: LIVE. Feb 25 daily stats: PASS (both panels, 6/6 checks each).
-**Daily Stats:** Feb 25 PASS. Feb 24 missed (quota exhaustion, expected). Series: Feb 18-23 + Feb 25 present.
-**Next Steps:** (1) Wait for enum to complete (~9-10 AM Feb 26). (2) Verify 50,010 channels done. (3) Launch Stream A alone. (4) Monitor Stream A for 5 min.
+- `screen -S discover_a`: LIVE (PID 46629). Keyword 27/94 (Japanese "初投稿"). 490/~1,692 keyword combos done. Resuming from checkpoint. ~6-7 more days to complete.
+- `screen -S enumerate_ai`: DONE. Completed 10:56 PM EST Feb 25. Checkpoint cleared.
+- 6 launchd services: LIVE. Feb 25 + Feb 26 daily stats: PASS (both panels, 6/6 checks each).
+**Daily Stats:** Feb 25 + Feb 26 PASS. Feb 24 missed (quota exhaustion, expected). Series: Feb 18-23 + Feb 25-26 present.
+**Next Steps:** (1) Stream A runs autonomously ~6-7 more days. (2) Monitor daily for quota stalls. (3) After Stream A completes: B.4 validation → Phase C (A' re-run).
+
+---
+
+## 2026-02-26 09:44 [Stream A Launched After Enum Completion]
+
+- **AI census enum completed 10:56 PM EST Feb 25:** 50,010/50,010 channels, **5,341,296 total videos**, 4.2 GB CSV. Checkpoint auto-cleared on completion. Clean exit, no errors.
+- **Enum throughput:** Started at ~8 channels/min (video-heavy channels early), accelerated to ~25/min through empty-channel stretches. Total run time: ~10.5 hours (12:27 PM → 10:56 PM).
+- **Stream A launched 9:44 AM EST Feb 26** in `screen -S discover_a`:
+  - Checkpoint intact: 481→490 completed keyword combos (keyword 27/94)
+  - CSV preserved: 48 MB with 38,964+ existing channels + 417 new in first 7 min
+  - Japanese keywords pulling well: regioncode:JP yielded 380 channels in one pass
+  - Strategies: base, safesearch, topicid, regioncode, duration (no `windows` — intentional per validated production set)
+- **Feb 26 daily stats validated:** Both panels PASS (6/6 checks). Subscriber drops check now running (Feb 25 data available as baseline). No anomalies.
+- **Note on overnight gap:** The SSH command to launch Stream A was sent ~10:56 PM Feb 25 but Katie's laptop auto-update interrupted the session. Stream A only started when reconnected at 9:44 AM Feb 26. ~11 hours of quota went unused overnight. Not critical but consider launchd-based automation for Stream A in the future to avoid screen session fragility.
 
 ---
 
