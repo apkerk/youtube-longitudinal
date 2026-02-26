@@ -16,6 +16,7 @@ Last Updated: Feb 02, 2026
 """
 
 import csv
+import json
 import os
 import re
 import time
@@ -40,6 +41,11 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+class QuotaExhaustedError(Exception):
+    """Raised when YouTube API quota is exhausted (403 quotaExceeded)."""
+    pass
 
 
 # =============================================================================
@@ -145,6 +151,16 @@ def execute_request(request, max_retries: int = 5, quota_cost: int = 1, endpoint
             return result
         except HttpError as e:
             if e.resp.status in [403, 429, 500, 503]:
+                # launchd safety: exit immediately on quota exhaustion, no retries
+                if e.resp.status == 403:
+                    try:
+                        error_reason = json.loads(e.content).get(
+                            'error', {}
+                        ).get('errors', [{}])[0].get('reason', '')
+                        if error_reason == 'quotaExceeded':
+                            raise QuotaExhaustedError("Daily API quota exhausted")
+                    except (KeyError, ValueError, IndexError):
+                        pass  # Not a quota error — fall through to retry
                 sleep_time = (2 ** retries) + (time.time() % 1)
                 logger.warning(f"API Error {e.resp.status}: Retrying in {sleep_time:.2f}s...")
                 time.sleep(sleep_time)
@@ -260,10 +276,12 @@ def get_channel_full_details(
                 channels_data.append(channel)
                 
             time.sleep(config.SLEEP_BETWEEN_CALLS)
-            
+
+        except QuotaExhaustedError:
+            raise
         except Exception as e:
             logger.error(f"Error fetching channel details: {e}")
-            
+
     return channels_data
 
 
@@ -1037,6 +1055,8 @@ def search_videos_paginated(
 
             time.sleep(config.SLEEP_BETWEEN_CALLS)
 
+        except QuotaExhaustedError:
+            raise
         except Exception as e:
             logger.error(f"Error in paginated search for '{query}': {e}")
             break

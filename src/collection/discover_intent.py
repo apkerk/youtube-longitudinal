@@ -34,9 +34,11 @@ Last Updated: Feb 19, 2026
 
 import argparse
 import csv
+import fcntl
 import json
 import logging
 import sys
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Set, Optional
@@ -51,6 +53,7 @@ from youtube_api import (
     get_channel_full_details,
     get_oldest_video,
     filter_channels_by_date,
+    QuotaExhaustedError,
 )
 import config
 
@@ -214,6 +217,16 @@ def generate_search_passes(
     return passes
 
 
+def _flush_batch(batch_channels, output_path):
+    # type: (List[Dict], Path) -> None
+    """Append a batch of channels to the output CSV."""
+    with open(output_path, 'a', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=config.CHANNEL_INITIAL_FIELDS)
+        for ch in batch_channels:
+            row = {field: ch.get(field) for field in config.CHANNEL_INITIAL_FIELDS}
+            writer.writerow(row)
+
+
 def discover_intent_channels(
     youtube,
     target_count=200000,  # type: int
@@ -222,6 +235,8 @@ def discover_intent_channels(
     window_hours=24,  # type: int
     strategies=None,  # type: Optional[Set[str]]
     days_back=None,  # type: Optional[int]
+    max_runtime=None,  # type: Optional[int]
+    max_consecutive_errors=5,  # type: int
 ):  # type: (...) -> List[Dict]
     """
     Discover intent-signaling new creators across 15 languages.
@@ -238,16 +253,34 @@ def discover_intent_channels(
         window_hours: Time window size in hours (default 24)
         strategies: Set of expansion strategy names to enable
         days_back: Only search the last N days (for daily discovery service)
+        max_runtime: Exit cleanly after this many seconds (launchd safety)
+        max_consecutive_errors: Exit after N consecutive errors (default 5)
 
     Returns:
         List of channel data dictionaries
     """
+    start_time = time.time()
+
     if strategies is None:
         strategies = config.DEFAULT_STRATEGIES
 
     if test_mode:
         target_count = min(target_count, 100)
         logger.info("TEST MODE: Limited to 100 channels")
+
+    # Completion-safe exit: if no checkpoint exists but output already has data,
+    # collection is already done. Prevents launchd from overwriting completed data.
+    if not CHECKPOINT_PATH.exists() and output_path.exists():
+        try:
+            with open(output_path, 'r', encoding='utf-8') as f:
+                reader = csv.reader(f)
+                next(reader)  # skip header
+                first_row = next(reader, None)
+                if first_row is not None:
+                    logger.info("Collection already complete (no checkpoint, output exists). Nothing to do.")
+                    return []
+        except (StopIteration, IOError):
+            pass  # Empty or unreadable file — proceed normally
 
     # Load checkpoint or start fresh
     completed_passes, channels_by_id = load_checkpoint(output_path)
@@ -304,10 +337,20 @@ def discover_intent_channels(
 
             batch_new_channels = []  # type: List[Dict]
             pass_max_pages = 3 if test_mode else search_pass["max_pages"]
+            consecutive_errors = 0
 
-            for window_start, window_end in time_windows:
+            for win_idx, (window_start, window_end) in enumerate(time_windows):
                 if len(channels_by_id) >= target_count:
                     break
+
+                # Runtime check inside window loop (every 50 windows)
+                if max_runtime and win_idx % 50 == 0 and win_idx > 0:
+                    if time.time() - start_time > max_runtime:
+                        logger.info("Max runtime reached mid-pass, saving and exiting")
+                        if batch_new_channels:
+                            _flush_batch(batch_new_channels, output_path)
+                        save_checkpoint(completed_passes, output_path, len(channels_by_id))
+                        return list(channels_by_id.values())
 
                 try:
                     # Build extra params: merge pass params + relevanceLanguage
@@ -324,6 +367,8 @@ def discover_intent_channels(
                         order="date",
                         **search_extra
                     )
+
+                    consecutive_errors = 0  # Reset on success
 
                     if not search_results:
                         continue
@@ -365,9 +410,25 @@ def discover_intent_channels(
                             seen_channel_ids.add(cid)
                             batch_new_channels.append(channel)
 
+                except QuotaExhaustedError:
+                    logger.warning("Quota exhausted, saving checkpoint and exiting")
+                    if batch_new_channels:
+                        _flush_batch(batch_new_channels, output_path)
+                    # Intentionally do NOT add pass_key to completed_passes
+                    save_checkpoint(completed_passes, output_path, len(channels_by_id))
+                    return list(channels_by_id.values())
+
                 except Exception as e:
                     logger.error("  Error in pass '%s' window %s: %s",
                                  search_pass["name"], window_start[:10], e)
+                    consecutive_errors += 1
+                    if consecutive_errors >= max_consecutive_errors:
+                        logger.warning("Too many consecutive errors (%d), saving and exiting",
+                                       consecutive_errors)
+                        if batch_new_channels:
+                            _flush_batch(batch_new_channels, output_path)
+                        save_checkpoint(completed_passes, output_path, len(channels_by_id))
+                        return list(channels_by_id.values())
                     continue
 
             # Append this pass's new channels to CSV
@@ -384,6 +445,12 @@ def discover_intent_channels(
             completed_passes.add(pass_key)
             save_checkpoint(completed_passes, output_path, len(channels_by_id))
 
+            # Runtime check after each completed pass
+            if max_runtime and time.time() - start_time > max_runtime:
+                logger.info("Max runtime reached after pass '%s', saving and exiting",
+                            search_pass["name"])
+                return list(channels_by_id.values())
+
         # Relevance second pass — conditional on capped queries (Tier 3)
         if "relevance" in strategies and capped_windows:
             rel_pass_key = "%s|%s|relevance" % (keyword, language)
@@ -397,12 +464,22 @@ def discover_intent_channels(
                 }
                 rel_batch = []  # type: List[Dict]
                 rel_max_pages = 3 if test_mode else 5
+                rel_consecutive_errors = 0
 
                 logger.info("  Relevance pass: %d capped windows", len(capped_windows))
 
                 for window_start, window_end in sorted(capped_windows):
                     if len(channels_by_id) >= target_count:
                         break
+
+                    # Runtime check in relevance loop
+                    if max_runtime and time.time() - start_time > max_runtime:
+                        logger.info("Max runtime reached in relevance pass, saving and exiting")
+                        if rel_batch:
+                            _flush_batch(rel_batch, output_path)
+                        save_checkpoint(completed_passes, output_path, len(channels_by_id))
+                        return list(channels_by_id.values())
+
                     try:
                         search_extra = {"safeSearch": safe_val}
                         if relevance_lang:
@@ -417,6 +494,8 @@ def discover_intent_channels(
                             order="relevance",
                             **search_extra
                         )
+
+                        rel_consecutive_errors = 0  # Reset on success
 
                         if not search_results:
                             continue
@@ -453,8 +532,23 @@ def discover_intent_channels(
                                 seen_channel_ids.add(cid)
                                 rel_batch.append(channel)
 
+                    except QuotaExhaustedError:
+                        logger.warning("Quota exhausted in relevance pass, saving and exiting")
+                        if rel_batch:
+                            _flush_batch(rel_batch, output_path)
+                        save_checkpoint(completed_passes, output_path, len(channels_by_id))
+                        return list(channels_by_id.values())
+
                     except Exception as e:
                         logger.error("  Error in relevance pass: %s", e)
+                        rel_consecutive_errors += 1
+                        if rel_consecutive_errors >= max_consecutive_errors:
+                            logger.warning("Too many consecutive errors in relevance pass (%d), saving and exiting",
+                                           rel_consecutive_errors)
+                            if rel_batch:
+                                _flush_batch(rel_batch, output_path)
+                            save_checkpoint(completed_passes, output_path, len(channels_by_id))
+                            return list(channels_by_id.values())
                         continue
 
                 if rel_batch:
@@ -601,10 +695,24 @@ def main():
                              % ",".join(sorted(config.EXPANSION_STRATEGIES)))
     parser.add_argument('--output', type=str, default=None,
                         help='Output CSV path (default: auto-generated with date stamp)')
+    parser.add_argument('--max-runtime', type=int, default=None,
+                        help='Exit cleanly after N seconds (launchd safety)')
+    parser.add_argument('--max-consecutive-errors', type=int, default=5,
+                        help='Exit after N consecutive window errors (default: 5)')
     args = parser.parse_args()
 
     setup_logging()
     config.ensure_directories()
+
+    # PID lockfile: prevent concurrent instances from corrupting checkpoint/CSV
+    lock_path = config.STREAM_DIRS["stream_a"] / ".stream_a.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    lock_fd = open(lock_path, 'w')
+    try:
+        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except (IOError, OSError):
+        logger.error("Another instance is already running (lockfile held). Exiting.")
+        sys.exit(1)
 
     # Parse strategies
     strategies = parse_strategies(args.strategies)
@@ -612,6 +720,8 @@ def main():
     logger.info("=" * 60)
     logger.info("STREAM A: INTENT CREATORS COLLECTION")
     logger.info("=" * 60)
+    if args.max_runtime:
+        logger.info("Max runtime: %d seconds", args.max_runtime)
 
     try:
         youtube = get_authenticated_service()
@@ -632,6 +742,8 @@ def main():
             window_hours=args.window_hours,
             strategies=strategies,
             days_back=args.days_back,
+            max_runtime=args.max_runtime,
+            max_consecutive_errors=args.max_consecutive_errors,
         )
 
         if not channels:
