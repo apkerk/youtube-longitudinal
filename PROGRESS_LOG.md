@@ -5,16 +5,29 @@
 
 ---
 
-## Current Status (as of Feb 26, 2026 — Afternoon)
+## Current Status (as of Feb 27, 2026 — Early AM)
 
-**Phase:** Phase B — ACTIVE. Stream A migrated to launchd.
-**Roadmap Position:** AI census enum: DONE. Stream A: 635 keyword combos done, now running as launchd service (fires 3:15 AM daily).
+**Phase:** Phase B — ACTIVE. Stream A launchd VERIFIED WORKING.
+**Roadmap Position:** AI census enum: DONE. Stream A: 772/~1,728 keyword combos done (44%), ~7 nights remaining. 83,145 unique channels.
 **What's Running on Mac Mini (192.168.86.36 — Nest mesh ethernet):**
-- `com.youtube.stream-a-rerun`: NEW launchd service. Fires 3:15 AM EST daily, 4h max runtime. First run tonight.
+- `com.youtube.stream-a-rerun`: Fires 3:15 AM EST daily, 4h max runtime. First run CONFIRMED successful (Feb 27).
 - 7 launchd services total: stream-a-rerun + 6 existing. All loaded.
 - No screen sessions. All collection now via launchd.
-**Daily Stats:** Feb 25 + Feb 26 PASS. Series: Feb 18-23 + Feb 25-26 present.
-**Next Steps:** (1) Verify Stream A launchd run tomorrow morning (check logs at data/logs/stream_a_rerun_stderr.log). (2) After Stream A completes all 94 keywords: retire plist, B.4 validation, Phase C (A' re-run + same QuotaExhaustedError fix).
+**Daily Stats:** Feb 25 + Feb 26 PASS. Feb 27 not yet run (8:00 AM EST). Series: Feb 18-23 + Feb 25-26 present.
+**Next Steps:** (1) Stream A continues nightly (~March 5-6 projected completion). (2) After all 94 keywords done: retire plist, B.4 validation, Phase C (A' re-run + same QuotaExhaustedError fix).
+
+---
+
+## 2026-02-27 05:20 [Stream A First Launchd Run — VERIFIED]
+
+- **First launchd run CONFIRMED SUCCESSFUL.** Service fired at 3:15 AM EST, ran for 1h 26m, exited cleanly via QuotaExhaustedError at 4:40 AM.
+- **Progress:** 635 → 772 completed combos (+137). Keywords 35-42 completed (German ×5, Portuguese ×5, Korean ×2). Hit quota mid-keyword 43 (자기소개, Korean).
+- **Tonight's harvest:** 9,224 new channels. Portuguese dominated (8,868), especially "Meu primeiro vídeo" (3,828 from base pass alone). Korean: 234. German: 122.
+- **By method:** base (5,354), topicid (2,852), duration (720), regioncode (298).
+- **Total unique channels in CSV:** 83,145 (85,198 rows with cross-batch duplication).
+- **QuotaExhaustedError working as designed:** Clean detection of 403 quotaExceeded, immediate checkpoint save, graceful exit. No cascading 403 retries. Exactly the behavior the launchd migration was built to achieve.
+- **Completion estimate:** ~1,728 total combos. At ~137/night, ~7 more nights (targeting ~March 5-6). Then retire plist, run B.4 validation, start Phase C.
+- **Daily stats:** Feb 26 present, Feb 27 not yet run (8:00 AM). 7 launchd services all loaded and healthy.
 
 ---
 
