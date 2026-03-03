@@ -5,16 +5,33 @@
 
 ---
 
-## Current Status (as of Feb 27, 2026 — Early AM)
+## Current Status (as of March 3, 2026 — Morning)
 
-**Phase:** Phase B — ACTIVE. Stream A launchd VERIFIED WORKING.
-**Roadmap Position:** AI census enum: DONE. Stream A: 772/~1,728 keyword combos done (44%), ~7 nights remaining. 83,145 unique channels.
+**Phase:** Phase B — ACTIVE. Stream A nearing completion, daily stats RECOVERED.
+**Roadmap Position:** Stream A: 73/94 keywords, 1,313 combos done (~76%). ~4 nights remaining (completion ~March 6-7).
 **What's Running on Mac Mini (192.168.86.36 — Nest mesh ethernet):**
-- `com.youtube.stream-a-rerun`: Fires 3:15 AM EST daily, 4h max runtime. First run CONFIRMED successful (Feb 27).
-- 7 launchd services total: stream-a-rerun + 6 existing. All loaded.
-- No screen sessions. All collection now via launchd.
-**Daily Stats:** Feb 25 + Feb 26 PASS. Feb 27 not yet run (8:00 AM EST). Series: Feb 18-23 + Feb 25-26 present.
-**Next Steps:** (1) Stream A continues nightly (~March 5-6 projected completion). (2) After all 94 keywords done: retire plist, B.4 validation, Phase C (A' re-run + same QuotaExhaustedError fix).
+- `com.youtube-longitudinal.daily-channel-stats`: **3:05 AM EST** (moved from 8:00 AM)
+- `com.youtube.ai-census-daily-channel-stats`: **3:12 AM EST** (moved from 9:00 AM)
+- `com.youtube.stream-a-rerun`: **3:35 AM EST** (moved from 3:15 AM), `--reserve-quota 2000`
+- 7 launchd services total. All loaded. No screen sessions.
+**Daily Stats:** RECOVERED from 5-day outage (Feb 27 - Mar 3). Caused by Stream A consuming entire daily quota before daily stats could run. Fixed by rescheduling: daily stats first (3:05/3:12 AM), then Stream A (3:35 AM), plus --reserve-quota 2000.
+**Data Gap:** Feb 27 - Mar 3 daily stats are permanently missing (point-in-time snapshots, can't backfill). Series: Feb 17-26 present, Feb 27 - Mar 3 missing, Mar 4+ should resume.
+**Next Steps:** (1) Verify Mar 4 daily stats appear (first run with new schedule). (2) Stream A finishes ~March 6-7. (3) Retire Stream A plist, B.4 validation, Phase C.
+
+---
+
+## 2026-03-03 09:40 [Daily Stats Outage Diagnosed + Fixed]
+
+- **DISCOVERED: 5-day daily stats outage (Feb 27 - Mar 3).** Stream A launchd service (3:15 AM) was consuming the entire daily API quota before daily stats (8:00/9:00 AM) could run. Every day since Stream A went to launchd, daily stats got immediate quotaExceeded.
+- **Root cause:** Stream A fires at 3:15 AM EST (15 min after midnight Pacific quota reset), runs ~77 min, exhausts the full quota by ~4:30 AM. Daily stats at 8:00/9:00 AM finds zero quota remaining.
+- **Diagnosis confirmed:** Manual API test at 12:43 PM succeeded (single call), but daily_stats.py batch call failed at 12:44 PM — only ~35 units remained from 1M.
+- **Fix 1 — Plist rescheduling:** Moved daily stats before Stream A. Gender gap: 8:00→3:05 AM. AI census: 9:00→3:12 AM. Stream A: 3:15→3:35 AM. Plists unloaded, rewritten, reloaded.
+- **Fix 2 — Quota reservation (commit d58bdbb):** Added `--reserve-quota` flag to `discover_intent.py` (default 2000). Script checks `get_quota_used()` against `daily_quota_limit - reserve_quota` before each search call and exits cleanly when threshold reached. Added `get_quota_used()` getter to `youtube_api.py`. Plist updated with `--reserve-quota 2000`.
+- **Code deployed:** Git push from laptop, git pull on Mac Mini. Import verified clean. All 7 plists loaded.
+- **Old failure sentinels archived** to `archive/failed_sentinels/` so health check starts clean.
+- **Data loss:** Feb 27 - Mar 3 daily stats permanently missing for both panels. These are point-in-time snapshots (current subscriber/view counts) — can't be retroactively collected.
+- **Stream A status:** 73/94 keywords, 1,313 combos, projected completion March 6-7. Running well.
+- **Katie out of town for ~1 week.** System should run autonomously. 148 GB disk free, sleep disabled, Amphetamine running.
 
 ---
 
