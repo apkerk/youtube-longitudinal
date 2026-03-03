@@ -54,6 +54,8 @@ from youtube_api import (
     get_oldest_video,
     filter_channels_by_date,
     QuotaExhaustedError,
+    get_quota_used,
+    load_config,
 )
 import config
 
@@ -237,6 +239,8 @@ def discover_intent_channels(
     days_back=None,  # type: Optional[int]
     max_runtime=None,  # type: Optional[int]
     max_consecutive_errors=5,  # type: int
+    reserve_quota=0,  # type: int
+    daily_quota_limit=0,  # type: int
 ):  # type: (...) -> List[Dict]
     """
     Discover intent-signaling new creators across 15 languages.
@@ -255,11 +259,14 @@ def discover_intent_channels(
         days_back: Only search the last N days (for daily discovery service)
         max_runtime: Exit cleanly after this many seconds (launchd safety)
         max_consecutive_errors: Exit after N consecutive errors (default 5)
+        reserve_quota: Stop this many units before daily limit (default 0 = disabled)
+        daily_quota_limit: Daily quota ceiling from config (required if reserve_quota > 0)
 
     Returns:
         List of channel data dictionaries
     """
     start_time = time.time()
+    quota_ceiling = daily_quota_limit - reserve_quota if reserve_quota > 0 and daily_quota_limit > 0 else 0
 
     if strategies is None:
         strategies = config.DEFAULT_STRATEGIES
@@ -351,6 +358,17 @@ def discover_intent_channels(
                             _flush_batch(batch_new_channels, output_path)
                         save_checkpoint(completed_passes, output_path, len(channels_by_id))
                         return list(channels_by_id.values())
+
+                # Quota reservation check before expensive search call
+                if quota_ceiling and get_quota_used() >= quota_ceiling:
+                    logger.warning(
+                        "Quota reservation reached (%d/%d used, reserving %d), saving and exiting",
+                        get_quota_used(), daily_quota_limit, reserve_quota,
+                    )
+                    if batch_new_channels:
+                        _flush_batch(batch_new_channels, output_path)
+                    save_checkpoint(completed_passes, output_path, len(channels_by_id))
+                    return list(channels_by_id.values())
 
                 try:
                     # Build extra params: merge pass params + relevanceLanguage
@@ -475,6 +493,17 @@ def discover_intent_channels(
                     # Runtime check in relevance loop
                     if max_runtime and time.time() - start_time > max_runtime:
                         logger.info("Max runtime reached in relevance pass, saving and exiting")
+                        if rel_batch:
+                            _flush_batch(rel_batch, output_path)
+                        save_checkpoint(completed_passes, output_path, len(channels_by_id))
+                        return list(channels_by_id.values())
+
+                    # Quota reservation check in relevance loop
+                    if quota_ceiling and get_quota_used() >= quota_ceiling:
+                        logger.warning(
+                            "Quota reservation reached in relevance pass (%d/%d used, reserving %d)",
+                            get_quota_used(), daily_quota_limit, reserve_quota,
+                        )
                         if rel_batch:
                             _flush_batch(rel_batch, output_path)
                         save_checkpoint(completed_passes, output_path, len(channels_by_id))
@@ -699,6 +728,8 @@ def main():
                         help='Exit cleanly after N seconds (launchd safety)')
     parser.add_argument('--max-consecutive-errors', type=int, default=5,
                         help='Exit after N consecutive window errors (default: 5)')
+    parser.add_argument('--reserve-quota', type=int, default=2000,
+                        help='Stop this many units before daily limit to leave room for other services (default: 2000)')
     args = parser.parse_args()
 
     setup_logging()
@@ -717,11 +748,18 @@ def main():
     # Parse strategies
     strategies = parse_strategies(args.strategies)
 
+    # Load daily quota limit from config for reservation check
+    api_config = load_config()
+    daily_quota_limit = api_config.get("daily_quota_limit", 0)
+
     logger.info("=" * 60)
     logger.info("STREAM A: INTENT CREATORS COLLECTION")
     logger.info("=" * 60)
     if args.max_runtime:
         logger.info("Max runtime: %d seconds", args.max_runtime)
+    if args.reserve_quota and daily_quota_limit:
+        logger.info("Quota reservation: %d units (limit: %d, ceiling: %d)",
+                     args.reserve_quota, daily_quota_limit, daily_quota_limit - args.reserve_quota)
 
     try:
         youtube = get_authenticated_service()
@@ -744,6 +782,8 @@ def main():
             days_back=args.days_back,
             max_runtime=args.max_runtime,
             max_consecutive_errors=args.max_consecutive_errors,
+            reserve_quota=args.reserve_quota,
+            daily_quota_limit=daily_quota_limit,
         )
 
         if not channels:

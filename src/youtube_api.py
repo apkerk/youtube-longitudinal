@@ -123,6 +123,11 @@ def _log_quota_usage(quota_cost: int, endpoint_name: str) -> None:
         pass  # Never block API operations for logging failures
 
 
+def get_quota_used() -> int:
+    """Return cumulative quota units consumed in the current process."""
+    return _quota_daily_total
+
+
 # =============================================================================
 # REQUEST EXECUTION WITH RETRY
 # =============================================================================
