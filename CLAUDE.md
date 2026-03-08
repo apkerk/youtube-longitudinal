@@ -1,5 +1,12 @@
 # YouTube Longitudinal Data Collection
 
+## Global Context
+
+For identity, values, priorities, and working principles, read:
+- `/Users/katieapker/Library/CloudStorage/GoogleDrive-apker.katie@gmail.com/My Drive/SECOND_BRAIN/USER/TELOS/TELOS_MAP.md` — identity + active priorities (The Algorithm uses this at THINK phase)
+- `/Users/katieapker/Library/CloudStorage/GoogleDrive-apker.katie@gmail.com/My Drive/SECOND_BRAIN/USER/ETHOS.md` — universal working principles (applies to all agents)
+- Relevant project charter: `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md`
+
 > Charter: `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md`
 > Read at session start for goals, milestones, and delegation boundaries.
 
