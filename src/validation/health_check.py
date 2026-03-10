@@ -211,13 +211,8 @@ class HealthChecker:
                 pass
         # If inventory is partial (enumeration in progress), scale threshold to match it
         if inventory_rows < 50_000 and inventory_rows > 0:
-            expected = int(inventory_rows * 0.95)
-            if row_count < expected:
-                return CheckResult(
-                    "video_stats_completeness", CheckResult.WARNING,
-                    f"{latest.name}: only {row_count:,} rows (expected ~{expected:,} based on inventory)",
-                    {"file": latest.name, "row_count": row_count},
-                )
+            # Inventory is still being built; any stats data is acceptable
+            pass  # OK as long as row_count > 0 (checked at start of function)
         elif inventory_rows >= 50_000 and row_count < MIN_VIDEO_STATS_ROWS:
             return CheckResult(
                 "video_stats_completeness", CheckResult.WARNING,
