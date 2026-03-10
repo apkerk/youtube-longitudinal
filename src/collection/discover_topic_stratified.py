@@ -28,6 +28,7 @@ Last Updated: Feb 18, 2026
 import argparse
 import csv
 import json
+import time
 import logging
 import sys
 from datetime import datetime, timedelta
@@ -42,6 +43,9 @@ from youtube_api import (
     search_videos_paginated,
     extract_channel_ids_from_search,
     get_channel_full_details,
+    QuotaExhaustedError,
+    get_quota_used,
+    load_config,
 )
 import config
 
@@ -117,6 +121,9 @@ def discover_topic_stratified_channels(
     target_count: int = 40000,
     test_mode: bool = False,
     output_path: Optional[Path] = None,
+    max_runtime: int = None,
+    reserve_quota: int = 0,
+    daily_quota_limit: int = 0,
 ) -> List[Dict]:
     """
     Discover channels stratified across YouTube topic categories.
@@ -139,6 +146,8 @@ def discover_topic_stratified_channels(
         logger.info("TEST MODE: Limited to 50 channels")
 
     completed_topics, channels_by_id = load_checkpoint(output_path)
+    start_time = time.time()
+    quota_ceiling = daily_quota_limit - reserve_quota if reserve_quota > 0 and daily_quota_limit > 0 else 0
     seen_channel_ids: Set[str] = set(channels_by_id.keys())
 
     if not completed_topics:
@@ -167,6 +176,13 @@ def discover_topic_stratified_channels(
             logger.info(f"Reached target of {target_count} channels")
             break
 
+
+        if max_runtime and time.time() - start_time > max_runtime:
+            logger.info("Max runtime reached -- stopping. Will resume next run.")
+            break
+        if quota_ceiling > 0 and get_quota_used() >= quota_ceiling:
+            logger.info("Quota ceiling reached -- stopping. Will resume next run.")
+            break
         if topic_id in completed_topics:
             continue
 
@@ -223,6 +239,9 @@ def discover_topic_stratified_channels(
             logger.info(f"  Found {len(batch_new_channels)} new channels "
                        f"(total: {len(channels_by_id)})")
 
+        except QuotaExhaustedError:
+            logger.warning("Quota exhausted -- stopping. Will resume next run.")
+            break
         except Exception as e:
             logger.error(f"  Error for topic {topic_name}: {e}")
 
@@ -248,6 +267,10 @@ def main():
     parser = argparse.ArgumentParser(description="Topic-Stratified Discovery")
     parser.add_argument('--test', action='store_true', help='Run in test mode (50 channels)')
     parser.add_argument('--limit', type=int, default=40000, help='Target channel count')
+    parser.add_argument('--max-runtime', type=int, default=None,
+                        help='Stop after N seconds (launchd safety)')
+    parser.add_argument('--reserve-quota', type=int, default=2000,
+                        help='Stop this many units before daily limit')
     args = parser.parse_args()
 
     setup_logging()
@@ -268,6 +291,9 @@ def main():
             target_count=args.limit,
             test_mode=args.test,
             output_path=output_path,
+            max_runtime=args.max_runtime,
+            reserve_quota=args.reserve_quota,
+            daily_quota_limit=load_config().get('daily_quota_limit', 0),
         )
 
         if not channels:

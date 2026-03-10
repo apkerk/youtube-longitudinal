@@ -28,7 +28,7 @@ from typing import Dict, List
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from youtube_api import get_authenticated_service, get_all_video_ids
+from youtube_api import get_authenticated_service, get_all_video_ids, QuotaExhaustedError
 import config
 
 logger = logging.getLogger(__name__)
@@ -116,6 +116,7 @@ def enumerate_all_channels(
     checkpoint_path: Path,
     test_mode: bool = False,
     limit: int = None,
+    max_runtime: int = None,
 ) -> int:
     """
     Enumerate all video IDs for a list of channels. Writes results to CSV
@@ -132,6 +133,8 @@ def enumerate_all_channels(
     Returns:
         Total number of videos enumerated
     """
+    import time as _time
+    start_time = _time.time()
     if test_mode and limit is None:
         limit = 5
 
@@ -196,6 +199,9 @@ def enumerate_all_channels(
                 checkpoint['completed_channels'] = list(completed_set)
                 save_checkpoint(checkpoint_path, checkpoint)
 
+            except QuotaExhaustedError:
+                logger.warning("Quota exhausted — stopping enumeration, will resume next run")
+                break
             except Exception as e:
                 logger.error(f"Error enumerating {channel_id}: {e}")
 
@@ -207,6 +213,9 @@ def enumerate_all_channels(
                     f"Progress: {channels_done}/{total_to_do} channels "
                     f"({total_videos} videos so far)"
                 )
+            if max_runtime and _time.time() - start_time > max_runtime:
+                logger.info(f"Max runtime {max_runtime}s reached — stopping. Will resume next run.")
+                break
 
     return total_videos
 
@@ -226,6 +235,7 @@ def main():
     )
     parser.add_argument('--test', action='store_true', help='Test mode (5 channels)')
     parser.add_argument('--limit', type=int, default=None, help='Max channels to process')
+    parser.add_argument('--max-runtime', type=int, default=None, help='Stop after N seconds (launchd safety)')
     args = parser.parse_args()
 
     setup_logging()
@@ -278,6 +288,7 @@ def main():
             checkpoint_path=checkpoint_path,
             test_mode=args.test,
             limit=args.limit,
+            max_runtime=args.max_runtime,
         )
 
         # Clear checkpoint on successful completion

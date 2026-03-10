@@ -47,6 +47,8 @@ from typing import Dict, List, Set, Optional
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import time
+
 from youtube_api import (
     get_authenticated_service,
     search_videos_paginated,
@@ -54,6 +56,9 @@ from youtube_api import (
     get_channel_full_details,
     get_oldest_video,
     filter_channels_by_date,
+    QuotaExhaustedError,
+    get_quota_used,
+    load_config,
 )
 import config
 
@@ -242,6 +247,9 @@ def discover_non_intent_channels(
     window_hours=24,  # type: int
     strategies=None,  # type: Optional[Set[str]]
     days_back=None,  # type: Optional[int]
+    max_runtime=None,  # type: Optional[int]
+    reserve_quota=0,  # type: int
+    daily_quota_limit=0,  # type: int
 ):  # type: (...) -> List[Dict]
     """
     Discover content-focused new creators (no explicit intent signaling).
@@ -282,6 +290,9 @@ def discover_non_intent_channels(
     if exclude_ids:
         logger.info("Cross-dedup: excluding %d channels from other streams", len(exclude_ids))
 
+    start_time = time.time()
+    quota_ceiling = daily_quota_limit - reserve_quota if reserve_quota > 0 and daily_quota_limit > 0 else 0
+
     # If fresh start, write CSV header
     if not completed_passes:
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -306,6 +317,13 @@ def discover_non_intent_channels(
     for idx, (keyword, language) in enumerate(non_intent_keywords):
         if len(channels_by_id) >= target_count:
             logger.info("Reached target of %d channels", target_count)
+            break
+
+        if max_runtime and time.time() - start_time > max_runtime:
+            logger.info("Max runtime reached -- stopping. Will resume next run.")
+            break
+        if quota_ceiling > 0 and get_quota_used() >= quota_ceiling:
+            logger.info("Quota ceiling %d reached -- stopping. Will resume next run.", quota_ceiling)
             break
 
         relevance_lang = config.RELEVANCE_LANGUAGE_CODES.get(language)
@@ -392,6 +410,9 @@ def discover_non_intent_channels(
                             seen_channel_ids.add(cid)
                             batch_new_channels.append(channel)
 
+                except QuotaExhaustedError:
+                    logger.warning("Quota exhausted -- stopping. Will resume next run.")
+                    return list(channels_by_id.values())
                 except Exception as e:
                     logger.error("  Error in pass '%s' window %s: %s",
                                  search_pass["name"], window_start[:10], e)
@@ -479,6 +500,9 @@ def discover_non_intent_channels(
                                 seen_channel_ids.add(cid)
                                 rel_batch.append(channel)
 
+                    except QuotaExhaustedError:
+                        logger.warning("Quota exhausted in relevance pass -- stopping.")
+                        return list(channels_by_id.values())
                     except Exception as e:
                         logger.error("  Error in relevance pass: %s", e)
                         continue
@@ -570,6 +594,9 @@ def discover_non_intent_channels(
                                 seen_channel_ids.add(cid)
                                 win_batch.append(channel)
 
+                    except QuotaExhaustedError:
+                        logger.warning("Quota exhausted in 12h window pass -- stopping.")
+                        return list(channels_by_id.values())
                     except Exception as e:
                         logger.error("  Error in 12h window pass: %s", e)
                         continue
@@ -707,6 +734,10 @@ def main():
                              % ",".join(sorted(config.EXPANSION_STRATEGIES)))
     parser.add_argument('--output', type=str, default=None,
                         help='Output CSV path (default: auto-generated with date stamp)')
+    parser.add_argument('--max-runtime', type=int, default=None,
+                        help='Stop after N seconds (launchd safety)')
+    parser.add_argument('--reserve-quota', type=int, default=2000,
+                        help='Stop this many units before daily limit')
     args = parser.parse_args()
 
     setup_logging()
@@ -733,6 +764,7 @@ def main():
         else:
             output_path = config.get_output_path("stream_a_prime", "initial")
 
+        _cfg = load_config()
         channels = discover_non_intent_channels(
             youtube=youtube,
             target_count=args.limit,
@@ -742,6 +774,9 @@ def main():
             window_hours=args.window_hours,
             strategies=strategies,
             days_back=args.days_back,
+            max_runtime=args.max_runtime,
+            reserve_quota=args.reserve_quota,
+            daily_quota_limit=_cfg.get('daily_quota_limit', 0),
         )
 
         if not channels:

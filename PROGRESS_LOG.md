@@ -1211,3 +1211,11 @@ youtube-longitudinal/
 **Next Steps (Immediate):**
 1. 🛑 USER ACTION REQUIRED: Run the 3-step validation suite to confirm network access.
 2. Set up `launchd` for daily automation.
+
+## 2026-03-10 19:30 Stream Infrastructure Hardening + Enumeration Deployment
+- Added QuotaExhaustedError + --max-runtime + --reserve-quota to all 6 unstarted scripts: discover_livestream, discover_shorts, discover_creative_commons, discover_topic_stratified, discover_trending, discover_non_intent (Stream A')
+- Fixed youtube_api.py: get_all_video_ids now re-raises QuotaExhaustedError instead of swallowing it
+- Fixed enumerate_videos.py: added QuotaExhaustedError catch, --max-runtime flag, and start_time tracking
+- Fixed health_check.py: inventory_integrity no longer fires DEGRADED for partial inventory; video_stats_completeness threshold is now dynamic based on inventory size (stops false Telegram alerts)
+- Deployed gender gap video enumeration as launchd service: com.youtube.gender-gap-enumeration (fires 4:00 AM EST, 7h max runtime, checkpoint/resume). Tested: 5 channels, 3,905 videos, ~780 videos/channel avg -- full run ~7.6M videos across ~3 overnight runs.
+- What's next: Enumeration completes ~March 13-14. Then: Stream A' re-run, Trending, Livestream, Shorts, Creative Commons, Topic-Stratified (one at a time, no concurrent discovery scripts).

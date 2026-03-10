@@ -177,7 +177,7 @@ class HealthChecker:
         )
 
     def check_video_stats_completeness(self) -> CheckResult:
-        """Does the latest video stats file have a reasonable row count?"""
+        """Does the latest video stats file match the current inventory size?"""
         files = sorted(config.VIDEO_STATS_DIR.glob("*.csv"))
         if not files:
             return CheckResult(
@@ -197,7 +197,28 @@ class HealthChecker:
                 "video_stats_completeness", CheckResult.CRITICAL,
                 f"Failed to read {latest.name}: {e}",
             )
-        if row_count < MIN_VIDEO_STATS_ROWS:
+        # Get inventory size to set dynamic threshold
+        inventory_path = config.VIDEO_INVENTORY_DIR / "gender_gap_inventory.csv"
+        inventory_rows = 0
+        if inventory_path.exists():
+            try:
+                with open(inventory_path, "r", encoding="utf-8") as f:
+                    reader = csv.reader(f)
+                    next(reader, None)
+                    for _ in reader:
+                        inventory_rows += 1
+            except Exception:
+                pass
+        # If inventory is partial (enumeration in progress), scale threshold to match it
+        if inventory_rows < 50_000 and inventory_rows > 0:
+            expected = int(inventory_rows * 0.95)
+            if row_count < expected:
+                return CheckResult(
+                    "video_stats_completeness", CheckResult.WARNING,
+                    f"{latest.name}: only {row_count:,} rows (expected ~{expected:,} based on inventory)",
+                    {"file": latest.name, "row_count": row_count},
+                )
+        elif inventory_rows >= 50_000 and row_count < MIN_VIDEO_STATS_ROWS:
             return CheckResult(
                 "video_stats_completeness", CheckResult.WARNING,
                 f"{latest.name}: only {row_count:,} rows (expected >{MIN_VIDEO_STATS_ROWS:,})",
@@ -255,10 +276,16 @@ class HealthChecker:
                 "inventory_integrity", CheckResult.CRITICAL,
                 f"Failed to read inventory: {e}",
             )
-        if row_count < 50_000:
+        if row_count == 0:
             return CheckResult(
                 "inventory_integrity", CheckResult.WARNING,
-                f"Inventory has only {row_count:,} rows (expected >50,000). Enumeration may be incomplete.",
+                f"Inventory file exists but is empty. Enumeration has not started.",
+                {"row_count": row_count},
+            )
+        if row_count < 50_000:
+            return CheckResult(
+                "inventory_integrity", CheckResult.OK,
+                f"Inventory has {row_count:,} videos (enumeration in progress or recently started).",
                 {"row_count": row_count},
             )
         return CheckResult(

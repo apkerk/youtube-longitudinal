@@ -786,6 +786,8 @@ def get_all_video_ids(
                 logger.error(f"Error enumerating videos for {channel_id}: {e}")
                 return video_list, page_token
 
+        except QuotaExhaustedError:
+            raise  # Do not swallow quota errors — let caller handle clean exit
         except Exception as e:
             logger.error(f"Unexpected error enumerating videos for {channel_id}: {e}")
             return video_list, page_token

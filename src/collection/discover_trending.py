@@ -29,6 +29,7 @@ Last Updated: Feb 18, 2026
 import argparse
 import csv
 import json
+import time
 import logging
 import sys
 from datetime import datetime
@@ -42,6 +43,9 @@ from youtube_api import (
     get_authenticated_service,
     get_trending_videos,
     get_channel_full_details,
+    QuotaExhaustedError,
+    get_quota_used,
+    load_config,
 )
 import config
 
@@ -155,6 +159,9 @@ def run_trending_collection(
     date_str: str,
     test_mode: bool = False,
     limit_regions: Optional[int] = None,
+    max_runtime: int = None,
+    reserve_quota: int = 0,
+    daily_quota_limit: int = 0,
 ) -> Dict:
     """
     Collect trending videos across all region codes for one day.
@@ -180,6 +187,8 @@ def run_trending_collection(
         regions = regions[:limit_regions]
 
     completed_regions = load_checkpoint(date_str)
+    start_time = time.time()
+    quota_ceiling = daily_quota_limit - reserve_quota if reserve_quota > 0 and daily_quota_limit > 0 else 0
     known_channel_ids = load_known_channel_ids()
 
     trending_log_path = get_trending_log_path(date_str)
@@ -210,6 +219,13 @@ def run_trending_collection(
     for idx, region in enumerate(regions):
         if region in completed_regions:
             continue
+
+        if max_runtime and time.time() - start_time > max_runtime:
+            logger.info("Max runtime reached -- stopping. Will resume next run.")
+            break
+        if quota_ceiling > 0 and get_quota_used() >= quota_ceiling:
+            logger.info("Quota ceiling reached -- stopping. Will resume next run.")
+            break
 
         logger.info(f"[{idx+1}/{len(regions)}] Region: {region}")
 
@@ -270,6 +286,9 @@ def run_trending_collection(
 
             logger.info(f"  {len(videos)} videos, {len(truly_new)} new channels")
 
+        except QuotaExhaustedError:
+            logger.warning("Quota exhausted -- stopping. Will resume next run.")
+            break
         except Exception as e:
             logger.error(f"  Error for region {region}: {e}")
 
@@ -302,6 +321,10 @@ def main():
     parser.add_argument('--limit-regions', type=int, default=None, help='Limit number of regions')
     parser.add_argument('--date', type=str, default=None,
                         help='Collection date (YYYY-MM-DD, default=today UTC)')
+    parser.add_argument('--max-runtime', type=int, default=None,
+                        help='Stop after N seconds (launchd safety)')
+    parser.add_argument('--reserve-quota', type=int, default=2000,
+                        help='Stop this many units before daily limit')
     args = parser.parse_args()
 
     setup_logging()
@@ -322,6 +345,9 @@ def main():
             date_str=date_str,
             test_mode=args.test,
             limit_regions=args.limit_regions,
+            max_runtime=args.max_runtime,
+            reserve_quota=args.reserve_quota,
+            daily_quota_limit=load_config().get('daily_quota_limit', 0),
         )
 
     except Exception as e:
