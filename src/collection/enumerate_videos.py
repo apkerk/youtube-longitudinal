@@ -291,10 +291,16 @@ def main():
             max_runtime=args.max_runtime,
         )
 
-        # Clear checkpoint on successful completion
+        # Clear checkpoint only if all channels were actually processed.
+        # Do NOT delete on max_runtime or quota exits — the next run needs it to resume.
         if checkpoint_path.exists():
-            checkpoint_path.unlink()
-            logger.info("Cleared checkpoint file (run complete)")
+            checkpoint_data = load_checkpoint(checkpoint_path)
+            n_done = len(checkpoint_data.get('completed_channels', []))
+            if n_done >= len(channel_ids):
+                checkpoint_path.unlink()
+                logger.info("Cleared checkpoint file (all channels complete)")
+            else:
+                logger.info(f"Checkpoint retained — {n_done}/{len(channel_ids)} channels done, will resume next run")
 
         logger.info("=" * 60)
         logger.info("ENUMERATION COMPLETE")
