@@ -65,6 +65,11 @@ This project collects longitudinal YouTube data via the YouTube Data API v3 for 
 1. Append timestamped entry to PROGRESS_LOG.md (append-only, never overwrite)
 2. Update current status marker in PROJECT_MASTER_PLAN.md if phase changed
 3. `git add` changed files, commit with descriptive message, push to origin
+4. **Open Brain captures** (required for substantive sessions — actually call `capture_thought`, do NOT just write out what captures "would" say):
+   - Session (always if significant): content = "[Date] YT Longitudinal: [1-2 sentence summary]", domain = "YouTube Longitudinal"
+   - Decision (if a meaningful technical/design decision was made): content = "Decision: [what] — because [rationale]", domain = "YouTube Longitudinal Decisions"
+   - Learning (if a technical insight emerged): content = "Learning: [insight]. Context: [trigger]", domain = "YouTube Longitudinal"
+   Skip if session was purely mechanical (status check, minor config edit, no decisions made).
 
 ## Safety Rules
 
