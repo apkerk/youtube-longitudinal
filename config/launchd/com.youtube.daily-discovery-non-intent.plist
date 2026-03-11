@@ -11,15 +11,15 @@
         <string>/usr/bin/python3</string>
         <string>-m</string>
         <string>src.collection.discover_non_intent</string>
-        <string>--days-back</string>
-        <string>1</string>
         <string>--strategies</string>
-        <string>base,safesearch</string>
+        <string>base,safesearch,topicid,regioncode,duration</string>
         <string>--skip-first-video</string>
         <string>--output</string>
-        <string>data/channels/stream_a_prime/daily_discovery.csv</string>
-        <string>--exclude-list</string>
-        <string>data/channels/stream_a/daily_discovery.csv</string>
+        <string>data/channels/stream_a_prime/initial_20260311.csv</string>
+        <string>--max-runtime</string>
+        <string>14400</string>
+        <string>--reserve-quota</string>
+        <string>2000</string>
     </array>
 
     <key>WorkingDirectory</key>
