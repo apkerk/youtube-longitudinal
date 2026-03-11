@@ -18,6 +18,8 @@ This project collects longitudinal YouTube data via the YouTube Data API v3 for 
 
 2. **Gender Gap Longitudinal Panel** — Daily video-level and channel-level statistics for 14,169 established channels from the Infludata/Bailey's dataset. Supports three research designs: AI Creator Census (gender dynamics in AI content creation), AI Adoption Diffusion Panel (staggered DiD), and Audience Response to AI Content (matching + DiD). The gender gap paper's analysis of *why* the gap exists lives in the dissertation CH2 directory; this repo owns the longitudinal data collection on those channels.
 
+**Methodology type:** Data gathering / pipeline (rules from RESEARCH/CLAUDE.md for this type apply)
+
 **Tech stack:** Python 3.14, YouTube Data API v3, pandas, pathlib
 
 **API quota:** ~1,010,000 units/day (YouTube Researcher Program tier)
