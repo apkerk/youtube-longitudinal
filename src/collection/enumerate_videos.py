@@ -133,8 +133,7 @@ def enumerate_all_channels(
     Returns:
         Total number of videos enumerated
     """
-    import time as _time
-    start_time = _time.time()
+    start_time = time.time()
     if test_mode and limit is None:
         limit = 5
 
@@ -213,9 +212,21 @@ def enumerate_all_channels(
                     f"Progress: {channels_done}/{total_to_do} channels "
                     f"({total_videos} videos so far)"
                 )
-            if max_runtime and _time.time() - start_time > max_runtime:
+            if max_runtime is not None and time.time() - start_time > max_runtime:
                 logger.info(f"Max runtime {max_runtime}s reached — stopping. Will resume next run.")
                 break
+
+    # Clear checkpoint only if every channel was processed.
+    # Partial exits (max_runtime, quota) must retain it so the next run can resume.
+    if len(completed_set) >= len(channel_ids):
+        if checkpoint_path.exists():
+            checkpoint_path.unlink()
+            logger.info("Cleared checkpoint (all channels complete)")
+    else:
+        logger.info(
+            f"Checkpoint retained — {len(completed_set)}/{len(channel_ids)} channels done, "
+            "will resume next run"
+        )
 
     return total_videos
 
@@ -290,17 +301,6 @@ def main():
             limit=args.limit,
             max_runtime=args.max_runtime,
         )
-
-        # Clear checkpoint only if all channels were actually processed.
-        # Do NOT delete on max_runtime or quota exits — the next run needs it to resume.
-        if checkpoint_path.exists():
-            checkpoint_data = load_checkpoint(checkpoint_path)
-            n_done = len(checkpoint_data.get('completed_channels', []))
-            if n_done >= len(channel_ids):
-                checkpoint_path.unlink()
-                logger.info("Cleared checkpoint file (all channels complete)")
-            else:
-                logger.info(f"Checkpoint retained — {n_done}/{len(channel_ids)} channels done, will resume next run")
 
         logger.info("=" * 60)
         logger.info("ENUMERATION COMPLETE")
