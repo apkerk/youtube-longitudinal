@@ -17,6 +17,7 @@ Created: Feb 16, 2026
 
 import argparse
 import csv
+import io
 import json
 import logging
 import shutil
@@ -202,11 +203,7 @@ class HealthChecker:
         inventory_rows = 0
         if inventory_path.exists():
             try:
-                with open(inventory_path, "r", encoding="utf-8") as f:
-                    reader = csv.reader(f)
-                    next(reader, None)
-                    for _ in reader:
-                        inventory_rows += 1
+                inventory_rows = _count_csv_rows_nul_safe(inventory_path)
             except Exception:
                 pass
         # If inventory is partial (enumeration in progress), scale threshold to match it
@@ -259,13 +256,8 @@ class HealthChecker:
                 "inventory_integrity", CheckResult.CRITICAL,
                 f"Video inventory not found: {inventory_path.name}",
             )
-        row_count = 0
         try:
-            with open(inventory_path, "r", encoding="utf-8") as f:
-                reader = csv.reader(f)
-                next(reader, None)
-                for _ in reader:
-                    row_count += 1
+            row_count = _count_csv_rows_nul_safe(inventory_path)
         except Exception as e:
             return CheckResult(
                 "inventory_integrity", CheckResult.CRITICAL,
@@ -445,6 +437,15 @@ class HealthChecker:
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(text_report)
         return output_path
+
+
+def _count_csv_rows_nul_safe(path: Path) -> int:
+    """Count data rows in a CSV, stripping NUL bytes that enumerate_videos.py may write."""
+    with open(path, "rb") as f:
+        content = f.read().replace(b"\x00", b"")
+    reader = csv.reader(io.StringIO(content.decode("utf-8", errors="replace")))
+    next(reader, None)  # skip header
+    return sum(1 for _ in reader)
 
 
 def _tail_file(path: Path, n: int) -> List[str]:
