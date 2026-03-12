@@ -1219,3 +1219,19 @@ youtube-longitudinal/
 - Fixed health_check.py: inventory_integrity no longer fires DEGRADED for partial inventory; video_stats_completeness threshold is now dynamic based on inventory size (stops false Telegram alerts)
 - Deployed gender gap video enumeration as launchd service: com.youtube.gender-gap-enumeration (fires 4:00 AM EST, 7h max runtime, checkpoint/resume). Tested: 5 channels, 3,905 videos, ~780 videos/channel avg -- full run ~7.6M videos across ~3 overnight runs.
 - What's next: Enumeration completes ~March 13-14. Then: Stream A' re-run, Trending, Livestream, Shorts, Creative Commons, Topic-Stratified (one at a time, no concurrent discovery scripts).
+
+## 2026-03-12 15:45 Health Check Fix + Stream A' Launch
+
+### Fixes
+- **health_check.py NUL byte bug:** Inventory reads were crashing with `line contains NUL` because enumerate_videos.py writes NUL bytes during active collection. Added `_count_csv_rows_nul_safe()` helper (binary read + strip NUL + decode). Pipeline now reads 4,951,627 inventory rows correctly. CRITICAL removed. Committed 59c39b9.
+- Root cause of Telegram alert at 12:02 PM: health check runs at 4 PM UTC (noon EDT) and was hitting this crash daily.
+
+### Status
+- Stream A': Launched for first time today at 2:00 PM. Running. 5,950+ channels from first keyword alone in first 38 minutes. 82 keywords x 15 languages x 5 strategies. Daily 4h runs until 200K reached.
+- Gender gap enumeration: 3,668/9,760 channels done (37.6%) as of this morning. ~March 15-16 completion.
+- Daily stats: Clean. Mar 12 file written 3:06 AM.
+- Remaining WARNING (video_stats_completeness 1,038 rows): Expected. Weekly video stats ran March 8 when inventory was near-empty. Self-corrects on Sunday's run.
+
+### Next Steps
+- Sunday: weekly video stats re-runs on larger inventory, completeness WARNING resolves
+- ~March 15-16: enumeration completes, start 5 new streams (one at a time)
