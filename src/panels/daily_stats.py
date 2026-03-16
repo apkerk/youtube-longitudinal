@@ -31,6 +31,7 @@ Last Updated: Feb 17, 2026
 
 import argparse
 import csv
+import io
 import json
 import logging
 import socket
@@ -152,15 +153,16 @@ class DailyStatsCollector:
         video_ids = []
         channel_ids_set = set()
 
-        with open(self.inventory_path, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                vid = row.get('video_id', '').strip()
-                cid = row.get('channel_id', '').strip()
-                if vid:
-                    video_ids.append(vid)
-                if cid:
-                    channel_ids_set.add(cid)
+        with open(self.inventory_path, 'rb') as f:
+            _raw = f.read().replace(b'\x00', b'').decode('utf-8', errors='replace')
+        reader = csv.DictReader(io.StringIO(_raw))
+        for row in reader:
+            vid = row.get('video_id', '').strip()
+            cid = row.get('channel_id', '').strip()
+            if vid:
+                video_ids.append(vid)
+            if cid:
+                channel_ids_set.add(cid)
 
         channel_ids = sorted(channel_ids_set)
         logger.info(f"Loaded inventory: {len(video_ids)} videos, {len(channel_ids)} channels")
@@ -353,12 +355,12 @@ class DailyStatsCollector:
         # Load known video IDs from inventory for filtering
         known_video_ids: set = set()
         if self.inventory_path.exists():
-            with open(self.inventory_path, 'r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    vid = row.get('video_id', '').strip()
-                    if vid:
-                        known_video_ids.add(vid)
+            with open(self.inventory_path, 'rb') as f:
+                _raw = f.read().replace(b'\x00', b'').decode('utf-8', errors='replace')
+            for row in csv.DictReader(io.StringIO(_raw)):
+                vid = row.get('video_id', '').strip()
+                if vid:
+                    known_video_ids.add(vid)
 
         new_entries: List[Dict] = []
         channels_with_new = 0
