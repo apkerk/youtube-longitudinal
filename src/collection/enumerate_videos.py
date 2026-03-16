@@ -222,6 +222,10 @@ def enumerate_all_channels(
         if checkpoint_path.exists():
             checkpoint_path.unlink()
             logger.info("Cleared checkpoint (all channels complete)")
+        # Write sentinel so future launchd runs don't overwrite completed inventory
+        sentinel_path = checkpoint_path.parent / f".enumerate_{output_path.stem}_complete"
+        sentinel_path.write_text(f"Completed: {datetime.utcnow().isoformat()}\nChannels: {len(completed_set)}\nVideos: {total_videos}\n")
+        logger.info(f"Completion sentinel written: {sentinel_path.name}")
     else:
         logger.info(
             f"Checkpoint retained — {len(completed_set)}/{len(channel_ids)} channels done, "
@@ -290,6 +294,14 @@ def main():
 
         if not channel_ids:
             logger.warning("No channel IDs found in input file")
+            return
+
+        # Check if enumeration was already completed (sentinel file present)
+        checkpoint_name_check = f".enumerate_{output_path.stem}_checkpoint.json"
+        sentinel_path_check = config.VIDEO_INVENTORY_DIR / f".enumerate_{output_path.stem}_complete"
+        if sentinel_path_check.exists() and not args.test:
+            logger.info(f"Enumeration already complete (sentinel found). Nothing to do.")
+            logger.info(f"Delete {sentinel_path_check.name} to force re-enumeration.")
             return
 
         total_videos = enumerate_all_channels(
