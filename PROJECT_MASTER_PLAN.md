@@ -22,9 +22,9 @@
 
 ## Current Marker
 
-**Now:** Expansion strategies IMPLEMENTED and VERIFIED. All 6 strategies coded, syntax-checked, Python 3.9-compatible. Daily discovery launchd plists drafted. Awaiting validation pilots on Mac Mini.
-**Last Session:** Feb 19, 2026 (Night) — Expansion code committed (40f075a). Verification passed: 94/82 keywords, 42 fields with 8 provenance, dry-run works, Python 3.9 clean. Dead code removed (83213ae). Daily discovery plists + --output flag added for persistent output files.
-**Next:** 1) Run 6 validation pilots on Mac Mini (~70K API units). 2) Launch Stream A re-run with validated strategies. 3) A' re-run. 4) Stream C. 5) Deploy daily discovery launchd services on Mac Mini.
+**Now (March 16, 2026):** Infrastructure fixes sprint complete. All five collection streams done or running. Daily panel stats clean. Gender gap enumeration rebuilding after sentinel fix (~14 nights). Stream A prime running (43,553 channels, toward 200K). Next work: new video detection + video stats for AI census.
+**Last Session:** March 12-16, 2026 -- enumerate_videos.py checkpoint bug fixed + sentinel added; NUL byte crashes fixed in health_check.py and daily_stats.py; Stream A prime launchd deployed; regression tests added (4/4). All committed and pushed.
+**Next:** 1) Build src/panels/update_inventory.py (new video detection, highest priority). 2) Daily chunked video stats for AI census. 3) Wire Trending stream. 4) Research design: tech-channel AI adoption study (pre/post Claude Code launch Jan 2026).
 
 ### Session Achievements (Feb 16, 2026 — Night)
 - ✅ Panel filtered to 9,760 coded channels (from 14,169). channel_ids.csv + channel_metadata.csv regenerated.

@@ -1235,3 +1235,35 @@ youtube-longitudinal/
 ### Next Steps
 - Sunday: weekly video stats re-runs on larger inventory, completeness WARNING resolves
 - ~March 15-16: enumeration completes, start 5 new streams (one at a time)
+
+## 2026-03-16 — Infrastructure Fixes Sprint (March 12–16)
+
+### Fixes Deployed
+- **enumerate_videos.py checkpoint bug (critical):** Checkpoint was deleted after every nightly run — including max-runtime exits — causing the script to re-enumerate from scratch each night instead of resuming. Fixed by moving checkpoint cleanup inside `enumerate_all_channels()` so it only fires when ALL channels are complete. Regression tests added: `src/validation/test_checkpoint_behavior.py` (4/4 passing on Mac Mini).
+- **enumerate_videos.py completion sentinel:** Launchd fired again March 16 4 AM and overwrote the completed 11.7M inventory. Added sentinel so completed runs skip re-enumeration. Rebuilding ~14 nights from scratch.
+- **health_check.py NUL byte crash:** Inventory reads crashed with `line contains NUL`. Added `_count_csv_rows_nul_safe()` helper (binary read + strip NUL + decode).
+- **daily_stats.py NUL byte crash:** Same NUL byte issue in load_inventory() and known_video_ids block. Patched with binary read approach.
+- **Stream A' launchd deployed:** com.youtube.daily-discovery-non-intent fires 2 PM daily. 43,553 channels collected so far. 82 keywords x 15 languages x 5 strategies, running toward 200K target.
+
+### Research Design Discussion
+- New video detection identified as highest priority: needed to establish AI adoption timing for staggered DiD in AI Adoption Diffusion Panel.
+- AI census has no weekly video stats collection configured -- gap to close.
+- Katie raised research design question: tech channels pre-Claude Code launch (Jan 2026) as cleaner exogenous shock sample for studying gender differences in AI adoption rates. Needs fleshing out.
+
+### Current Status
+- Gender gap enumeration: OVERWRITTEN by launchd re-run March 16. Rebuilding. ~14 nights to completion.
+- Daily panel stats: Running clean (both gender gap and AI census). Mar 16 3:05 AM file confirmed.
+- Stream A': Running. ~43,553 channels toward 200K.
+
+### What's Next
+1. Build src/panels/update_inventory.py -- new video detection for both panels (highest priority)
+2. Set up daily chunked video stats (--chunk flag on daily_stats.py) for AI census and gender gap
+3. Wire Trending stream (cheap, ~100 units/day, low effort)
+4. Think through tech-channel AI adoption research design (Katie's new idea)
+
+### All Commits Pushed
+- enumerate_videos.py bug fix + sentinel
+- daily_stats.py NUL byte fix
+- health_check.py NUL byte fix
+- src/validation/test_checkpoint_behavior.py (new regression tests)
+- config/launchd/com.youtube.daily-discovery-non-intent.plist (new)
