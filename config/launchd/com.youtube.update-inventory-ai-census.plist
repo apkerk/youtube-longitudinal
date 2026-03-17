@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.youtube.update-inventory-ai-census</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>-m</string>
+        <string>src.panels.update_inventory</string>
+        <string>--panel</string>
+        <string>ai_census</string>
+        <string>--max-runtime</string>
+        <string>1800</string>
+        <string>--reserve-quota</string>
+        <string>2000</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/katieapker/.youtube-longitudinal/repo</string>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>3</integer>
+        <key>Minute</key>
+        <integer>35</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/katieapker/.youtube-longitudinal/repo/data/logs/update_inventory_ai_census_stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/katieapker/.youtube-longitudinal/repo/data/logs/update_inventory_ai_census_stderr.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+</dict>
+</plist>

@@ -429,6 +429,8 @@ class DailyStatsCollector:
         mode: str = "both",
         test_mode: bool = False,
         limit: Optional[int] = None,
+        chunk_index: Optional[int] = None,
+        num_chunks: Optional[int] = None,
     ) -> Dict:
         """
         Execute panel collection pipeline.
@@ -451,6 +453,9 @@ class DailyStatsCollector:
             mode: 'channel', 'video', or 'both'
             test_mode: If True, default limit to 250 video IDs
             limit: Max video IDs to process
+            chunk_index: Which chunk to process (0-indexed). Used with num_chunks
+                to split video stats across daily runs.
+            num_chunks: Total number of chunks to split the inventory into.
 
         Returns:
             Summary dict with counts and paths
@@ -471,6 +476,19 @@ class DailyStatsCollector:
         else:
             # All other cases: load from the video inventory (provides both video + channel IDs)
             video_ids, channel_ids = self.load_inventory()
+
+        # Apply chunking if requested (for splitting video stats across daily runs)
+        if collect_videos and chunk_index is not None and num_chunks is not None:
+            total = len(video_ids)
+            chunk_size = total // num_chunks
+            start = chunk_index * chunk_size
+            # Last chunk gets any remainder
+            end = total if chunk_index == num_chunks - 1 else start + chunk_size
+            video_ids = video_ids[start:end]
+            logger.info(
+                f"Chunk {chunk_index}/{num_chunks}: processing videos [{start}:{end}] "
+                f"({len(video_ids)} of {total} total)"
+            )
 
         if collect_videos and not video_ids:
             logger.warning("No video IDs in inventory, nothing to collect")
@@ -575,6 +593,10 @@ def main():
     parser.add_argument('--limit', type=int, default=None, help='Max video IDs to process')
     parser.add_argument('--date', type=str, default=None,
         help='Override collection date (YYYY-MM-DD) for backfilling missed days')
+    parser.add_argument('--chunk-index', type=int, default=None,
+        help='Which chunk to process (0-indexed). Use with --num-chunks to split video stats across daily runs.')
+    parser.add_argument('--num-chunks', type=int, default=None,
+        help='Total number of chunks to split the video inventory into (e.g., 7 for daily-over-a-week).')
     args = parser.parse_args()
 
     # Validate --date format
@@ -583,6 +605,19 @@ def main():
             datetime.strptime(args.date, "%Y-%m-%d")
         except ValueError:
             print("Error: --date must be YYYY-MM-DD format", file=sys.stderr)
+            sys.exit(1)
+
+    # Validate chunk flags
+    if (args.chunk_index is not None) != (args.num_chunks is not None):
+        print("Error: --chunk-index and --num-chunks must be used together", file=sys.stderr)
+        sys.exit(1)
+
+    if args.chunk_index is not None:
+        if args.chunk_index < 0 or args.chunk_index >= args.num_chunks:
+            print(f"Error: --chunk-index must be 0..{args.num_chunks - 1}", file=sys.stderr)
+            sys.exit(1)
+        if args.mode not in ("video", "both"):
+            print("Error: --chunk-index only applies to video or both modes", file=sys.stderr)
             sys.exit(1)
 
     setup_logging()
@@ -639,6 +674,8 @@ def main():
         logger.info(f"Limit: {args.limit}")
     if args.date:
         logger.info(f"Date override: {args.date}")
+    if args.chunk_index is not None:
+        logger.info(f"Chunk: {args.chunk_index}/{args.num_chunks}")
     logger.info("=" * 60)
 
     try:
@@ -652,7 +689,13 @@ def main():
             panel_name=args.panel_name,
             date_override=args.date,
         )
-        summary = collector.run(mode=args.mode, test_mode=args.test, limit=args.limit)
+        summary = collector.run(
+            mode=args.mode,
+            test_mode=args.test,
+            limit=args.limit,
+            chunk_index=args.chunk_index,
+            num_chunks=args.num_chunks,
+        )
 
         logger.info("=" * 60)
         logger.info("COLLECTION COMPLETE")
