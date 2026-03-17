@@ -55,6 +55,7 @@ STREAM_DIRS = {
     "livestream": CHANNELS_DIR / "livestream",
     "shorts_first": CHANNELS_DIR / "shorts_first",
     "creative_commons": CHANNELS_DIR / "creative_commons",
+    "tech_census": CHANNELS_DIR / "tech_census",
 }
 
 # =============================================================================
@@ -72,6 +73,7 @@ SAMPLE_TARGETS = {
     "livestream": 25000,        # Livestream creators
     "shorts_first": 50000,      # Shorts-first creators
     "creative_commons": 15000,  # Creative Commons educators
+    "tech_census": 50000,       # Pre-2023 tech channels for AI adoption study
 }
 
 # =============================================================================
@@ -596,6 +598,55 @@ AI_FLAG_KEYWORDS: Dict[str, List[str]] = {
 AI_FLAG_KEYWORDS_FLAT: List[str] = []
 for _cat_keywords in AI_FLAG_KEYWORDS.values():
     AI_FLAG_KEYWORDS_FLAT.extend(_cat_keywords)
+
+# =============================================================================
+# TECH CENSUS CONFIG (pre-2023 tech channels for AI adoption study)
+# =============================================================================
+
+TECH_CENSUS_TOPIC_ID = "/m/07c1v"  # Technology parent topic
+
+TECH_CENSUS_CREATION_CUTOFF = "2023-01-01"  # Channels must be created before this date
+
+# Search windows span 2015-2022 (8 years of pre-AI tech content)
+TECH_CENSUS_WINDOW_START = "2015-01-01"
+TECH_CENSUS_WINDOW_END = "2022-12-31"
+
+# Region codes for rotating discovery (one per window, cycling)
+TECH_CENSUS_REGIONS = [
+    "US", "IN", "BR", "GB", "JP", "DE", "FR", "RU",
+    "KR", "MX", "ID", "CA", "AU", "IT", "ES",
+]
+
+# Keywords for Method 2 (keyword discovery without topicId)
+TECH_CENSUS_KEYWORDS: List[str] = [
+    # Programming / Development
+    "coding tutorial", "programming tutorial", "python tutorial",
+    "javascript tutorial", "software development", "web development",
+    "code review", "github", "developer", "full stack",
+    # Hardware / Gadgets
+    "tech review", "gadget review", "unboxing tech", "PC build",
+    "laptop review", "smartphone review", "best tech", "tech comparison",
+    # General Technology
+    "technology explained", "how it works tech", "software review",
+    "app review", "tech news", "tech tips",
+    # Multilingual
+    "tutoriel programmation",       # FR
+    "tutorial de programacion",     # ES
+    "プログラミング チュートリアル",  # JP
+    "технологии обзор",             # RU
+    "기술 리뷰",                     # KR
+]
+
+# Topic strings that count as "Technology-related" for Stage 1 verification
+TECH_TOPIC_TERMS = [
+    "technology", "software", "computer", "gadget", "programming",
+]
+
+# Stage 2 eligible categories (channels tagged with these get content-screened)
+TECH_STAGE2_CATEGORIES = [
+    "education", "entertainment", "people", "knowledge",
+    "science", "how-to", "howto",
+]
 
 # =============================================================================
 # RANDOM PREFIX CONFIG (Stream C)
