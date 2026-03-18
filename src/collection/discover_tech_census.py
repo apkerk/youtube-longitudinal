@@ -100,7 +100,7 @@ def generate_windows(start_date_str, end_date_str):
 # =============================================================================
 
 def checkpoint_path(method):
-    return TECH_CENSUS_DIR / ".discovery_%s_checkpoint.json" % method
+    return TECH_CENSUS_DIR / (".discovery_%s_checkpoint.json" % method)
 
 
 def load_checkpoint(method, output_path):
