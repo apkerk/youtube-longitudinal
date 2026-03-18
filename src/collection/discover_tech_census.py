@@ -78,8 +78,15 @@ def setup_logging():
 # TIME WINDOW GENERATION
 # =============================================================================
 
-def generate_windows(start_date_str, end_date_str):
-    """Generate 24-hour (date, date+1) windows across the given range.
+def generate_windows(start_date_str, end_date_str, step_days=7):
+    """Generate time windows across the given range.
+
+    Args:
+        start_date_str: YYYY-MM-DD start
+        end_date_str: YYYY-MM-DD end
+        step_days: Days between window starts (default 7 = weekly).
+            Each window is 24 hours wide (one day); step_days controls
+            how far apart the sampled days are.
 
     Returns list of (published_after_iso, published_before_iso) tuples.
     """
@@ -91,7 +98,7 @@ def generate_windows(start_date_str, end_date_str):
         after = current.strftime("%Y-%m-%dT00:00:00Z")
         before = (current + timedelta(days=1)).strftime("%Y-%m-%dT00:00:00Z")
         windows.append((after, before))
-        current += timedelta(days=1)
+        current += timedelta(days=step_days)
     return windows
 
 
@@ -179,6 +186,7 @@ def run_discovery(
     max_runtime=None,
     reserve_quota=0,
     daily_quota_limit=0,
+    step_days=7,
 ):
     """
     Main discovery loop for either topicid or keyword method.
@@ -190,7 +198,7 @@ def run_discovery(
     quota_ceiling = daily_quota_limit - reserve_quota if reserve_quota > 0 and daily_quota_limit > 0 else 0
 
     # Generate time windows
-    windows = generate_windows(config.TECH_CENSUS_WINDOW_START, config.TECH_CENSUS_WINDOW_END)
+    windows = generate_windows(config.TECH_CENSUS_WINDOW_START, config.TECH_CENSUS_WINDOW_END, step_days=step_days)
     if test_mode:
         windows = windows[:5]
         logger.info("TEST MODE: limited to %d windows", len(windows))
@@ -375,6 +383,10 @@ def main():
         "--reserve-quota", type=int, default=2000,
         help="Stop this many units before daily limit (default 2000)",
     )
+    parser.add_argument(
+        "--step-days", type=int, default=7,
+        help="Days between sampled windows (default 7 = weekly, 1 = daily)",
+    )
     args = parser.parse_args()
 
     setup_logging()
@@ -426,6 +438,7 @@ def main():
             max_runtime=args.max_runtime,
             reserve_quota=args.reserve_quota,
             daily_quota_limit=daily_quota_limit,
+            step_days=args.step_days,
         )
 
         logger.info("=" * 60)
