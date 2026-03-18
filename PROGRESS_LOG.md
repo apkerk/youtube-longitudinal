@@ -5,18 +5,65 @@
 
 ---
 
-## Current Status (as of March 3, 2026 — Morning)
+## Current Status (as of March 18, 2026 — 5:30 PM)
 
-**Phase:** Phase B — ACTIVE. Stream A nearing completion, daily stats RECOVERED.
-**Roadmap Position:** Stream A: 73/94 keywords, 1,313 combos done (~76%). ~4 nights remaining (completion ~March 6-7).
-**What's Running on Mac Mini (192.168.86.36 — Nest mesh ethernet):**
-- `com.youtube-longitudinal.daily-channel-stats`: **3:05 AM EST** (moved from 8:00 AM)
-- `com.youtube.ai-census-daily-channel-stats`: **3:12 AM EST** (moved from 9:00 AM)
-- `com.youtube.stream-a-rerun`: **3:35 AM EST** (moved from 3:15 AM), `--reserve-quota 2000`
-- 7 launchd services total. All loaded. No screen sessions.
-**Daily Stats:** RECOVERED from 5-day outage (Feb 27 - Mar 3). Caused by Stream A consuming entire daily quota before daily stats could run. Fixed by rescheduling: daily stats first (3:05/3:12 AM), then Stream A (3:35 AM), plus --reserve-quota 2000.
-**Data Gap:** Feb 27 - Mar 3 daily stats are permanently missing (point-in-time snapshots, can't backfill). Series: Feb 17-26 present, Feb 27 - Mar 3 missing, Mar 4+ should resume.
-**Next Steps:** (1) Verify Mar 4 daily stats appear (first run with new schedule). (2) Stream A finishes ~March 6-7. (3) Retire Stream A plist, B.4 validation, Phase C.
+**Phase:** Infrastructure expansion + new Tech Census stream design.
+**What's Running on Mac Mini (100.109.96.120 via Tailscale):**
+- `com.youtube-longitudinal.daily-channel-stats`: **3:05 AM** (gender gap, 9,760 channels)
+- `com.youtube.ai-census-daily-channel-stats`: **3:12 AM** (AI census, 50,010 channels)
+- `com.youtube.parallel-enumeration`: **3:15 AM** (10-shard parallel video enumeration, NEW)
+- `com.youtube.update-inventory-gender-gap`: **3:30 AM** (new video detection, NEW)
+- `com.youtube.update-inventory-ai-census`: **3:35 AM** (new video detection, NEW)
+- `com.youtube.daily-trending`: **11:00 AM** (trending tracker, NEW)
+- `com.youtube.gender-gap-video-stats-chunk`: **11:00 AM** (daily 1/7 video stats, NEW)
+- `com.youtube.ai-census-video-stats-chunk`: **12:00 PM** (daily 1/7 video stats, NEW)
+- `com.youtube.daily-discovery-non-intent`: **PAUSED** (A' at 43,553/200K, paused to free quota for enumeration)
+- `com.youtube.stream-a-rerun`: dormant (Stream A complete)
+- Plus: health-check, sync-to-drive, weekly-video-stats (legacy)
+**Daily Stats:** Clean streak since March 5 for both panels.
+**Gender Gap Enumeration:** REBUILDING via 10 parallel shards (9,760 channels). March 16 launchd overwrite destroyed 11.7M inventory. Sentinel fix in place. First parallel run tonight. Should complete in 1-2 nights with A' paused (freeing ~840K quota units).
+**A' Discovery:** Paused at 43,553/200K. Auto-resumes when all 10 enumeration shards complete.
+**Quota:** Today used 1,006,985 units. A' search.list consumed 83% (839,900 units). Enumeration + video stats + daily stats combined = only 167K.
+**Tailscale:** Installed on both laptop and Mac Mini. SSH works from anywhere (DC trip).
+**Next Steps:** (1) Verify parallel enumeration runs tonight. (2) After enum complete, merge + re-enable A'. (3) Deploy Tech Census discovery when quota allows. (4) Run topic distribution diagnostic on gender gap panel.
+
+---
+
+## 2026-03-18 17:30 [Major Infrastructure Session: Parallel Enumeration + Tech Census + Tailscale]
+
+**Focus:** Recover from gender gap inventory loss, build new infrastructure, design Tech Census stream
+**Project State:** Data infrastructure phase. Gender gap daily stats healthy (March 5+), video inventory rebuilding via 10-shard parallelization tonight, Tech Census stream designed and script committed, Tailscale remote access operational for DC trip.
+
+### Accomplished
+- **Diagnosed inventory corruption:** Gender gap inventory had 9,584 channels but only 1 video per channel (should be ~1,200 avg). March 16 launchd overwrite produced a truncated file. Checkpoint falsely marked 9,584 channels "complete."
+- **Built parallel enumeration system:** `parallel_enumerate.py` splits 9,760 channels into 10 shards of 976. Each writes to its own CSV and checkpoint. Three rounds of code audit caught: partial results marked complete (fixed: discard partial, retry next run), merge script OOM on 11M rows (fixed: streaming merge), duplicate screen session race condition on multi-night runs (fixed: screen -list check before launch), and QPS rate limiting (acceptable with exponential backoff).
+- **Built Tech Census stream:** New discovery script (`discover_tech_census.py`) for 50K pre-2023 Technology-tagged channels. Two methods: topicId discovery and keyword discovery. Design doc plan-eval scored 83/100. Committed and pushed.
+- **Research design memo:** Analyzed 5 options for studying gendered AI adoption. Katie chose: tech-specific sample, pre-Jan 2023 channels, video enumeration to track adoption timing by gender. 50K target. Broad search then filter to Technology topics.
+- **Quota analysis:** Today's 1M units: 83% consumed by A' search.list (839,900 units). Paused A' to free quota for enumeration.
+- **Installed Tailscale** on both Mac Mini and laptop. SSH works over Tailscale IP (100.109.96.120). Updated `~/.ssh/config` alias. Remote access from DC confirmed working.
+- **Deployed new launchd services:** update_inventory (both panels), daily video stats chunks (both panels), trending tracker, parallel enumeration launcher.
+
+### Decisions
+- **Pause A' for enumeration:** A' consumes 83% of daily quota for search.list calls. Enumeration needs ~293K units total. With A' paused, enumeration should finish in 1-2 nights. A' auto-resumes when all 10 shard sentinels exist.
+- **Tech Census design:** Broad discovery (not topic-restricted), filter to Technology post-hoc, pre-Jan 2023, 50K target. Multiple strategies (topicId + keyword + potential random prefix supplement). Gender coding deferred to Katie.
+- **Daily video stats as chunks:** Weekly single-run (11.7M videos = 19h) doesn't fit. Daily 1/7th chunks in the 11AM-2PM gap between enumeration and A'.
+
+### Files Created/Modified
+- `src/collection/discover_tech_census.py` (new)
+- `src/config.py` (tech_census entries)
+- `docs/TECH_CENSUS_DESIGN.md` (new)
+- `parallel_enumerate.py` (new, on Mac Mini)
+- `merge_shards.py` (new, on Mac Mini)
+- `launch_shards.sh` (new, on Mac Mini)
+- `~/.ssh/config` (updated macmini alias to Tailscale IP)
+- Various launchd plists deployed to Mac Mini
+
+### What's Next
+1. Verify parallel enumeration runs tonight (check logs from DC via Tailscale)
+2. After enum complete: merge produces `gender_gap_inventory.csv`, A' auto-resumes
+3. Run topic distribution diagnostic on gender gap panel (how many tech channels?)
+4. Deploy Tech Census discovery when quota slot available
+5. Ben Lewis co-author meeting Thu 4 PM
 
 ---
 

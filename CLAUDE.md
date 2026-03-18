@@ -10,6 +10,31 @@ For identity, values, priorities, and working principles, read:
 > Charter: `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md`
 > Read at session start for goals, milestones, and delegation boundaries.
 
+## Outer Loop Criteria
+
+Binary-testable for this project:
+- Daily collection pipeline runs without errors and produces validated output → **YES/NO**
+- No quota overruns or unexpected API failures in the last 7 days → **YES/NO**
+- Current collection phase matches the milestone in PROJECT_CHARTER.md → **YES/NO**
+
+---
+
+## When ALGORITHM Mode Applies
+
+Use ALGORITHM mode for:
+- Pipeline architecture decisions or sampling design changes
+- Sessions involving methodology decisions (cohort cutoff dates, stream definitions, filter criteria)
+- Any production collection run approval (>1000 channels requires Katie's explicit sign-off)
+- Multi-file coordination across src/ + data/ + documentation in one session
+
+Use NATIVE mode for:
+- Running --test mode validation
+- Generating diagnostic plots and descriptive statistics
+- Updating PROGRESS_LOG.md and PROJECT_MASTER_PLAN.md
+- Reading/analyzing existing data files
+
+---
+
 ## Project Identity
 
 This project collects longitudinal YouTube data via the YouTube Data API v3 for two research programs:
@@ -57,6 +82,9 @@ This project collects longitudinal YouTube data via the YouTube Data API v3 for 
 ## Session Protocol
 
 ### On Startup
+
+**HOOK CHECK:** A `[SESSION CONTEXT — YouTube Longitudinal]` block is injected automatically at session start. Verify it appeared. If absent, run `search_thoughts` with query "YouTube Longitudinal" manually.
+
 1. Read this file (CLAUDE.md)
 2. Read the project charter at `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md`. Print 3-line summary: current milestone, days until next deadline, blockers from last session. Verify work aligns with charter milestones.
 3. Read PROJECT_MASTER_PLAN.md — understand current phase and next steps
