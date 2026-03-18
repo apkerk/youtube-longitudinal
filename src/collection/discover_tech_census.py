@@ -62,7 +62,7 @@ LOCKFILE_PATH = TECH_CENSUS_DIR / ".tech_census.lock"
 def setup_logging():
     """Configure logging with file and stream handlers."""
     config.ensure_directories()
-    log_file = config.LOGS_DIR / "discover_tech_census_%s.log" % config.get_date_stamp()
+    log_file = config.LOGS_DIR / ("discover_tech_census_%s.log" % config.get_date_stamp())
 
     logging.basicConfig(
         level=logging.INFO,
@@ -378,7 +378,7 @@ def main():
         if not output_path.is_absolute():
             output_path = config.PROJECT_ROOT / output_path
     else:
-        output_path = TECH_CENSUS_DIR / "%s_%s.csv" % (args.method, config.get_date_stamp())
+        output_path = TECH_CENSUS_DIR / ("%s_%s.csv" % (args.method, config.get_date_stamp()))
 
     logger.info("=" * 60)
     logger.info("TECH CENSUS DISCOVERY")
