@@ -106,17 +106,36 @@ echo "=========================================="
 echo "PARALLEL ENUMERATION COMPLETE — $(date)"
 echo "=========================================="
 
-# Count final inventory
+# Count final inventory and write sentinel to prevent future overwrites
 python3 -c "
 import csv, io
-with open('$OUTPUT', 'rb') as f:
+from datetime import datetime
+from pathlib import Path
+
+output = Path('$OUTPUT')
+with open(output, 'rb') as f:
     raw = f.read().replace(b'\x00', b'')
 text = raw.decode('utf-8', errors='replace')
 reader = csv.DictReader(io.StringIO(text))
 ids = set()
+videos = 0
 for row in reader:
     cid = row.get('channel_id', '').strip()
     if cid:
         ids.add(cid)
-print('Final inventory: %d unique channels' % len(ids))
+        videos += 1
+print('Final inventory: %d unique channels, %d video rows' % (len(ids), videos))
+
+# Write completion sentinel (same format as enumerate_videos.py)
+sentinel = output.parent / ('.enumerate_%s_complete' % output.stem)
+sentinel.write_text(
+    'Completed: %s\nChannels: %d\nVideos: %d\nMethod: parallel_enumerate (10 shards)\n'
+    % (datetime.utcnow().isoformat(), len(ids), videos)
+)
+print('Sentinel written: %s' % sentinel.name)
+print('Nightly launchd enumeration will now skip automatically.')
 "
+
+# Unload the one-shot plist so it doesn't re-fire tomorrow
+launchctl unload ~/Library/LaunchAgents/com.youtube.parallel-enum-oneshot.plist 2>/dev/null || true
+echo "One-shot plist unloaded."
