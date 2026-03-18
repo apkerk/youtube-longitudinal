@@ -200,20 +200,28 @@ def run_discovery(
     regions = config.TECH_CENSUS_REGIONS
     work_queue = []
 
+    # Broad query terms paired with topicId to boost yield (topicId alone is ~1 result/day)
+    topicid_queries = [
+        "technology", "tech", "software", "computer", "programming",
+        "tutorial", "review", "how to", "code", "developer",
+    ]
+
     if method == "topicid":
         for i, (after, before) in enumerate(windows):
             region = regions[i % len(regions)]
-            for sort_order in sort_orders:
-                key = "%s|%s|%s" % (after[:10], sort_order, region)
-                params = {
-                    "published_after": after,
-                    "published_before": before,
-                    "order": sort_order,
-                    "region_code": region,
-                    "max_pages": 10,
-                    "topicId": config.TECH_CENSUS_TOPIC_ID,
-                }
-                work_queue.append((key, params))
+            for tq in topicid_queries:
+                for sort_order in ["date", "relevance"]:
+                    key = "%s|%s|%s|%s" % (after[:10], tq, sort_order, region)
+                    params = {
+                        "published_after": after,
+                        "published_before": before,
+                        "order": sort_order,
+                        "region_code": region,
+                        "max_pages": 5,
+                        "query": tq,
+                        "topicId": config.TECH_CENSUS_TOPIC_ID,
+                    }
+                    work_queue.append((key, params))
 
     elif method == "keyword":
         keywords = config.TECH_CENSUS_KEYWORDS
