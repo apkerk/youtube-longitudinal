@@ -5,27 +5,53 @@
 
 ---
 
-## Current Status (as of March 18, 2026 — 5:30 PM)
+## Current Status (as of March 23, 2026 — 10:00 AM)
 
-**Phase:** Infrastructure expansion + new Tech Census stream design.
+**Phase:** Steady-state collection. All infrastructure operational.
 **What's Running on Mac Mini (100.109.96.120 via Tailscale):**
 - `com.youtube-longitudinal.daily-channel-stats`: **3:05 AM** (gender gap, 9,760 channels)
 - `com.youtube.ai-census-daily-channel-stats`: **3:12 AM** (AI census, 50,010 channels)
-- `com.youtube.parallel-enumeration`: **3:15 AM** (10-shard parallel video enumeration, NEW)
-- `com.youtube.update-inventory-gender-gap`: **3:30 AM** (new video detection, NEW)
-- `com.youtube.update-inventory-ai-census`: **3:35 AM** (new video detection, NEW)
-- `com.youtube.daily-trending`: **11:00 AM** (trending tracker, NEW)
-- `com.youtube.gender-gap-video-stats-chunk`: **11:00 AM** (daily 1/7 video stats, NEW)
-- `com.youtube.ai-census-video-stats-chunk`: **12:00 PM** (daily 1/7 video stats, NEW)
-- `com.youtube.daily-discovery-non-intent`: **PAUSED** (A' at 43,553/200K, paused to free quota for enumeration)
+- `com.youtube.update-inventory-gender-gap`: **3:30 AM** (new video detection)
+- `com.youtube.update-inventory-ai-census`: **3:35 AM** (new video detection)
+- `com.youtube.gender-gap-video-stats-chunk`: **4:30 AM** (daily 1/7 video stats, moved from 11 AM)
+- `com.youtube.ai-census-video-stats-chunk`: **7:00 AM** (daily 1/7 video stats, moved from 12 PM)
+- `com.youtube.daily-trending`: **11:00 AM** (trending tracker, 51 regions)
+- `com.youtube.daily-discovery-non-intent`: **2:00 PM** (A' at 68,212/200K)
 - `com.youtube.stream-a-rerun`: dormant (Stream A complete)
 - Plus: health-check, sync-to-drive, weekly-video-stats (legacy)
-**Daily Stats:** Clean streak since March 5 for both panels.
-**Gender Gap Enumeration:** REBUILDING via 10 parallel shards (9,760 channels). March 16 launchd overwrite destroyed 11.7M inventory. Sentinel fix in place. First parallel run tonight. Should complete in 1-2 nights with A' paused (freeing ~840K quota units).
-**A' Discovery:** Paused at 43,553/200K. Auto-resumes when all 10 enumeration shards complete.
-**Quota:** Today used 1,006,985 units. A' search.list consumed 83% (839,900 units). Enumeration + video stats + daily stats combined = only 167K.
-**Tailscale:** Installed on both laptop and Mac Mini. SSH works from anywhere (DC trip).
-**Next Steps:** (1) Verify parallel enumeration runs tonight. (2) After enum complete, merge + re-enable A'. (3) Deploy Tech Census discovery when quota allows. (4) Run topic distribution diagnostic on gender gap panel.
+**Daily Stats:** Unbroken streak March 5-23 for both panels. Gender gap files now in correct `gender_gap/` subdirectory.
+**Gender Gap Inventory:** REBUILT. 11,739,044 videos + growing via daily update_inventory. Completed in one night via 10-shard parallel enumeration (March 19).
+**A' Discovery:** Running. 68,212/200K unique channels. Gaining ~2-3K/day. ETA mid-May.
+**Video Stats Chunks:** Rescheduled March 23 to run before A' (4:30 AM / 7:00 AM instead of 11 AM / 12 PM). Prevents quota exhaustion that was occurring when A' and video stats ran concurrently.
+**Trending:** 7 consecutive days collected (March 17-23).
+**Tech Census:** Script committed. Not yet running. Awaiting quota slot.
+**Next Steps:** (1) Verify rescheduled video stats chunks run clean tomorrow. (2) Deploy Tech Census discovery when ready. (3) Run topic distribution diagnostic on gender gap panel.
+
+---
+
+## 2026-03-23 10:00 [Video Stats Rescheduled + Monday Status Check]
+
+- **All streams healthy.** Daily channel stats unbroken March 5-23. A' at 68,212. Gender gap inventory growing (update_inventory adding ~7,600 new videos/day). Trending at 7 days.
+- **Rescheduled video stats chunks:** Gender gap 11 AM -> 4:30 AM, AI census 12 PM -> 7:00 AM. Ensures all irreplaceable collection completes before A' fires at 2 PM. Fixes recurring quota exhaustion where A' + video stats together exceeded 1M daily limit.
+- **Decision:** Priority order for shared quota is: daily channel stats > update inventory > video stats chunks > trending > A' discovery. Irreplaceable data first, resumable discovery last.
+
+---
+
+## 2026-03-20 07:00 [Plist Fix + Inventory Permissions]
+
+- **Fixed gender gap daily stats plist:** Missing `--panel-name gender_gap` arg. Stats files were landing in `channel_stats/` root instead of `channel_stats/gender_gap/`. Update_inventory couldn't find them. Added the arg, reloaded plist, moved all existing files (Feb 17 - Mar 20) to correct subdirectory.
+- **Fixed inventory permissions:** File was chmod 444 (read-only) for overwrite protection, but update_inventory needs append access. Changed to 644. Sentinel files still prevent old enumeration from overwriting.
+- **Wrote merge sentinel** (`.parallel_enum_merged`) that auto_parallel_enum.sh failed to create.
+- **A' back online:** Re-enabled March 19. Jumped to 60,702 from 43,553 in 2 days.
+
+---
+
+## 2026-03-19 08:30 [Parallel Enumeration COMPLETE + Merge]
+
+- **All 10 shards completed overnight** (March 19, 5:20 AM - 7:02 AM). Gender gap inventory rebuilt: **11,739,044 videos** across 9,760 channels.
+- **Merge required NUL-safe fix:** shard_00 had NUL bytes from concurrent writes. Original merge produced 868K rows instead of 11.7M. Fixed with binary read + strip NUL + decode (same pattern as health_check.py). Committed fix.
+- **Inventory set read-only** (chmod 444) to prevent future overwrites. Sentinel files on all 10 shards.
+- **AI census update_inventory working:** Found 2,593 channels with new videos, added 31,242 new video IDs. Hits 30-min runtime cap daily (7,729 channels remaining per run).
 
 ---
 
