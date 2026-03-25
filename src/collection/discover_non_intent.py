@@ -99,12 +99,15 @@ def load_checkpoint(output_path):
 
     saved_path = Path(ckpt.get("output_path", ""))
     if saved_path.exists() and saved_path == output_path:
-        with open(saved_path, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                cid = row.get('channel_id', '').strip()
-                if cid:
-                    channels_by_id[cid] = row
+        with open(saved_path, 'rb') as f:
+            raw = f.read().replace(b'\x00', b'')
+        text = raw.decode('utf-8', errors='replace')
+        import io
+        reader = csv.DictReader(io.StringIO(text))
+        for row in reader:
+            cid = row.get('channel_id', '').strip()
+            if cid:
+                channels_by_id[cid] = row
 
     logger.info(
         "Resumed from checkpoint: %d channels, %d passes completed",
