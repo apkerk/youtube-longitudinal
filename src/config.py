@@ -64,7 +64,7 @@ STREAM_DIRS = {
 
 SAMPLE_TARGETS = {
     "stream_a": 200000,         # Intent creators (LARGE for attrition)
-    "stream_a_prime": 200000,   # Non-intent creators (LARGE for attrition)
+    "stream_a_prime": 100000,   # Non-intent creators (LARGE for attrition)
     "stream_b": 25000,          # Algorithm favorites (benchmark)
     "stream_c": 50000,          # Searchable random
     "stream_d": 25000,          # Casual uploads

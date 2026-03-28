@@ -243,7 +243,7 @@ def generate_search_passes(
 
 def discover_non_intent_channels(
     youtube,
-    target_count=200000,  # type: int
+    target_count=100000,  # type: int
     test_mode=False,  # type: bool
     output_path=None,  # type: Optional[Path]
     exclude_ids=None,  # type: Optional[Set[str]]
