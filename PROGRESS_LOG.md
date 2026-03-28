@@ -5,27 +5,52 @@
 
 ---
 
-## Current Status (as of March 23, 2026 — 10:00 AM)
+## Current Status (as of March 28, 2026 — 6:50 AM)
 
-**Phase:** Steady-state collection. All infrastructure operational.
+**Phase:** Steady-state collection. All 14 services operational. A' approaching 100K cap.
 **What's Running on Mac Mini (100.109.96.120 via Tailscale):**
 - `com.youtube-longitudinal.daily-channel-stats`: **3:05 AM** (gender gap, 9,760 channels)
 - `com.youtube.ai-census-daily-channel-stats`: **3:12 AM** (AI census, 50,010 channels)
 - `com.youtube.update-inventory-gender-gap`: **3:30 AM** (new video detection)
 - `com.youtube.update-inventory-ai-census`: **3:35 AM** (new video detection)
-- `com.youtube.gender-gap-video-stats-chunk`: **4:30 AM** (daily 1/7 video stats, moved from 11 AM)
-- `com.youtube.ai-census-video-stats-chunk`: **7:00 AM** (daily 1/7 video stats, moved from 12 PM)
+- `com.youtube.gender-gap-video-stats-chunk`: **4:30 AM** (daily 1/7 video stats)
+- `com.youtube.ai-census-video-stats-chunk`: **7:00 AM** (daily 1/7 video stats)
 - `com.youtube.daily-trending`: **11:00 AM** (trending tracker, 51 regions)
-- `com.youtube.daily-discovery-non-intent`: **2:00 PM** (A' at 68,212/200K)
-- `com.youtube.stream-a-rerun`: dormant (Stream A complete)
-- Plus: health-check, sync-to-drive, weekly-video-stats (legacy)
-**Daily Stats:** Unbroken streak March 5-23 for both panels. Gender gap files now in correct `gender_gap/` subdirectory.
-**Gender Gap Inventory:** REBUILT. 11,739,044 videos + growing via daily update_inventory. Completed in one night via 10-shard parallel enumeration (March 19).
-**A' Discovery:** Running. 68,212/200K unique channels. Gaining ~2-3K/day. ETA mid-May.
-**Video Stats Chunks:** Rescheduled March 23 to run before A' (4:30 AM / 7:00 AM instead of 11 AM / 12 PM). Prevents quota exhaustion that was occurring when A' and video stats ran concurrently.
-**Trending:** 7 consecutive days collected (March 17-23).
-**Tech Census:** Script committed. Not yet running. Awaiting quota slot.
-**Next Steps:** (1) Verify rescheduled video stats chunks run clean tomorrow. (2) Deploy Tech Census discovery when ready. (3) Run topic distribution diagnostic on gender gap panel.
+- `com.youtube.daily-discovery-non-intent`: **2:00 PM** (A' at 91,383/100K, target lowered from 200K)
+- Plus: stream-a-rerun (dormant), health-check, sync-to-drive, weekly-video-stats (legacy)
+**Daily Stats:** Unbroken streak March 5-28 for both panels (24 consecutive days).
+**Gender Gap Inventory:** 11.7M+ videos, growing ~7K/day via update_inventory.
+**A' Discovery:** 91,383/100K. Gaining ~3,200/day. Auto-stops at 100K (~Mon/Tue March 30-31). NUL byte fix holding since March 25.
+**Video Stats Chunks:** Running clean since March 21. GG: ~85MB/day. AI census: ~195MB/day.
+**Trending:** 14,825 cumulative unique channels across 51 regions.
+**Attrition Check (March 28):** 200-channel sample of early A' channels: 58.5% still uploading, 41.5% attrited. Much lower than 80-90% assumption.
+**Tech Census:** Script committed. Not yet running. Will deploy when A' frees quota (~March 31).
+**Next Steps:** (1) A' hits 100K and auto-stops. (2) Deploy Tech Census in freed quota slot. (3) Run topic distribution diagnostic on gender gap panel.
+
+---
+
+## 2026-03-18 through 2026-03-28 [Extended Monitoring Session: DC Trip + Attrition Analysis]
+
+**Focus:** Daily pipeline monitoring from DC via Tailscale, bug fixes, attrition analysis, A' target revision.
+**Project State:** Collection infrastructure fully operational. 14 services running autonomously. A' approaching 100K revised target (~Mon/Tue). Tech Census ready to deploy when A' frees quota.
+
+### Key Events (Chronological)
+- **March 18:** Major infrastructure session. Built Tech Census stream (design + script). Installed Tailscale on laptop + Mac Mini. Deployed 6 new launchd services. Paused A' for parallel enumeration.
+- **March 19:** Gender gap enumeration COMPLETE (11,739,044 videos) via 10-shard parallel run. Merge required NUL-safe fix. A' re-enabled. Merge sentinel written.
+- **March 20:** Found gender gap plist missing `--panel-name gender_gap`. Fixed, moved 16 days of stats files to correct subdirectory. AI census update_inventory working (31K new videos/day).
+- **March 23:** Rescheduled video stats chunks (11 AM/12 PM -> 4:30 AM/7:00 AM) to prevent quota exhaustion overlap with A'.
+- **March 24-25:** Diagnosed A' NUL byte crash. load_checkpoint was crashing on NUL bytes in the CSV. Fix deployed March 25 8:19 AM. 6 days of A' collection lost (March 19-24). First clean run March 25 at 2 PM.
+- **March 28:** Ran attrition analysis on 200 early A' channels. Result: 41.5% attrition (not 80-90% assumed). Lowered A' target from 200K to 100K. At 91,383, will auto-stop ~March 30-31.
+
+### Decisions
+- **A' target lowered 200K -> 100K.** Attrition check shows 41.5%, so 100K yields ~58K survivors, 4:1 ratio over Stream A's ~15K survivors. Going to 200K would be collecting data we'll never use. Freed quota goes to Tech Census.
+- **Priority order for shared quota:** daily channel stats > update inventory > video stats chunks > trending > A' discovery. Irreplaceable data first, resumable discovery last.
+- **Video stats chunks moved before A'.** Prevents quota exhaustion from concurrent runs.
+
+### Lessons Learned
+- NUL byte fixes must cover ALL read paths in a script, not just the one you're looking at. The March 25 fix covered load_checkpoint but the misdiagnosis on March 18 ("not a problem for the running script") cost 6 days.
+- Always check stderr logs when diagnosing issues, not just the data files.
+- Attrition assumptions should be tested empirically before setting sample targets. A 5-minute API check on 200 channels saved 35 days of unnecessary collection.
 
 ---
 
