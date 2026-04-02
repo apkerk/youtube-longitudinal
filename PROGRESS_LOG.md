@@ -5,9 +5,9 @@
 
 ---
 
-## Current Status (as of March 28, 2026 — 6:50 AM)
+## Current Status (as of April 2, 2026 — 9:30 AM)
 
-**Phase:** Steady-state collection. All 14 services operational. A' approaching 100K cap.
+**Phase:** Tech Census discovery launched. A' complete. Infrastructure steady-state.
 **What's Running on Mac Mini (100.109.96.120 via Tailscale):**
 - `com.youtube-longitudinal.daily-channel-stats`: **3:05 AM** (gender gap, 9,760 channels)
 - `com.youtube.ai-census-daily-channel-stats`: **3:12 AM** (AI census, 50,010 channels)
@@ -16,16 +16,38 @@
 - `com.youtube.gender-gap-video-stats-chunk`: **4:30 AM** (daily 1/7 video stats)
 - `com.youtube.ai-census-video-stats-chunk`: **7:00 AM** (daily 1/7 video stats)
 - `com.youtube.daily-trending`: **11:00 AM** (trending tracker, 51 regions)
-- `com.youtube.daily-discovery-non-intent`: **2:00 PM** (A' at 91,383/100K, target lowered from 200K)
+- `screen: tech_census` — ACTIVE. topicId method, 8,360 work keys, 8h max runtime, 50K reserve quota.
+- `com.youtube.daily-discovery-non-intent`: **UNLOADED** (A' complete at 110,408 channels)
 - Plus: stream-a-rerun (dormant), health-check, sync-to-drive, weekly-video-stats (legacy)
-**Daily Stats:** Unbroken streak March 5-28 for both panels (24 consecutive days).
+**Daily Stats:** Unbroken streak March 5 - April 2 for both panels (29 consecutive days).
 **Gender Gap Inventory:** 11.7M+ videos, growing ~7K/day via update_inventory.
-**A' Discovery:** 91,383/100K. Gaining ~3,200/day. Auto-stops at 100K (~Mon/Tue March 30-31). NUL byte fix holding since March 25.
+**A' Discovery:** COMPLETE. 110,408 channels (target was 100K, overshot by 10K due to within-run batch collection).
 **Video Stats Chunks:** Running clean since March 21. GG: ~85MB/day. AI census: ~195MB/day.
-**Trending:** 14,825 cumulative unique channels across 51 regions.
-**Attrition Check (March 28):** 200-channel sample of early A' channels: 58.5% still uploading, 41.5% attrited. Much lower than 80-90% assumption.
-**Tech Census:** Script committed. Not yet running. Will deploy when A' frees quota (~March 31).
-**Next Steps:** (1) A' hits 100K and auto-stops. (2) Deploy Tech Census in freed quota slot. (3) Run topic distribution diagnostic on gender gap panel.
+**Trending:** 17,619 cumulative unique channels across 51 regions.
+**Tech Census:** RUNNING. topicId method launched April 2 9:28 AM. 660 channels in first 48 seconds. 8,360 keys total. Screen session with checkpoint/resume.
+**Next Steps:** (1) Monitor Tech Census first-day yield. (2) Create launchd plist for daily Tech Census runs. (3) After topicId method complete, run keyword method. (4) Queue: Topic-Stratified, then Livestream + Shorts.
+
+---
+
+## 2026-04-02 09:30 [A' Stopped + Tech Census Launched]
+
+**Focus:** Stream transition: stop A', deploy Tech Census.
+**Project State:** Data infrastructure expanding. 5 new creator streams complete (A, A', B, C, D). Tech Census discovery running for AI adoption x gender study. Daily panels and video stats collecting autonomously.
+
+- **A' stopped at 110,408 channels.** Target was 100K. Overshot because the stop condition checked at keyword-loop level, not between API batches. Not a problem, 110K is fine.
+- **A' overshot means ~880K daily quota freed.** This was the constraint blocking all other discovery streams.
+- **Tech Census topicId method launched.** Screen session on Mac Mini, 8,360 work keys (weekly windows 2015-2022 x 10 query terms x 2 sort orders x 15 regions rotating). 660 channels found in first 48 seconds. 8h max runtime, 50K reserve quota. Checkpoint every 50 keys.
+- **Reviewed all streams and planned sequencing.** After Tech Census: Topic-Stratified (40K), then Livestream + Shorts (25K + 50K), then Creative Commons (15K).
+- **Daily infrastructure healthy.** 29-day unbroken streak on daily stats. Video stats chunks, update inventory, trending all running clean.
+
+### Files Modified
+- A' launchd plist unloaded on Mac Mini
+
+### What's Next
+1. Check Tech Census yield after today's run
+2. Create launchd plist for Tech Census daily runs (replace screen session)
+3. After topicId method exhausts, switch to keyword method
+4. Queue Topic-Stratified after Tech Census
 
 ---
 
