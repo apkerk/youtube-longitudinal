@@ -5,9 +5,9 @@
 
 ---
 
-## Current Status (as of April 2, 2026 — 9:30 AM)
+## Current Status (as of April 3, 2026 — 6:06 PM)
 
-**Phase:** Tech Census discovery launched. A' complete. Infrastructure steady-state.
+**Phase:** Tech Census keyword method running. TopicId method complete (45,432 channels). Infrastructure steady-state.
 **What's Running on Mac Mini (100.109.96.120 via Tailscale):**
 - `com.youtube-longitudinal.daily-channel-stats`: **3:05 AM** (gender gap, 9,760 channels)
 - `com.youtube.ai-census-daily-channel-stats`: **3:12 AM** (AI census, 50,010 channels)
@@ -16,16 +16,30 @@
 - `com.youtube.gender-gap-video-stats-chunk`: **4:30 AM** (daily 1/7 video stats)
 - `com.youtube.ai-census-video-stats-chunk`: **7:00 AM** (daily 1/7 video stats)
 - `com.youtube.daily-trending`: **11:00 AM** (trending tracker, 51 regions)
-- `screen: tech_census` — ACTIVE. topicId method, 8,360 work keys, 8h max runtime, 50K reserve quota.
-- `com.youtube.daily-discovery-non-intent`: **UNLOADED** (A' complete at 110,408 channels)
+- `screen: tech_census_kw` — ACTIVE. Keyword method, 24,244 work keys, 8h max runtime.
+- `com.youtube.daily-discovery-non-intent`: **UNLOADED** (A' complete at 110,408)
 - Plus: stream-a-rerun (dormant), health-check, sync-to-drive, weekly-video-stats (legacy)
-**Daily Stats:** Unbroken streak March 5 - April 2 for both panels (29 consecutive days).
+**Daily Stats:** Unbroken streak March 5 - April 3 for both panels (30 consecutive days).
 **Gender Gap Inventory:** 11.7M+ videos, growing ~7K/day via update_inventory.
-**A' Discovery:** COMPLETE. 110,408 channels (target was 100K, overshot by 10K due to within-run batch collection).
-**Video Stats Chunks:** Running clean since March 21. GG: ~85MB/day. AI census: ~195MB/day.
-**Trending:** 17,619 cumulative unique channels across 51 regions.
-**Tech Census:** RUNNING. topicId method launched April 2 9:28 AM. 660 channels in first 48 seconds. 8,360 keys total. Screen session with checkpoint/resume.
-**Next Steps:** (1) Monitor Tech Census first-day yield. (2) Create launchd plist for daily Tech Census runs. (3) After topicId method complete, run keyword method. (4) Queue: Topic-Stratified, then Livestream + Shorts.
+**A' Discovery:** COMPLETE. 110,408 channels.
+**Video Stats Chunks:** Running clean. GG: ~85MB/day. AI census: ~195MB/day.
+**Trending:** 18,800 cumulative unique channels across 51 regions.
+**Tech Census:** TopicId method COMPLETE (45,432 channels, April 2). Keyword method RUNNING (launched April 3 6:05 PM, 24,244 keys). Stream C filter (1,928) ready to extract.
+**Quota:** Infrastructure uses ~122K/day. ~878K available for discovery. Yesterday Tech Census used 836K.
+**Stream Queue:** After Tech Census: Topic-Stratified (40K) -> Livestream (25K) + Shorts (50K) -> Creative Commons (15K).
+**Next Steps:** (1) Keyword method runs tonight + tomorrow. (2) Merge topicId + keyword CSVs, dedup, apply pre-2023 + Technology filters. (3) Deploy Topic-Stratified next.
+
+---
+
+## 2026-04-03 18:06 [Tech Census TopicId Complete + Keyword Method Launched]
+
+**Focus:** Tech Census progress check, quota analysis, keyword method deployment.
+**Project State:** Tech Census discovery in progress. TopicId method found 45,432 channels in one day. Keyword method running (24,244 keys). After merge + filtering, expect 50K+ pre-2023 tech channels. All daily infrastructure services healthy (30-day streak).
+
+- **Tech Census topicId method COMPLETE.** Ran April 2, processed all 8,360 keys in one session. Found 45,432 unique tech channels. Checkpoint cleared (finished clean).
+- **Quota analysis:** Infrastructure services use ~122K/day (12%). ~878K available for discovery. Tech Census topicId used 836K in its single-day run.
+- **Keyword method launched April 3 6:05 PM.** 24,244 work keys (30 keywords x ~418 weekly windows x 2 sort orders). Screen session with 8h max runtime, 50K reserve. Will run multiple days via checkpoint/resume.
+- **All completed streams:** A (26,327), A' (110,408), B (18,208), C (50,022), D (3,933). Tech Census topicId (45,432). All daily panels running.
 
 ---
 
