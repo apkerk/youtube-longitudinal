@@ -171,17 +171,20 @@ def discover_topic_stratified_channels(
     logger.info(f"Per-topic target: {per_topic_target}")
     logger.info(f"Already collected: {len(channels_by_id)} channels")
 
+    all_done = True  # assume natural completion
     for idx, (topic_id, topic_name) in enumerate(topics):
         if len(channels_by_id) >= target_count:
             logger.info(f"Reached target of {target_count} channels")
+            all_done = True  # target reached = done
             break
 
-
-        if max_runtime and time.time() - start_time > max_runtime:
+        if max_runtime is not None and time.time() - start_time > max_runtime:
             logger.info("Max runtime reached -- stopping. Will resume next run.")
+            all_done = False
             break
         if quota_ceiling > 0 and get_quota_used() >= quota_ceiling:
             logger.info("Quota ceiling reached -- stopping. Will resume next run.")
+            all_done = False
             break
         if topic_id in completed_topics:
             continue
@@ -241,6 +244,7 @@ def discover_topic_stratified_channels(
 
         except QuotaExhaustedError:
             logger.warning("Quota exhausted -- stopping. Will resume next run.")
+            all_done = False
             break
         except Exception as e:
             logger.error(f"  Error for topic {topic_name}: {e}")
@@ -255,7 +259,8 @@ def discover_topic_stratified_channels(
         completed_topics.add(topic_id)
         save_checkpoint(completed_topics, output_path, len(channels_by_id))
 
-    clear_checkpoint()
+    if all_done:
+        clear_checkpoint()
 
     channels = list(channels_by_id.values())
     logger.info(f"Discovery complete: {len(channels)} total channels")

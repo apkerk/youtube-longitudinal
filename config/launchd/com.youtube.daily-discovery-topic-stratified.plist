@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.youtube.daily-discovery-topic-stratified</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>-m</string>
+        <string>src.collection.discover_topic_stratified</string>
+        <string>--limit</string>
+        <string>40000</string>
+        <string>--max-runtime</string>
+        <string>14400</string>
+        <string>--reserve-quota</string>
+        <string>2000</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/katieapker/.youtube-longitudinal/repo</string>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>14</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/katieapker/.youtube-longitudinal/repo/data/logs/daily_discovery_topic_stratified_stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/katieapker/.youtube-longitudinal/repo/data/logs/daily_discovery_topic_stratified_stderr.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
