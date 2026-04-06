@@ -5,9 +5,9 @@
 
 ---
 
-## Current Status (as of April 3, 2026 — 6:06 PM)
+## Current Status (as of April 6, 2026 — 9:45 AM)
 
-**Phase:** Tech Census keyword method running. TopicId method complete (45,432 channels). Infrastructure steady-state.
+**Phase:** Tech Census COMPLETE. All new creator streams complete. Infrastructure steady-state. Ready for Topic-Stratified.
 **What's Running on Mac Mini (100.109.96.120 via Tailscale):**
 - `com.youtube-longitudinal.daily-channel-stats`: **3:05 AM** (gender gap, 9,760 channels)
 - `com.youtube.ai-census-daily-channel-stats`: **3:12 AM** (AI census, 50,010 channels)
@@ -16,18 +16,42 @@
 - `com.youtube.gender-gap-video-stats-chunk`: **4:30 AM** (daily 1/7 video stats)
 - `com.youtube.ai-census-video-stats-chunk`: **7:00 AM** (daily 1/7 video stats)
 - `com.youtube.daily-trending`: **11:00 AM** (trending tracker, 51 regions)
-- `screen: tech_census_kw` — ACTIVE. Keyword method, 24,244 work keys, 8h max runtime.
 - `com.youtube.daily-discovery-non-intent`: **UNLOADED** (A' complete at 110,408)
+- `screen: tech_census_kw` — **STOPPED** (April 6, target exceeded)
 - Plus: stream-a-rerun (dormant), health-check, sync-to-drive, weekly-video-stats (legacy)
-**Daily Stats:** Unbroken streak March 5 - April 3 for both panels (30 consecutive days).
+**Daily Stats:** Unbroken streak March 5 - April 6 for both panels (33 consecutive days).
 **Gender Gap Inventory:** 11.7M+ videos, growing ~7K/day via update_inventory.
 **A' Discovery:** COMPLETE. 110,408 channels.
 **Video Stats Chunks:** Running clean. GG: ~85MB/day. AI census: ~195MB/day.
-**Trending:** 18,800 cumulative unique channels across 51 regions.
-**Tech Census:** TopicId method COMPLETE (45,432 channels, April 2). Keyword method RUNNING (launched April 3 6:05 PM, 24,244 keys). Stream C filter (1,928) ready to extract.
-**Quota:** Infrastructure uses ~122K/day. ~878K available for discovery. Yesterday Tech Census used 836K.
-**Stream Queue:** After Tech Census: Topic-Stratified (40K) -> Livestream (25K) + Shorts (50K) -> Creative Commons (15K).
-**Next Steps:** (1) Keyword method runs tonight + tomorrow. (2) Merge topicId + keyword CSVs, dedup, apply pre-2023 + Technology filters. (3) Deploy Topic-Stratified next.
+**Trending:** 19,762 cumulative unique channels across 51 regions.
+**Tech Census:** COMPLETE. TopicId (45,432) + keyword (58,552) methods done. After dedup + pre-2023 + Technology filters: **61,563 unique channels** (target was 50K). Keyword launchd stopped April 6.
+**Quota:** Infrastructure uses ~122K/day. ~878K now fully available for next discovery stream.
+**Stream Queue:** Topic-Stratified (40K) -> Livestream (25K) + Shorts (50K) -> Creative Commons (15K).
+**Next Steps:** (1) Merge Tech Census CSVs into final channel list. (2) Deploy Topic-Stratified stream. (3) Run topic distribution analysis on gender gap panel. (4) Start daily stats on Tech Census panel.
+
+---
+
+## 2026-04-06 09:45 [Tech Census Complete + Multi-Day Session Wrap-Up]
+
+**Focus:** End-of-session wrap-up for March 18 - April 6 monitoring period. Tech Census finalized, all streams accounted for.
+**Project State:** All 6 discovery streams complete (A, A', B, C, D, Tech Census). Daily infrastructure running autonomously for 33 days. Ready to deploy Topic-Stratified next.
+
+### Key Accomplishments (March 18 - April 6)
+- **Tech Census COMPLETE.** TopicId method: 45,432 channels (April 2, one day). Keyword method: 58,552 channels (15,709/24,244 keys processed before stopping). After dedup + pre-2023 + Technology filters: 61,563 unique channels. Target was 50K, exceeded by 23%. Keyword launchd stopped April 6.
+- **A' COMPLETE at 110,408.** Stopped April 2. Attrition analysis showed 41.5% (not 80-90% assumed), so target lowered from 200K to 100K. 110K yields ~65K survivors, 4:1 ratio over Stream A.
+- **Tailscale deployed.** Laptop + Mac Mini. Remote SSH from DC trip worked throughout.
+- **10-shard parallel enumeration** rebuilt gender gap video inventory (11,739,044 videos) in one night (March 19).
+- **Fixed gender gap plist** missing --panel-name; moved stats to correct subdirectory (March 20).
+- **Fixed A' NUL byte crash** in load_checkpoint. 6 days lost (March 19-24). Fix deployed March 25.
+- **Video stats rescheduled** to 4:30 AM / 7:00 AM to prevent quota exhaustion overlap (March 23).
+- **Daily infrastructure:** 33-day unbroken streak on both panels. All services healthy.
+- **Trending:** 19,762 cumulative unique channels.
+
+### What's Next
+1. Merge Tech Census topicId + keyword CSVs into final deduplicated channel list
+2. Deploy Topic-Stratified stream (40K target)
+3. Run topic distribution analysis on gender gap panel
+4. Set up daily stats collection on Tech Census panel
 
 ---
 
