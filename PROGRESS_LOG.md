@@ -5,9 +5,9 @@
 
 ---
 
-## Current Status (as of April 6, 2026 — 9:45 AM)
+## Current Status (as of April 6, 2026 — 10:25 AM)
 
-**Phase:** Tech Census COMPLETE. All new creator streams complete. Infrastructure steady-state. Ready for Topic-Stratified.
+**Phase:** Topic-Stratified DEPLOYED. Tech Census merged. All new creator streams complete. Infrastructure steady-state.
 **What's Running on Mac Mini (100.109.96.120 via Tailscale):**
 - `com.youtube-longitudinal.daily-channel-stats`: **3:05 AM** (gender gap, 9,760 channels)
 - `com.youtube.ai-census-daily-channel-stats`: **3:12 AM** (AI census, 50,010 channels)
@@ -16,18 +16,56 @@
 - `com.youtube.gender-gap-video-stats-chunk`: **4:30 AM** (daily 1/7 video stats)
 - `com.youtube.ai-census-video-stats-chunk`: **7:00 AM** (daily 1/7 video stats)
 - `com.youtube.daily-trending`: **11:00 AM** (trending tracker, 51 regions)
-- `com.youtube.daily-discovery-non-intent`: **UNLOADED** (A' complete at 110,408)
-- `screen: tech_census_kw` — **STOPPED** (April 6, target exceeded)
+- `com.youtube.daily-discovery-topic-stratified`: **2:00 PM** (40K target, 4h max runtime)
 - Plus: stream-a-rerun (dormant), health-check, sync-to-drive, weekly-video-stats (legacy)
 **Daily Stats:** Unbroken streak March 5 - April 6 for both panels (33 consecutive days).
 **Gender Gap Inventory:** 11.7M+ videos, growing ~7K/day via update_inventory.
-**A' Discovery:** COMPLETE. 110,408 channels.
 **Video Stats Chunks:** Running clean. GG: ~85MB/day. AI census: ~195MB/day.
 **Trending:** 19,762 cumulative unique channels across 51 regions.
-**Tech Census:** COMPLETE. TopicId (45,432) + keyword (58,552) methods done. After dedup + pre-2023 + Technology filters: **61,563 unique channels** (target was 50K). Keyword launchd stopped April 6.
-**Quota:** Infrastructure uses ~122K/day. ~878K now fully available for next discovery stream.
-**Stream Queue:** Topic-Stratified (40K) -> Livestream (25K) + Shorts (50K) -> Creative Commons (15K).
-**Next Steps:** (1) Merge Tech Census CSVs into final channel list. (2) Deploy Topic-Stratified stream. (3) Run topic distribution analysis on gender gap panel. (4) Start daily stats on Tech Census panel.
+**Tech Census:** COMPLETE + MERGED. 63,728 channels after dedup + pre-2023 + Technology filters. channel_ids.csv and channel_metadata.csv written.
+**Topic-Stratified:** DEPLOYED. Fires 2 PM EST daily. First run today April 6.
+**Quota:** Infrastructure uses ~122K/day (12%). Topic-Stratified will consume most of remaining ~878K during its 4h window.
+**Stream Queue:** Topic-Stratified (40K, running) -> Shorts-First (50K) -> Livestream (25K) -> Creative Commons (15K).
+**Next Steps:** (1) Monitor Topic-Stratified first run tonight. (2) Start daily stats on Tech Census panel. (3) Run topic distribution analysis on gender gap panel.
+
+---
+
+## 2026-04-06 10:25 [Topic-Stratified Deployed + Tech Census Merged]
+
+**Focus:** Stream priority review, Topic-Stratified deployment, Tech Census post-collection merge.
+**Project State:** 7 discovery streams (A, A', B, C, D, Tech Census, Topic-Stratified). Topic-Stratified fires at 2 PM today, first of the expansion streams. Tech Census canonical channel list finalized.
+
+### Stream Priority Assessment
+Reviewed all 4 expansion streams against research questions served and marginal value:
+- **Topic-Stratified (40K): RUN FIRST.** Addresses keyword bias, the single biggest methodological vulnerability. Without it, cross-category analyses are confounded by keyword selection.
+- **Shorts-First (50K): RUN SECOND.** YouTube's fastest-growing format, highest substantive value after Topic-Stratified.
+- **Livestream (25K): RUN THIRD.** Niche modality, narrower research questions.
+- **Creative Commons (15K): RUN LAST.** Smallest, most niche.
+Revised queue: Topic-Stratified -> Shorts -> Livestream -> Creative Commons (swapped Shorts ahead of Livestream from original plan).
+
+### Bug Fix
+- **discover_topic_stratified.py checkpoint bug:** Same pattern as enumerate_videos March 12 bug. clear_checkpoint() ran after ALL loop exits including max_runtime and quota exhaustion, deleting progress. Fixed with all_done flag: only clears on natural completion or target reached.
+- **Secondary fix:** `if max_runtime` -> `if max_runtime is not None` (0-is-falsy bug).
+
+### Tech Census Merge
+- Built src/collection/merge_tech_census.py (one-time merge script).
+- Merged topicId (45,432) + keyword (58,552) + Stream C Technology filter (3,540 tech-tagged).
+- After dedup: 97,339 unique. Overlap: 10,030 between topicId and keyword methods.
+- After pre-2023 + Technology filters: **63,728 channels** (target was 50K, exceeded by 27%).
+- By source: topicId 35,318, keyword 26,575, Stream C 1,835.
+- Output: channel_ids.csv (63,728) + channel_metadata.csv written to data/channels/tech_census/.
+
+### Deployment
+- Launchd plist created and loaded: com.youtube.daily-discovery-topic-stratified
+- Schedule: 2:00 PM EST daily (same slot as A' and Tech Census used)
+- 4h max runtime, 2K reserve quota
+- First run fires today April 6 at 2 PM.
+
+### Files
+- src/collection/discover_topic_stratified.py (checkpoint bug fix)
+- src/collection/merge_tech_census.py (new)
+- config/launchd/com.youtube.daily-discovery-topic-stratified.plist (new)
+- Committed 71093d8, pushed to origin/main, pulled to Mac Mini.
 
 ---
 
