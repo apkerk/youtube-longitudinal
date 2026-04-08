@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.youtube.monthly-sweep-stream-c</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>-m</string>
+        <string>src.panels.daily_stats</string>
+        <string>--channel-list</string>
+        <string>data/channels/stream_c/channel_ids.csv</string>
+        <string>--mode</string>
+        <string>channel</string>
+        <string>--panel-name</string>
+        <string>stream_c</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/katieapker/.youtube-longitudinal/repo</string>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Day</key>
+        <integer>1</integer>
+        <key>Hour</key>
+        <integer>5</integer>
+        <key>Minute</key>
+        <integer>15</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/katieapker/.youtube-longitudinal/repo/data/logs/monthly_sweep_stream_c_stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/katieapker/.youtube-longitudinal/repo/data/logs/monthly_sweep_stream_c_stderr.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
