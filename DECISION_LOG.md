@@ -127,4 +127,72 @@ Sample channels created around 2020 and collect their **full video history** (al
 - **Sample size / sampling method:** Random prefix search filtered to 2020 creation dates? Or pull from an existing channel list?
 - **Quota cost:** Full video history for N channels × avg videos per channel. Need to estimate.
 - **Gender coding:** Would need to code gender for these channels (not in Bailey's dataset)
+
+## 006. Abandon Freebase topicId for Discovery; Use videoCategoryId Instead
+**Date:** Apr 7, 2026
+**Status:** IMPLEMENTING
+
+### Context
+Topic-Stratified stream (designed Feb 18, 2026) used Freebase `topicId` parameter on `search.list` to discover channels across 62 topic categories. First production run (Apr 6) returned only 90 channels from 1 of 62 topics. Investigation revealed the `topicId` parameter returns near-zero results when used without a query string. Freebase is deprecated.
+
+### Decision
+Abandon Freebase `topicId` for all future discovery. Use YouTube's native `videoCategoryId` parameter on `search.list` instead (15 categories, integer IDs, confirmed working Apr 7 with 400K-1M+ results per category).
+
+### YouTube's Three Category Systems (Reference)
+1. **Freebase topicIds** (`topic_ids` field, e.g., `/m/04rlf`): DEPRECATED. From `channels.list(part=topicDetails)` → `topicDetails.topicIds`. Broken for search filtering. Do not use.
+2. **Channel-level topicCategories** (`topic_1/2/3` fields, Wikipedia URLs): From `channels.list(part=topicDetails)` → `topicDetails.topicCategories`. Up to 3 per channel. **This is what the JMP gender gap paper uses** for its `bucketedGranularTopic` and `granularTopic_over_thirty` regression variables. The JMP bucketing logic (parent vs. granular priority, subtopic consolidation) is in `YT_v1/code/pre_cursor/1-Assign Granular Topic_Hobby as Parent.do`.
+3. **Video-level videoCategoryId** (`categoryId`, integer): From `videos.list(part=snippet)` → `snippet.categoryId`. Set by creators per video upload. 15 categories. Works reliably as a search filter.
+
+### Usage Rule
+- **Discovery** (finding channels via search API): Use `videoCategoryId` (works as search filter)
+- **Analysis** (category variable in regressions): Use `topic_1/2/3` (consistent with JMP)
+- **Secondary/validation**: Modal `videoCategoryId` across a channel's videos provides a bottom-up category assignment
+- Both are captured automatically: videoCategoryId during discovery, topic_1/2/3 when channels.list runs on discovered channels
+
+### Rationale
+- Freebase is officially deprecated; relying on it is fragile
+- videoCategoryId is YouTube's native system, actively maintained
+- topic_1/2/3 (channel-level topicCategories) ensures consistency with the JMP's existing category variable
+- Having both systems captured enables cross-validation
+
+## 007. Replace Topic-Stratified with Category Quota Sampler
+**Date:** Apr 7, 2026
+**Status:** IMPLEMENTING
+
+### Context
+Topic-Stratified (40K target, 62 Freebase topics, `topicId` filter) failed in production. Analysis of A' (110K channels) revealed apparent category breadth was inflated by multi-tagging: 48% of channels have multiple Freebase topic tags, and primary-category assignment collapses to 4 dominant categories (Lifestyle 33%, Gaming 20%, Entertainment 18%, Music 13%). Smaller categories (Sports, Society, Knowledge) have adequate marginal counts but thin cells when crossed with language (15) and eventually gender.
+
+### Decision
+Replace Topic-Stratified with a **Category Quota Sampler** that uses `videoCategoryId` and floor-based collection.
+
+### Design
+- 15 YouTube video categories (native integer IDs)
+- For each category: `search.list(videoCategoryId=X, q=letter, order=date, publishedAfter=2026-01-01)`
+- Cycle through letters a-z as query parameter (minimal-bias query diversification, borrowed from Stream C's random prefix logic)
+- **Per-category floor target**: collect until each category has 3,000-5,000 unique channels
+- Categories that are naturally abundant hit quota fast and stop; rare categories get more cycles
+- Checkpoint per category (resume-safe for launchd)
+- `--max-runtime` and `--reserve-quota` flags (standard hardening)
+
+### Why Floor-Based, Not Proportional
+- Proportional allocation wastes quota collecting more Lifestyle/Entertainment channels we already have in abundance
+- Floor-based guarantees minimum viable sample sizes for category x language x gender subgroup analysis
+- The algorithm adapts: rare categories get more search effort automatically
+
+### Primary Category Assignment (Future)
+- For analysis: use `topic_1/2/3` (channel-level topicCategories, consistent with JMP)
+- For validation: modal `videoCategoryId` across channel's videos (requires video enumeration)
+- `videoCategoryId` used for discovery is a strong initial proxy but NOT the analysis variable
+
+### Alternatives Considered
+- Fix Topic-Stratified by adding query strings alongside topicId: Rejected. Still relies on deprecated Freebase system. Would produce same multi-tagging noise.
+- Category-specific keyword banks per topic: Rejected. Labor-intensive, introduces researcher priors about what keywords represent each category.
+- Skip category expansion entirely (A' coverage is "good enough"): Rejected. Cell sizes too thin after crossing with language and gender. Future research flexibility requires guaranteed minimums.
+- videoCategoryId + broad generic query (single approach): Adopted. Letter cycling provides query diversity without semantic bias.
+
+### Impact
+- Replaces `discover_topic_stratified.py` with `discover_category_quota.py`
+- Same 2 PM EST launchd slot, same quota budget
+- Expected yield: 45K-75K channels (15 categories x 3-5K floor)
+- Clean discovery-category label per channel by construction
 - **Feasibility:** Can the YouTube API filter search results by channel creation date?

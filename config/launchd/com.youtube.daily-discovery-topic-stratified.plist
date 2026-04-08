@@ -10,9 +10,11 @@
     <array>
         <string>/usr/bin/python3</string>
         <string>-m</string>
-        <string>src.collection.discover_topic_stratified</string>
+        <string>src.collection.discover_category_quota</string>
         <string>--limit</string>
-        <string>40000</string>
+        <string>75000</string>
+        <string>--per-category</string>
+        <string>5000</string>
         <string>--max-runtime</string>
         <string>14400</string>
         <string>--reserve-quota</string>
