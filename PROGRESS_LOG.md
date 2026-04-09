@@ -5,9 +5,9 @@
 
 ---
 
-## Current Status (as of April 8, 2026 — 10:00 PM)
+## Current Status (as of April 9, 2026 — 1:30 PM)
 
-**Phase:** Full infrastructure deployed. All panels tracked. April from-founding cohort live. Shorts-First next.
+**Phase:** Gendered AI adoption research design complete. Knowledge Economy Census + Entry Cohorts deployed. AI flagger run on Gender Gap Panel.
 **What's Running on Mac Mini (100.109.96.120 via Tailscale) — 22 services:**
 
 Daily channel stats (5 panels):
@@ -36,16 +36,62 @@ Discovery:
 - `daily-discovery-april-intent`: **12:30 PM** (rolling 48h window)
 - `daily-discovery-april-non-intent`: **1:00 PM** (rolling 48h window)
 - `rebuild-april-cohort`: **1:45 PM** (merge + dedup)
-- `daily-discovery-shorts`: **2:00 PM** (50K target)
+- `daily-discovery-entry-cohorts`: **11:30 AM** (temporal windows around 20 tool launches, 1h max)
+- `daily-discovery-knowledge-economy`: **2:00 PM** (pre-2023 risk set, 100K+ target, 4h max)
 
-Plus: stream-a-rerun (dormant), health-check x2, sync-to-drive
+Plus: stream-a-rerun (dormant), health-check x2, sync-to-drive. Shorts-First UNLOADED (KE Census takes priority).
 
-**Daily Stats Panels:** 6 panels, ~355K channels total. First run for new panels tonight.
-**April Cohort:** 22,594 channels (19,000 intent + 3,594 non-intent). From-founding tracking starts tonight. Growing daily via rolling discovery.
-**Category Quota:** COMPLETE. 73,508 channels across 15 YouTube categories (12/15 hit 5K floor). Replaced broken Topic-Stratified (Freebase topicId deprecated, videoCategoryId works).
-**Shorts-First:** Deployed, first run tomorrow 2 PM.
-**Quota:** All daily infrastructure ~130K/day (~13%). ~870K available for discovery.
-**Stream Queue:** Shorts-First (50K, starting tomorrow) -> Livestream (25K) -> Creative Commons (15K).
+**Daily Stats Panels:** 6 panels, ~355K channels total.
+**April Cohort:** 22,594 channels (19,000 intent + 3,594 non-intent). From-founding tracking live. Growing daily.
+**Category Quota:** COMPLETE. 73,508 channels.
+**AI Flagger:** RUN on Gender Gap Panel. 40,355 flagged / 11.8M videos (0.34%). tools_general 74%, image_video 10%, general_ai 8%, audio_music 7%, coding 1%, content_creation 1%.
+**Knowledge Economy Census:** DEPLOYED. 80 keywords x 10 domains, pre-2023. First run today 2 PM.
+**Entry Cohorts:** DEPLOYED. 20 tool launches x treatment/control windows. First run today 11:30 AM.
+**Shorts-First:** PAUSED (KE Census takes 2 PM slot). Resumes after KE Census completes.
+**Quota:** Infrastructure ~130K/day. KE Census + Entry Cohorts use most of remaining ~870K.
+**Research Design:** docs/GENDERED_AI_ADOPTION_DESIGN.md. Two complementary designs: staggered DiD on established channels (Design A) + temporal cohorts around tool launches (Design B). Neither sampled on DV.
+
+---
+
+## 2026-04-09 13:30 [Gendered AI Adoption: Research Design + Knowledge Economy Census + Entry Cohorts]
+
+**Focus:** Research design for gendered AI adoption paper. Built risk set infrastructure.
+**Project State:** Research design phase + data collection. Two new discovery streams for studying how tool characteristics shape gendered participation in AI content creation. AI flagger first results in hand. 23 launchd services. Next: monitor KE Census + Entry Cohorts, compute descriptives from flagger output, begin gender coding pipeline.
+
+### Research Design
+- **Design A (Adoption):** Staggered event-study DiD on pre-2023 established knowledge-economy channels. Tool launches as exogenous shocks. Gender x tool-techiness interaction. NOT sampled on AI content.
+- **Design B (Entry):** Temporal cohorts born around tool launches. Treatment vs. control (1yr prior). Gender composition of new entrants by tool type. NOT sampled on AI content.
+- Key insight from Katie: avoid sampling on the DV. Use domain-defining keywords (business tips, productivity, design tutorial) to find the risk set. AI content is the OUTCOME measured post-collection.
+- Tool launch calendar: 20 events from Jun 2022 (Copilot) through Jan 2026 (Claude Code), each scored on 1-10 techiness dimension.
+- Full design doc: docs/GENDERED_AI_ADOPTION_DESIGN.md
+
+### AI Flagger Results (Gender Gap Panel)
+- Ran flag_ai_videos.py on 11.8M video inventory. 40,355 flagged (0.34%).
+- Category breakdown: tools_general 30,019, image_video 4,060, general_ai 3,415, audio_music 2,750, coding 423, content_creation 336.
+- ChatGPT/GPT-4 content dominates (74% of all flags). Need tool-specific subcategories to disaggregate.
+
+### Infrastructure
+- discover_knowledge_economy.py: pre-2023 channels, 10 domains, 80 keywords. 2 PM daily. Target 100K+.
+- discover_entry_cohorts.py: temporal windows around 20 tool launches (treatment + control). 11:30 AM daily.
+- Both tested on Mac Mini. Shorts-First paused (KE Census takes priority in 2 PM slot).
+- 23 launchd services total.
+
+### Key Decisions
+- Three YouTube category systems documented (DECISION_LOG 006-007): Freebase deprecated, topicCategories for analysis, videoCategoryId for discovery.
+- Knowledge Economy Census defined by domain-defining keywords, NOT AI keywords. Clean separation between sampling frame and outcome.
+- Entry Cohorts use same domain keywords in temporal windows around launches, with control windows 1yr prior. Not sampled on DV.
+- Gender coding: hybrid FairFace + validation against 9,760 hand-coded channels. Not a blocking constraint.
+- Shorts-First paused; resumes after KE Census completes (~10-12 days).
+
+### Files Created
+- docs/GENDERED_AI_ADOPTION_DESIGN.md (research design)
+- docs/tool_launch_calendar.csv (20 launches with techiness scores)
+- src/collection/discover_knowledge_economy.py
+- src/collection/discover_entry_cohorts.py
+- 2 launchd plists
+- src/config.py updated with KNOWLEDGE_ECONOMY_KEYWORDS (10 domains, 80 keywords)
+
+### Commit: bb5a87e
 
 ---
 
