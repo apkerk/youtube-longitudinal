@@ -1,0 +1,21 @@
+tool_name,launch_date,tool_category,techiness_score,target_audience,keyword_subcategory,notes
+GitHub Copilot GA,2022-06-21,coding,9,developer,coding,First major AI coding assistant; VS Code extension; GitHub subscription required
+Stable Diffusion open source,2022-08-22,image_video,8,developer,image_video,Open-source text-to-image model; local install via command line; sparked open-source AI art movement
+Midjourney V4,2022-11-05,image_video,6,creative_professional,image_video,Discord-only interface; major quality leap over V3; subscription model
+ChatGPT launch,2022-11-30,general_ai,2,general_public,tools_general,Free web chat interface; 100M users in 2 months; GPT-3.5 based
+GPT-4,2023-03-14,general_ai,3,general_public,tools_general,Multimodal capability; ChatGPT Plus subscription; API access for developers
+Midjourney V5,2023-03-15,image_video,5,creative_professional,image_video,Photorealistic quality; still Discord-only but simpler prompting
+Adobe Firefly,2023-03-21,image_video,2,creative_professional,image_video,Integrated into Creative Cloud apps; commercially safe training data; lowest barrier for existing Adobe users
+Runway Gen-2,2023-06-05,image_video,4,creative_professional,image_video,Text-to-video and image-to-video; web interface; subscription tiers
+Claude 2,2023-07-11,general_ai,3,general_public,tools_general,100K context window; web interface; Anthropic safety focus
+DALL-E 3 in ChatGPT,2023-10-03,image_video,2,general_public,image_video,Image generation inside ChatGPT; no prompt engineering needed; lowest barrier text-to-image
+GPT-4 Turbo,2023-11-06,general_ai,3,general_public,tools_general,128K context; cheaper API; knowledge cutoff April 2023; JSON mode
+Gemini launch,2023-12-06,general_ai,2,general_public,tools_general,Google multimodal model; integrated into Google products; free tier available
+Sora announcement,2024-02-15,image_video,4,creative_professional,image_video,OpenAI text-to-video; demo only at announcement; limited access rollout through 2024
+Claude 3,2024-03-04,general_ai,3,general_public,tools_general,Three-tier model family (Haiku/Sonnet/Opus); vision capability; API and web
+Suno V3,2024-03-22,audio_music,3,general_public,audio_music,Text-to-song with lyrics and vocals; web interface; free tier; viral on social media
+Meta Llama 3,2024-04-18,general_ai,7,developer,tools_general,Open-weights LLM; requires local setup or cloud hosting; 8B and 70B parameter versions
+GPT-4o,2024-05-13,general_ai,2,general_public,tools_general,Multimodal native model; free tier access; real-time voice mode; fastest GPT-4 class model
+Claude 3.5 Sonnet,2024-06-20,general_ai,3,general_public,tools_general,Best-in-class coding and reasoning; Artifacts feature; web and API
+Cursor AI rapid growth,2024-07-01,coding,7,developer,coding,AI-native code editor; forked VS Code; subscription model; rapid adoption mid-2024
+Claude Code launch,2026-01-23,coding,8,developer,coding,CLI-based agentic coding tool; terminal interface; developer workflow integration

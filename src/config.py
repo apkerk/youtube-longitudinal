@@ -649,6 +649,66 @@ TECH_STAGE2_CATEGORIES = [
 ]
 
 # =============================================================================
+# KNOWLEDGE ECONOMY KEYWORDS (pre-AI baseline discovery)
+# Domain-defining keywords for channels producing knowledge-economy content
+# BEFORE the AI transition. None of these terms are AI-specific; they describe
+# the substantive domains whose creators are most exposed to AI disruption.
+# Used to build a pre-AI baseline panel for difference-in-differences designs.
+# =============================================================================
+
+KNOWLEDGE_ECONOMY_KEYWORDS: Dict[str, List[str]] = {
+    "business_entrepreneurship": [
+        "business tips", "entrepreneurship", "startup advice", "small business tips",
+        "business strategy", "how to start a business", "business plan", "business growth",
+    ],
+    "marketing_seo": [
+        "marketing strategy", "SEO tutorial", "digital marketing", "social media marketing",
+        "email marketing", "content marketing", "facebook ads tutorial", "google ads tutorial",
+    ],
+    "productivity_workflow": [
+        "productivity tips", "workflow optimization", "time management", "notion tutorial",
+        "project management", "task management", "work from home tips", "efficiency tips",
+    ],
+    "tech_reviews_software": [
+        "software tutorial", "app review", "tech tutorial", "software review",
+        "best apps", "tool review", "saas review", "software comparison",
+    ],
+    "design_creative": [
+        "graphic design tutorial", "photoshop tutorial", "video editing tutorial",
+        "after effects tutorial", "premiere pro tutorial", "canva tutorial",
+        "filmmaking tips", "photography tutorial",
+    ],
+    "education_teaching": [
+        "online teaching", "online course creation", "education technology",
+        "elearning tutorial", "how to teach online", "course creation",
+        "tutorial channel tips", "educational content",
+    ],
+    "freelancing_consulting": [
+        "freelancing tips", "how to freelance", "consulting business",
+        "upwork tips", "fiverr tips", "client management",
+        "remote work tips", "freelance business",
+    ],
+    "finance_investing": [
+        "investing strategy", "personal finance tips", "financial planning",
+        "stock market tutorial", "cryptocurrency tutorial", "passive income strategy",
+        "real estate investing", "budgeting tips",
+    ],
+    "programming_webdev": [
+        "web development tutorial", "programming tutorial", "coding tutorial",
+        "javascript tutorial", "python tutorial", "react tutorial",
+        "full stack tutorial", "learn to code",
+    ],
+    "content_creation_meta": [
+        "how to grow on youtube", "content creation tips", "youtube algorithm",
+        "thumbnail design tips", "youtube strategy", "podcasting tips",
+        "streaming tips", "youtube analytics",
+    ],
+}
+
+KNOWLEDGE_ECONOMY_SAMPLE_TARGET = 100000  # Target unique channels
+KNOWLEDGE_ECONOMY_CREATION_CUTOFF = "2023-01-01"  # Pre-AI baseline
+
+# =============================================================================
 # RANDOM PREFIX CONFIG (Stream C)
 # =============================================================================
 
