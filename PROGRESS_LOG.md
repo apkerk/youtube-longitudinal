@@ -5,28 +5,94 @@
 
 ---
 
-## Current Status (as of April 6, 2026 — 10:25 AM)
+## Current Status (as of April 8, 2026 — 10:00 PM)
 
-**Phase:** Topic-Stratified DEPLOYED. Tech Census merged. All new creator streams complete. Infrastructure steady-state.
-**What's Running on Mac Mini (100.109.96.120 via Tailscale):**
-- `com.youtube-longitudinal.daily-channel-stats`: **3:05 AM** (gender gap, 9,760 channels)
-- `com.youtube.ai-census-daily-channel-stats`: **3:12 AM** (AI census, 50,010 channels)
-- `com.youtube.update-inventory-gender-gap`: **3:30 AM** (new video detection)
-- `com.youtube.update-inventory-ai-census`: **3:35 AM** (new video detection)
-- `com.youtube.gender-gap-video-stats-chunk`: **4:30 AM** (daily 1/7 video stats)
-- `com.youtube.ai-census-video-stats-chunk`: **7:00 AM** (daily 1/7 video stats)
-- `com.youtube.daily-trending`: **11:00 AM** (trending tracker, 51 regions)
-- `com.youtube.daily-discovery-topic-stratified`: **2:00 PM** (40K target, 4h max runtime)
-- Plus: stream-a-rerun (dormant), health-check, sync-to-drive, weekly-video-stats (legacy)
-**Daily Stats:** Unbroken streak March 5 - April 6 for both panels (33 consecutive days).
-**Gender Gap Inventory:** 11.7M+ videos, growing ~7K/day via update_inventory.
-**Video Stats Chunks:** Running clean. GG: ~85MB/day. AI census: ~195MB/day.
-**Trending:** 19,762 cumulative unique channels across 51 regions.
-**Tech Census:** COMPLETE + MERGED. 63,728 channels after dedup + pre-2023 + Technology filters. channel_ids.csv and channel_metadata.csv written.
-**Topic-Stratified:** DEPLOYED. Fires 2 PM EST daily. First run today April 6.
-**Quota:** Infrastructure uses ~122K/day (12%). Topic-Stratified will consume most of remaining ~878K during its 4h window.
-**Stream Queue:** Topic-Stratified (40K, running) -> Shorts-First (50K) -> Livestream (25K) -> Creative Commons (15K).
-**Next Steps:** (1) Monitor Topic-Stratified first run tonight. (2) Start daily stats on Tech Census panel. (3) Run topic distribution analysis on gender gap panel.
+**Phase:** Full infrastructure deployed. All panels tracked. April from-founding cohort live. Shorts-First next.
+**What's Running on Mac Mini (100.109.96.120 via Tailscale) — 22 services:**
+
+Daily channel stats (5 panels):
+- `gender_gap`: **3:05 AM** (9,760 channels)
+- `ai_census`: **3:12 AM** (50,010 channels)
+- `tech_census`: **3:20 AM** (63,728 channels)
+- `new_cohort` (A+A'): **3:25 AM** (135,977 channels)
+- `category_quota`: **3:32 AM** (73,508 channels)
+- `april_cohort`: **3:38 AM** (22,594 channels, growing daily)
+
+New video detection:
+- `update-inventory-gender-gap`: **3:30 AM**
+- `update-inventory-ai-census`: **3:35 AM**
+
+Video stats:
+- `gender-gap-video-stats-chunk`: **4:30 AM** (1/7 of 11.7M videos)
+- `ai-census-video-stats-chunk`: **7:00 AM** (1/7 of 5.3M videos)
+
+Periodic sweeps:
+- `monthly-sweep-stream-b`: **5:00 AM 1st** (18,207 channels)
+- `monthly-sweep-stream-c`: **5:15 AM 1st** (50,022 channels)
+- `weekly-sweep-stream-d`: **5:30 AM Sundays** (3,932 channels)
+
+Discovery:
+- `daily-trending`: **11:00 AM** (51 regions)
+- `daily-discovery-april-intent`: **12:30 PM** (rolling 48h window)
+- `daily-discovery-april-non-intent`: **1:00 PM** (rolling 48h window)
+- `rebuild-april-cohort`: **1:45 PM** (merge + dedup)
+- `daily-discovery-shorts`: **2:00 PM** (50K target)
+
+Plus: stream-a-rerun (dormant), health-check x2, sync-to-drive
+
+**Daily Stats Panels:** 6 panels, ~355K channels total. First run for new panels tonight.
+**April Cohort:** 22,594 channels (19,000 intent + 3,594 non-intent). From-founding tracking starts tonight. Growing daily via rolling discovery.
+**Category Quota:** COMPLETE. 73,508 channels across 15 YouTube categories (12/15 hit 5K floor). Replaced broken Topic-Stratified (Freebase topicId deprecated, videoCategoryId works).
+**Shorts-First:** Deployed, first run tomorrow 2 PM.
+**Quota:** All daily infrastructure ~130K/day (~13%). ~870K available for discovery.
+**Stream Queue:** Shorts-First (50K, starting tomorrow) -> Livestream (25K) -> Creative Commons (15K).
+
+---
+
+## 2026-04-08 22:00 [Full Infrastructure Deployment + April Cohort + Category Quota Complete]
+
+**Focus:** Multi-day session (Apr 6-8). Category system diagnosis, Category Quota Sampler, full panel coverage audit, April from-founding cohort.
+**Project State:** All discovery streams complete or running. Every channel list now has stats collection at the design-specified cadence. April cohort provides from-founding tracking missing from original A/A'. 22 launchd services on Mac Mini. Next: Shorts-First discovery, then Livestream, Creative Commons.
+
+### Apr 6: Topic-Stratified Deployment + Tech Census Merge
+- Deployed Topic-Stratified stream (2 PM). Merged Tech Census (63,728 channels). Tech Census daily stats deployed (3:20 AM). See separate log entry.
+
+### Apr 7: Topic-Stratified Diagnosis
+- First Topic-Stratified run returned only 90 channels from 1/62 topics. Root cause: Freebase topicId returns near-zero results when used alone on search.list. The Tech Census worked because it combined topicId with query strings.
+- Analyzed A' category distribution: 48% of channels have multiple topic tags. Primary-category assignment collapses to 4 dominant categories (Lifestyle 33%, Gaming 20%, Entertainment 18%, Music 13%). Smaller categories thin when crossed with language.
+
+### Apr 8: Category Quota Sampler + Full Audit + April Cohort
+- **Category Quota Sampler built and deployed.** Uses YouTube's native videoCategoryId (15 categories, actively maintained) instead of deprecated Freebase topicId. Floor-based collection: 5K per category. Completed in ONE run (42 min, 73,508 channels). 12/15 categories hit 5K floor. Three smaller categories (Pets 4,677, Sports 4,784, Nonprofits 4,083) exhausted all query letters but have adequate N.
+- **Three YouTube category systems documented** (DECISION_LOG entries 006-007): Freebase topicIds (deprecated, don't use), channel-level topicCategories (topic_1/2/3, what JMP uses for analysis), video-level videoCategoryId (works for search filtering). Discovery uses videoCategoryId; analysis uses topic_1/2/3.
+- **Full panel coverage audit.** Found gaps: original A/A' (136K) had no daily stats, B/C/D had no periodic sweeps, Category Quota had no stats. All fixed:
+  - new_cohort daily stats (A+A', 135,977 ch, 3:25 AM)
+  - category_quota daily stats (73,508 ch, 3:32 AM)
+  - Stream B monthly sweep (18,207 ch, 1st of month)
+  - Stream C monthly sweep (50,022 ch, 1st of month)
+  - Stream D weekly sweep (3,932 ch, Sundays)
+- **April from-founding cohort.** Original A/A' channels have no early-trajectory data (2-3 month gap between creation and stats start). Built rolling daily discovery for channels created in April 2026+:
+  - April Intent: 12:30 PM daily (same 94 keywords, 15 languages)
+  - April Non-Intent: 1:00 PM daily (same 82 keywords, cross-deduped against Intent)
+  - Rebuild combined list: 1:45 PM daily
+  - April cohort daily stats: 3:38 AM (growing panel)
+  - Initial backfill today: 19,000 intent + 3,594 non-intent = 22,594 channels. First stats tonight.
+- **Legacy cleanup:** Unloaded weekly-video-stats (redundant with daily chunks). Unloaded completed Category Quota discovery from 2 PM slot. Shorts-First deployed in its place.
+
+### Key Decisions
+- **Abandon Freebase topicId** (DECISION_LOG 006). Use videoCategoryId for discovery, topic_1/2/3 for analysis.
+- **Category Quota Sampler** (DECISION_LOG 007). Floor-based, not proportional. Guarantees minimum cell sizes.
+- **Stream queue revised:** Category Quota (DONE) -> Shorts-First (deployed) -> Livestream -> Creative Commons.
+- **April cohort as separate temporal sample.** Not comparable to Feb A/A' without explicit temporal matching. Clean from-founding trajectories for the intent-vs-non-intent research design.
+
+### Files Created
+- src/collection/discover_category_quota.py
+- src/collection/rebuild_april_cohort.py
+- 10 new launchd plists in config/launchd/
+
+### Commits
+- 82548d3: Category Quota Sampler + DECISION_LOG 006-007
+- 86e6e07: Full infrastructure deployment (6 new plists)
+- 394c8af: April cohort (4 plists + rebuild script)
 
 ---
 
