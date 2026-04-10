@@ -277,7 +277,8 @@ def discover_intent_channels(
 
     # Completion-safe exit: if no checkpoint exists but output already has data,
     # collection is already done. Prevents launchd from overwriting completed data.
-    if not CHECKPOINT_PATH.exists() and output_path.exists():
+    # Skip this check when days_back is set (rolling daily discovery should always run).
+    if days_back is None and not CHECKPOINT_PATH.exists() and output_path.exists():
         try:
             with open(output_path, 'r', encoding='utf-8') as f:
                 reader = csv.reader(f)
