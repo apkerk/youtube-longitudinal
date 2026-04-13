@@ -52,8 +52,20 @@ def main():
     APRIL_COHORT_DIR.mkdir(parents=True, exist_ok=True)
 
     seen = set()
+    existing_count = 0
     intent_count = 0
     non_intent_count = 0
+
+    # Preserve existing channel_ids.csv as baseline (never shrink the list)
+    if OUTPUT_IDS.exists():
+        with open(OUTPUT_IDS, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                cid = row.get("channel_id", "").strip()
+                if cid and cid not in seen:
+                    seen.add(cid)
+                    existing_count += 1
+        logger.info("Loaded %d existing channel IDs as baseline", existing_count)
 
     # Read April Intent first (priority in dedup)
     for csv_file in sorted(APRIL_INTENT_DIR.glob("*.csv")):
@@ -82,9 +94,11 @@ def main():
         for cid in sorted(seen):
             writer.writerow([cid])
 
-    total = intent_count + non_intent_count
-    logger.info("April cohort rebuilt: %d channels (intent=%d, non_intent=%d, overlap excluded)",
-                total, intent_count, non_intent_count)
+    total = len(seen)
+    new_intent = intent_count
+    new_non_intent = non_intent_count
+    logger.info("April cohort rebuilt: %d total channels (baseline=%d, new_intent=%d, new_non_intent=%d)",
+                total, existing_count, new_intent, new_non_intent)
 
 
 if __name__ == "__main__":
