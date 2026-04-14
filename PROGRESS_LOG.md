@@ -5,9 +5,9 @@
 
 ---
 
-## Current Status (as of April 9, 2026 — 1:30 PM)
+## Current Status (as of April 14, 2026 — 9:40 AM)
 
-**Phase:** Gendered AI adoption research design complete. Knowledge Economy Census + Entry Cohorts deployed. AI flagger run on Gender Gap Panel.
+**Phase:** Post-incident recovery. All services clean. KE Census + Entry Cohorts resuming after 3-day stall.
 **What's Running on Mac Mini (100.109.96.120 via Tailscale) — 22 services:**
 
 Daily channel stats (5 panels):
@@ -45,11 +45,34 @@ Plus: stream-a-rerun (dormant), health-check x2, sync-to-drive. Shorts-First UNL
 **April Cohort:** 22,594 channels (19,000 intent + 3,594 non-intent). From-founding tracking live. Growing daily.
 **Category Quota:** COMPLETE. 73,508 channels.
 **AI Flagger:** RUN on Gender Gap Panel. 40,355 flagged / 11.8M videos (0.34%). tools_general 74%, image_video 10%, general_ai 8%, audio_music 7%, coding 1%, content_creation 1%.
-**Knowledge Economy Census:** DEPLOYED. 80 keywords x 10 domains, pre-2023. First run today 2 PM.
-**Entry Cohorts:** DEPLOYED. 20 tool launches x treatment/control windows. First run today 11:30 AM.
-**Shorts-First:** PAUSED (KE Census takes 2 PM slot). Resumes after KE Census completes.
-**Quota:** Infrastructure ~130K/day. KE Census + Entry Cohorts use most of remaining ~870K.
+**Knowledge Economy Census:** Running. 7,250/66,880 keys (11%), 33K channels. Stalled Apr 11-13 (stream-a-rerun incident). Resuming today 2 PM.
+**Entry Cohorts:** Running. 5,853/102,400 keys (6%), 31K channels. Stalled Apr 11-13. Resuming today 11:30 AM.
+**April Cohort:** 25,551 channels (recovered from daily stats after rebuild script damage). Rebuild script patched to never shrink.
+**Shorts-First:** PAUSED (KE Census takes 2 PM slot).
+**Quota:** Infrastructure ~130K/day. Full ~870K available for discovery starting today (stream-a-rerun removed).
 **Research Design:** docs/GENDERED_AI_ADOPTION_DESIGN.md. Two complementary designs: staggered DiD on established channels (Design A) + temporal cohorts around tool launches (Design B). Neither sampled on DV.
+
+---
+
+## 2026-04-14 09:40 [Incident Recovery + Infrastructure Fixes]
+
+**Focus:** Diagnosed and fixed stream-a-rerun incident (Apr 11-13). Recovery and cleanup.
+
+### Stream-A-Rerun Incident (Apr 11-13)
+- **Root cause:** Legacy launchd plist `com.youtube.stream-a-rerun` was never unloaded. It fired daily at 3:35 AM with 4h max runtime. On Apr 11, its checkpoint was empty/reset, causing it to restart Stream A collection from scratch, consuming the entire daily quota (~1M units) before any other discovery service could run.
+- **Impact:** 3 days of zero progress on KE Census, Entry Cohorts, April Intent, and Trending. April cohort channel_ids.csv overwritten to 25 channels by rebuild script reading damaged source files.
+- **Recovery:** Unloaded stream-a-rerun. Recovered April cohort (25,551 IDs from Apr 11 daily stats backup). Patched rebuild_april_cohort.py to never shrink (reads existing channel_ids.csv as baseline). Fixed Stream B and D channel_ids.csv missing headers.
+- **Daily stats:** NO GAPS. All 6 panels collected through Apr 14. The incident only affected discovery services, not daily tracking.
+
+### Fixes Applied
+- `com.youtube.stream-a-rerun`: UNLOADED permanently
+- `src/collection/rebuild_april_cohort.py`: reads existing channel_ids.csv as baseline before adding new channels (commit cd1276b)
+- `src/collection/discover_intent.py`: skip completion check when --days-back is set (commit d93e8c9)
+- `data/channels/stream_b/channel_ids.csv`: added missing header row
+- `data/channels/stream_d/channel_ids.csv`: added missing header row
+
+### Lesson Learned
+Legacy launchd plists that share scripts with active services are time bombs. When the shared script gets modified, the legacy plist inherits the change. Always unload dormant services immediately, don't just ignore them. Also: rebuild scripts that overwrite canonical files should NEVER shrink the output (read existing as baseline, only add).
 
 ---
 
