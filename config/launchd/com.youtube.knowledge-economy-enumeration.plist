@@ -16,7 +16,7 @@
         <string>--output</string>
         <string>data/video_inventory/knowledge_economy_inventory.csv</string>
         <string>--max-runtime</string>
-        <string>7200</string>
+        <string>25200</string>
     </array>
 
     <key>WorkingDirectory</key>
