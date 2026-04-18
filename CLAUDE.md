@@ -1,4 +1,30 @@
-# YouTube Longitudinal Data Collection
+# YouTube Longitudinal — CLAUDE.md
+
+> **Level:** 4 (project workspace)
+> **Parent CLAUDE.md ancestor chain:** `~/.claude/CLAUDE.md` (Level 1 global) → `SECOND_BRAIN/CLAUDE.md` (Level 2 Second Brain) → `RESEARCH/CLAUDE.md` (Level 3 research execution) → THIS FILE
+> **Methodology type:** data-gathering-pipeline  (API collection, validation, longitudinal panel engineering — rules in RESEARCH/CLAUDE.md apply)
+> **Canonical Open Brain domain tag:** `YouTube Longitudinal`
+> **Decision domain tag:** `YouTube Longitudinal Decisions`
+> **Project charter:** `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md`
+> **Voice profile:** `SECOND_BRAIN/05-reference/KATIE_ACADEMIC_VOICE_PROFILE.md` (for any writing produced in this workspace)
+> **Authoritative project list:** `SECOND_BRAIN/USER/TELOS/PROJECTS.md`
+
+## Mandatory Session Startup (run before responding to first message)
+
+1. Verify `[SESSION CONTEXT — YouTube Longitudinal]` hook block appeared. If absent, run `search_thoughts` with query `"YouTube Longitudinal"`.
+2. Read `SECOND_BRAIN/USER/TELOS/TELOS_MAP.md` (skip on continuation sessions within past 24h per RESEARCH/CLAUDE.md fast-path rule).
+3. Read `SECOND_BRAIN/03-research/RESEARCH_PIPELINE.md` — current priority order.
+4. Read this project's charter: `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md`.
+5. Read `PROGRESS_LOG.md` in this workspace (limit 500 lines).
+6. `search_thoughts` query `"YouTube Longitudinal"` to pull relevant Open Brain context.
+
+## Recovery (if Level 4 context appears unloaded)
+
+If the session opened at RESEARCH/ root, read the Project Index in `RESEARCH/CLAUDE.md` to identify the active project. Log root-level sessions to `RESEARCH/PROGRESS_LOG.md`.
+
+(Project-specific content begins below this header block. Above this line is template-controlled.)
+
+---
 
 ## Global Context
 
