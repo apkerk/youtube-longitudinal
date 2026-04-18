@@ -5,6 +5,43 @@
 
 ---
 
+## Current Status (as of April 18, 2026 — 9:35 AM)
+
+**Phase:** KE Census COMPLETE at 143,558 channels. Enumeration starting tomorrow.
+
+**Milestone:** Knowledge Economy Census discovery stopped voluntarily at 143,558 unique channels (43% over 100K target, 52.5% of keyword space processed). channel_ids.csv extracted. Video enumeration scheduled for 9 AM daily (7h max runtime, ~800K quota/day, ~7-10 day completion for 143K channels).
+
+**What's Running on Mac Mini:**
+- All 6 daily stats panels (42+ day streak)
+- Entry Cohorts (11:30 AM, ~18K keys done)
+- April Intent + Non-Intent (12:30 PM, 1:00 PM rolling discovery)
+- Rebuild April cohort (1:45 PM)
+- **KE Census enumeration (9 AM daily, 7h max)** — NEW, first run tomorrow
+- Trending (11 AM)
+- Video stats chunks (4:30 AM + 7 AM)
+- Inventory updates (3:30 AM + 3:35 AM)
+
+**Paper Pipeline:** Discovery → Enumeration (in progress) → AI flagger on KE inventory → Gender coding → Event study → Manuscript.
+
+---
+
+## 2026-04-18 09:35 [KE Census Discovery Stopped + Enumeration Deployed]
+
+**Focus:** Stopped KE Census discovery at 143,558 channels (43% over target). Deployed enumeration plist.
+
+**Decisions:**
+- Stop discovery at 143K (far exceeded 100K target). Extracted channel_ids.csv from 10 dated CSVs (Apr 9-18), 143,558 unique.
+- Deploy enumeration at 9 AM daily with 7h max runtime. Freed quota (no competing discovery) gives ~800K/day. Full 143K enumeration in ~7-10 days.
+- Keep Entry Cohorts and April cohort discovery running (different time slots, complementary data).
+
+**Files:**
+- `data/channels/knowledge_economy/channel_ids.csv` (143,558 channels)
+- `config/launchd/com.youtube.knowledge-economy-enumeration.plist` (new, 9 AM / 7h)
+
+**Commits:** a6b151a (enumeration plist), ffa9287 (stop discovery + bump runtime)
+
+---
+
 ## Current Status (as of April 14, 2026 — 9:40 AM)
 
 **Phase:** Post-incident recovery. All services clean. KE Census + Entry Cohorts resuming after 3-day stall.
