@@ -1635,3 +1635,28 @@ youtube-longitudinal/
 - health_check.py NUL byte fix
 - src/validation/test_checkpoint_behavior.py (new regression tests)
 - config/launchd/com.youtube.daily-discovery-non-intent.plist (new)
+
+## 2026-04-26 08:12 [Enumeration Throughput Tuning]
+**Focus:** Free quota-bound throughput for KE Census enumeration after pausing Entry Cohorts.
+**Project State:** Data infrastructure phase — KE Census enumeration in progress (25,272/143,558 channels = 17.6% as of Apr 25), Entry Cohorts paused, all 6 daily panels running clean.
+
+### What was done
+- **Paused Entry Cohorts discovery (Apr 20, 10 PM):** Unloaded `com.youtube.daily-discovery-entry-cohorts` and renamed plist to `.PAUSED` on Mac Mini. Preserves resume path, prevents accidental reactivation. Resume note in `paused_services.md` auto-memory.
+- **Verified pause working:** Apr 19-21 enumeration runs hit `quotaExceeded` 403s at ~1 PM (Entry Cohorts active). Apr 22-25 runs hit `Max runtime 25200s` ceiling cleanly at 4 PM with no 403 — confirming quota is no longer the binding constraint.
+- **Bumped max-runtime 7h → 10h → 17h** on `com.youtube.knowledge-economy-enumeration.plist`:
+  - Reasoning: quota resets at midnight Pacific = 3 AM Eastern, exactly when daily stats fires. Enumeration burning through Wednesday's quota by evening doesn't conflict — daily stats at 3:05 AM Thursday gets fresh quota. Just need a buffer so enumeration isn't actively running at 3 AM competing for Thursday's reset quota.
+  - Final: 61,200s = 17h. 9 AM start → 2 AM stop = 1h buffer before daily stats.
+  - Script's `QuotaExhaustedError` handler stops cleanly at 403; max-runtime is just the safety belt.
+
+### Other observations
+- Entry Cohorts diagnostic (pre-pause): 103,442 unique channels discovered, only 12.6% (13,083) actually CREATED in treatment/control windows. The 87.4% (90,359) are established adopters — bonus dataset for Design A. Confirms post-hoc filter approach is correct; no keyword problem.
+- Retroactivity confirmed: enumeration ~99% retroactive (deletion attrition only), Entry Cohorts ~95% retroactive. Daily stats + April cohort from-founding tracking = NOT retroactive (must keep running).
+
+### Files modified
+- `~/Library/LaunchAgents/com.youtube.knowledge-economy-enumeration.plist` (Mac Mini): max-runtime 25200 → 36000 → 61200
+- `~/Library/LaunchAgents/com.youtube.daily-discovery-entry-cohorts.plist` → renamed `.PAUSED` (Mac Mini)
+- Auto-memory: `paused_services.md` + `MEMORY.md` index entry
+
+### Next
+- Monitor Monday's run (first 17h window). If quota 403 hits before 2 AM, that's the actual ceiling and we'll know throughput.
+- Resume Entry Cohorts when KE enumeration completes (~3 weeks at projected ~6K channels/day).
