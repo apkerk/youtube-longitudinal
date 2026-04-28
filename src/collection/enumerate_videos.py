@@ -131,7 +131,7 @@ def enumerate_all_channels(
         limit: Max number of channels to process
 
     Returns:
-        Total number of videos enumerated
+        Tuple of (total_videos, channels_done)
     """
     start_time = time.time()
     if test_mode and limit is None:
@@ -232,7 +232,7 @@ def enumerate_all_channels(
             "will resume next run"
         )
 
-    return total_videos
+    return total_videos, len(completed_set)
 
 
 def main():
@@ -304,7 +304,7 @@ def main():
             logger.info(f"Delete {sentinel_path_check.name} to force re-enumeration.")
             return
 
-        total_videos = enumerate_all_channels(
+        total_videos, channels_done = enumerate_all_channels(
             youtube=youtube,
             channel_ids=channel_ids,
             output_path=output_path,
@@ -315,9 +315,12 @@ def main():
         )
 
         logger.info("=" * 60)
-        logger.info("ENUMERATION COMPLETE")
-        logger.info(f"Channels processed: {len(channel_ids)}")
-        logger.info(f"Total videos found: {total_videos}")
+        if channels_done >= len(channel_ids):
+            logger.info("ENUMERATION COMPLETE")
+        else:
+            logger.info("ENUMERATION PAUSED — will resume next run")
+        logger.info(f"Channels done: {channels_done}/{len(channel_ids)}")
+        logger.info(f"Videos found this run: {total_videos}")
         logger.info(f"Output: {output_path}")
         logger.info("=" * 60)
 
