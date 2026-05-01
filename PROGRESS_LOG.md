@@ -5,23 +5,46 @@
 
 ---
 
-## Current Status (as of April 18, 2026 — 9:35 AM)
+## Current Status (as of May 1, 2026 — 4:40 PM)
 
-**Phase:** KE Census COMPLETE at 143,558 channels. Enumeration starting tomorrow.
+**Phase:** KE Census enumeration COMPLETE. KE daily stats + video stats chunks deployed. Entry Cohorts unpaused.
 
-**Milestone:** Knowledge Economy Census discovery stopped voluntarily at 143,558 unique channels (43% over 100K target, 52.5% of keyword space processed). channel_ids.csv extracted. Video enumeration scheduled for 9 AM daily (7h max runtime, ~800K quota/day, ~7-10 day completion for 143K channels).
+---
 
-**What's Running on Mac Mini:**
-- All 6 daily stats panels (42+ day streak)
-- Entry Cohorts (11:30 AM, ~18K keys done)
-- April Intent + Non-Intent (12:30 PM, 1:00 PM rolling discovery)
-- Rebuild April cohort (1:45 PM)
-- **KE Census enumeration (9 AM daily, 7h max)** — NEW, first run tomorrow
-- Trending (11 AM)
-- Video stats chunks (4:30 AM + 7 AM)
-- Inventory updates (3:30 AM + 3:35 AM)
+## 2026-05-01 16:40 [KE Enumeration Complete + KE Stats Deployed + Entry Cohorts Resumed]
 
-**Paper Pipeline:** Discovery → Enumeration (in progress) → AI flagger on KE inventory → Gender coding → Event study → Manuscript.
+**Focus:** Closed out KE Census infrastructure. Enumeration finished Apr 30 at 7:07 PM (~12 days). Deployed daily channel stats + weekly video stats chunks for KE panel. Unpaused Entry Cohorts now that quota is freed.
+
+**KE Census final tally:**
+- 143,558 / 143,558 channels enumerated (100%)
+- ~10.26M videos indexed (6.49M overnight + 3.77M final-day)
+- Inventory: `data/video_inventory/knowledge_economy_inventory.csv` (6.5 GB)
+- Sentinel `.enumerate_knowledge_economy_inventory_complete` written
+- Today's 9 AM launchd hit sentinel and exited cleanly — no wasted quota
+
+**Logging patch shipped (commit c56a90e):** `enumerate_videos.py` now returns `(total_videos, channels_done)` and prints `ENUMERATION PAUSED — will resume next run` vs `ENUMERATION COMPLETE` based on actual completion. Old behavior printed "COMPLETE" with `len(channel_ids)` regardless of partial exit.
+
+**KE daily channel stats deployed:**
+- Plist: `com.youtube.knowledge-economy-daily-channel-stats` — fires 3:50 AM
+- Pipeline validated via `--test` run on May 1 (cost: ~2,871 quota units, runtime ~12 min)
+- First production output: `data/daily_panels/channel_stats/knowledge_economy/2026-05-01.csv` — 143,558 rows, 5 cols, 0 nulls
+- `--limit` flag only limits video IDs, not channels — channel mode always runs full panel
+
+**KE video stats chunks deployed:**
+- Plist: `com.youtube.knowledge-economy-video-stats-chunk` — fires 8:30 AM, 7-day rolling chunks
+- Quota: ~29,300 units/day (1/7 of ~10.26M videos)
+
+**Entry Cohorts unpaused:**
+- Renamed `.PAUSED` → `.plist`, `launchctl load` succeeded
+- Schedule: 11:30 AM daily, 60 min max runtime, reserves 50K quota
+
+**Quota delta:** New daily total ~162K (from ~130K). 840K headroom remains.
+
+**Schedule layout (active panels):**
+- 3:06 AM gender_gap channel | 3:12/17 ai_census channel | 3:20 tech_census channel
+- 3:39/40 new_cohort + category_quota | 3:50 KE channel (NEW) | 3:53 april_cohort
+- 4:30 AM gender_gap video chunk | 7:00 AM ai_census video chunk | 8:30 AM KE video chunk (NEW)
+- 9:00 AM KE enumeration sentinel-exit | 11:30 AM Entry Cohorts (RESUMED)
 
 ---
 

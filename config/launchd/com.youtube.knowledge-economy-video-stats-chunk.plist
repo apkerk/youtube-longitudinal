@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.youtube.knowledge-economy-video-stats-chunk</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/katieapker/.youtube-longitudinal/repo/src/panels/run_video_stats_chunk.sh</string>
+        <string>data/video_inventory/knowledge_economy_inventory.csv</string>
+        <string>knowledge_economy</string>
+        <string>7</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/katieapker/.youtube-longitudinal/repo</string>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>8</integer>
+        <key>Minute</key>
+        <integer>30</integer>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>/Users/katieapker/.youtube-longitudinal/repo/data/logs/knowledge_economy_video_stats_chunk_stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/katieapker/.youtube-longitudinal/repo/data/logs/knowledge_economy_video_stats_chunk_stderr.log</string>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+</dict>
+</plist>
