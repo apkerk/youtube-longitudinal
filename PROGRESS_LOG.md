@@ -5,9 +5,52 @@
 
 ---
 
-## Current Status (as of May 1, 2026 — 4:40 PM)
+## Current Status (as of May 4, 2026 — 5:55 PM)
 
-**Phase:** KE Census enumeration COMPLETE. KE daily stats + video stats chunks deployed. Entry Cohorts unpaused.
+**Phase:** Post-reboot cleanup. Quota incident May 4 caused by `daily-discovery-knowledge-economy` rogue plist (928K units burned). 8 dormant plists retired with `.RETIRED` rename to prevent reboot reactivation. Active service count: 25.
+
+---
+
+## 2026-05-04 17:55 [Sunday May 3 Reboot Incident + Rogue Plist Cleanup]
+
+**Focus:** Sunday May 3 7:24 PM Mac Mini reboot reloaded 11 dormant plists. One — `daily-discovery-knowledge-economy` — burned 928,021 quota units Monday 7:15-8:41 AM, exhausting daily quota and breaking ai_census + KE video chunks.
+
+**Root cause:** macOS launchd auto-loads ALL plists in `~/Library/LaunchAgents/` on reboot. "Unloaded" services without `.RETIRED` rename are time bombs. Same lesson as Apr 11-13 stream-a-rerun incident, different plist.
+
+**Why KE discovery was so destructive:** No idempotency check against existing `channel_ids.csv` (KE Census discovery completed Apr 18 at 143,558 channels). Plist fired, found no checkpoint, started rediscovering from scratch. Burned 928K units in 86 minutes before quota cut it off.
+
+**Apr 13 fixes that DID hold today:**
+- `stream-a-rerun` fired at 3:35 AM, hit output-exists check, exited at zero cost
+- `gender-gap-enumeration` and `parallel-enumeration` shards all hit sentinel files, exited cheap
+- `rebuild_april_cohort` patch held — april_cohort grew from 22K → 129K cleanly
+
+**8 plists retired (unloaded + renamed `.RETIRED`):**
+1. `com.youtube.daily-discovery-knowledge-economy` — TODAY'S CULPRIT (no idempotency)
+2. `com.youtube-longitudinal.weekly-video-stats` — old Sunday 8 AM full-inventory job
+3. `com.youtube.daily-discovery-non-intent` — Stream A' complete (110K)
+4. `com.youtube.daily-discovery-topic-stratified` — replaced by category_quota
+5. `com.youtube.tech-census-keyword` — Tech Census stopped Apr 6
+6. `com.youtube.stream-a-rerun` — Apr 11-13 culprit, safe today but time bomb
+7. `com.youtube.gender-gap-enumeration` — complete (sentinel)
+8. `com.youtube.parallel-enumeration` — gender_gap shards complete
+
+**Kept active:** `com.youtube.daily-discovery-shorts` — Katie wants Shorts data; it hit empty quota today but plist is sound.
+
+**Service count:** 33 (post-reboot) → 25 (after cleanup).
+
+**Today's data losses:**
+- KE video chunk (8:30 AM): partial, 292K of expected ~1.5M stats
+- ai_census video chunk (7:00 AM): partial, 1.05M of expected stats
+- shorts (2 PM): 0 channels (empty quota)
+- topic-stratified, A', tech-census-keyword: all hit empty quota — but those are retired now
+
+**Tomorrow's quota math (clean):**
+- Channel stats (7 panels): ~12K
+- Video chunks (3 panels): ~95K
+- Discovery (intent, non-intent, entry, trending, shorts): variable, capped by `--reserve-quota` flags
+- Total floor: ~107K. 893K headroom.
+
+**Lesson reinforced:** Always rename to `.RETIRED` (not just unload) when retiring a service. Unload alone evaporates on reboot.
 
 ---
 
