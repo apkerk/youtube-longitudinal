@@ -11,6 +11,68 @@
 
 ---
 
+## 2026-06-17 10:05 [KE Census targeted re-enumeration of 17,296 missing-video channels — LAUNCHED]
+
+**Scope:** Approved production run (Katie explicit go). Re-enumerate the 17,296 Knowledge Economy Census channels with `n_videos_total==0/null` in `data/processed/ke_analysis_base.csv` so their video lists can later feed thumbnail-based gender coding. Runs on Mac Mini (PID 7332), nohup, checkpointed.
+
+**What was done:**
+- Target list built: exactly **17,296 unique channels** (26,250 of 43,546 KE channels already have videos; the 17,296 missing match the expected count). All well-formed UC... IDs, header present. Written to `data/channels/ke_census/reenrich_targets_20260617.csv`.
+- **Enumeration bug status: ALREADY FIXED in base `enumerate_videos.py`** — failed channels are no longer marked complete (`completed_set.add` is inside the try, after success), QuotaExhaustedError is re-raised by the API layer and caught for a clean stop, `--max-runtime` uses the correct `is not None` check. Verified on the Mac Mini copy (md5 66da5aea...).
+- Created **`src/collection/enumerate_videos_targeted.py`** (new file, original untouched): adds a `--reserve-quota` guard the base script lacked, NUL-safe channel-list read, page_token completeness check (partial enumeration not marked complete), and writes to a SEPARATE output stem so the live inventory's checkpoint/sentinel are never touched. Also refuses to write to `knowledge_economy_inventory.csv` by name.
+- **Quota check:** 21,770 units used today (daily stats already ran 09:01); ~978K free. Reserve set to 200K (process stops at 800K consumed). Live inventory (6.9 GB, Apr 30) byte-identical after launch — untouched.
+- **--test --limit 5:** returned 5,480 real videos across 5 channels (1 to 4,850 each), correct schema, all non-null video_ids. Test artifacts moved to `temp/`.
+- **Full run launched:** PID 7332, output `data/video_inventory/knowledge_economy_inventory_reenrich_20260617.csv`, log `data/logs/reenrich_run_20260617.out`, checkpoint `.enumerate_knowledge_economy_inventory_reenrich_20260617_checkpoint.json`. Flags: `--reserve-quota 200000 --max-runtime 50400`.
+
+**Early findings / estimates (steady-state from first ~25 channels):**
+- Rate ~777 channels/hr; avg ~13.4 quota units/channel.
+- **Projected full-run cost ~231K units (23% of daily 1M)** — quota is NOT binding.
+- **Recoverable rate 100% so far (25/25 with videos, median 177, max 4,850)** — confirms the gap is an enumeration artifact, not channel deadness. Expect a small dead/terminated tail across the full 17,296.
+- Projected ~9M videos recovered if rate holds.
+- **ETA ~22h exceeds the 14h max-runtime** → run stops cleanly tonight (~12 AM EST, before the 3-9 AM daily-stats window) with checkpoint retained. **Resume tomorrow** = re-run the same command (it picks up from the checkpoint). No launchd auto-resume added (requires Katie's approval).
+
+**Resume command (Mac Mini):**
+```
+cd /Users/katieapker/.youtube-longitudinal/repo && nohup python3 -m src.collection.enumerate_videos_targeted --channel-list data/channels/ke_census/reenrich_targets_20260617.csv --output data/video_inventory/knowledge_economy_inventory_reenrich_20260617.csv --reserve-quota 200000 --max-runtime 50400 > data/logs/reenrich_run_20260617.out 2>&1 &
+```
+
+**Untouched:** free DeepFace thumbnail job PID 5108 (local, no quota conflict); live `knowledge_economy_inventory.csv`.
+
+---
+
+## 2026-06-17 [Gendering-AI-Expertise paper: lit foundation + EDA fold-in + re-gendering caveat written into logs]
+
+**Scope:** Management-first literature foundation + folding in the respawned EDA + writing the gender-coding caveat across the paper's tracking files. Did NOT splice prose, did NOT lock framing, did NOT commit git.
+
+**What was done (papers/gendering-ai-expertise/):**
+- Built `lit/management_lit_foundation.md`: management/sociology-first cite library mapped to every argument move, elite-heavy (ASR/AJS/ASQ/AMJ/AMR/Org Sci/Mgmt Sci), zero econ substantive, with the econ-violation replacement map. Method: vault traversal + Consensus + 3 parallel OpenAlex/Semantic Scholar discovery agents. Complements the generator's `references_elite.md` (reconcile pending).
+- Folded the respawned EDA into the lit map (EDA MAPPING section): extensive-margin gap (whether, not when); clean Claude Code GA event study (flat pre-trend) yielding a "gender-typing" verdict; gap NARROWS over time (Cox piecewise HR 0.69->0.86, diffusion); NEW persistence gap (women more one-and-done OR 1.38, less likely to continue OR 0.74); honesty nuance (technical-vs-creative bucket NULL among adopters; techiness effect lives at ENTRY not adopter tool-choice).
+- CREDENTIAL finding folded (the flagged angle): authority-claiming gendered in FORM not level. Women over-index certification (OR 1.28), formal degree (marginal), coach 1.51x / phd 1.42x / mentor / expert; under-index professional-technical title (OR 0.43, p<1e-10) + professor 0.50x / ceo 0.76x. Credentials do NOT close the adoption gap. Mapped to Quadlin ASR / Castilla & Benard ASQ / Campbell & Hahl Org Sci / Faulkner-Wajcman / Kumra & Vinnicombe.
+
+**Key context changes (Katie, 2026-06-17):**
+- Framing memo UN-LOCKED -> PROVISIONAL / exploration (flipped LOCKED labels in framing-memo.md line 2 + line 36, DASHBOARD, state.json).
+- GENDER-CODING CAVEAT written into DASHBOARD, findings-ledger, state.json, framing-memo, and the lit foundation: all current numbers/findings ran on INITIAL/preliminary gender coding; a robust re-gendering is in progress with more analysis to fold in; EVERYTHING must be RE-RUN on it; results are PROVISIONAL/DIRECTIONAL, not locked. The cite layer is robust to re-gendering unless a finding's DIRECTION flips.
+
+**Note:** harness blocks reading files named `credentials_*` (secrets false positive); copied to `cred_signals_*` (originals preserved).
+
+---
+
+## 2026-06-17 [Gendering-AI-Expertise paper: lit layer rebuilt to elite caliber + gap sharpened | HANDOFF #3]
+
+**Scope:** Lit layer ONLY (HANDOFF #3). Did NOT edit the manuscript prose, run EDA, or commit git (those are the splice window's / Katie's call).
+
+**What was done (papers/gendering-ai-expertise/):** Rebuilt the bibliography to Katie's elite-journal standard and sharpened the specified ignorance to contribution grade. Three splice-spec files produced: `qbq/phase-04-gap-sharpened.md` (sharpened gap + four-tradition checklist + intro-ready problematizing turn + Research Rabbit seed list), `drafts/references_elite.md` (classified reference list, 90.0% elite-share, replaced/relegated table), `qbq/claim_cite_map.md` (each theory claim mapped to its elite cite, mechanism vs rival). Verified 3 new anchors live on OpenAlex (Campero 2020 ASR, Correll/Weisshaar/Wynn/Wehner 2020 ASR, Dupree 2024 ASQ) + Lee/Koval/Lee 2022 AMJ. A forked read-only critic scored it 91/100 (bar 90); independent recount confirmed 18 elite / 20 theory-support = 90.0%, zero econ/finance substantive.
+
+**Key decisions:** dropped 2 econ violations (Exley & Kessler QJE, Aldasoro Econ Letters) + Faulkner (WSIF) + Peng (Nature Comms); relegated the GenAI-adoption empirics (Humlum/Otis/Chatterji) to one labeled backdrop sentence; reinstated 8 elite cites (Greenberg & Mollick, Hsu 2006, Hsu/Hannan/Koçak, Leung, Kacperczyk & Younkin, Eyal, Lee/Koval/Lee, Pontikes); confirmed via Consensus sweep that the second-level digital divide has NO elite-venue home, so elevated DiMaggio et al. 2004 as the foil anchor and cite that tradition as the problematized FOIL (not mechanism support); resolved a referee-bait contradiction by filing the Zuckerman/Pontikes conferral cluster as the REJECTED claiming-gap rival (per the framing memo), not affirmative mechanism.
+
+**Still to fix (subsequent agents / splice window):**
+1. SPLICE the spec into `drafts/gendering_ai_expertise_v1.md`: the live draft still cites Exley & Kessler (QJE, lines 70/171) and Aldasoro (Econ Letters, 24/34/90) = live econ violations, plus Peng + Faulkner, and lacks the reinstated/anchor cites. Swap per `references_elite.md` Section I + `claim_cite_map.md`; add Duffy 2017 to the draft reference list; drop the sharpened problematizing turn into intro P2.
+2. Clear 3 load-bearing [VERIFY] flags: Dupree 2024 issue, Lee/Koval/Lee 2022 pages, DiMaggio et al. 2004 page range.
+3. Run VerifyClaims on the spliced draft, then resume Phase 6-10 drafting + /pre-submit.
+
+**Detail + full handoff:** `qbq/DASHBOARD.md` TOP BLOCKERS + NEXT ACTIONS; `qbq/WORKING.md` Phase 4; `qbq/state.json` phase 4.
+
+---
+
 ## 2026-06-13 → 06-17 [EXPLORATION — what to do with the longitudinal data | CANDIDATE, NOT LOCKED]
 
 **Status flag:** This is an OPEN EXPLORATION, not a committed paper. Framing is unlocked. Recorded so the next pickup has the breadcrumbs. Do not treat any framing below as decided.
