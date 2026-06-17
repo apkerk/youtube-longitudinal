@@ -11,6 +11,25 @@
 
 ---
 
+## 2026-06-13 → 06-17 [EXPLORATION — what to do with the longitudinal data | CANDIDATE, NOT LOCKED]
+
+**Status flag:** This is an OPEN EXPLORATION, not a committed paper. Framing is unlocked. Recorded so the next pickup has the breadcrumbs. Do not treat any framing below as decided.
+
+**What was explored:** Whether the gender-gap longitudinal panel (9,591 individual-run creators; 11.6M dated uploads; daily channel-stats Feb 17–present; Infludata ~March 2025 baseline) supports a NOVEL, non-gender paper distinct from the JMP. Ran a real QbQ-Auto pass end to end.
+
+**Candidate finding (provisional, survived robustness but NOT locked as the paper's thesis):**
+- Posting *consistency* (steadiness of monthly cadence), not *volume*, tracks creator outcomes. In nested OLS the volume coefficient collapses (0.33→0.06) once rhythm enters; consistency b≈2.4 on log subscribers, holds within content-category FE and net of recency.
+- Two prospective, time-ordered designs (4-month daily panel; ~15-month Infludata→2026 horizon) sharpened this: production reliability predicts **venture SURVIVAL** (IQR consistency → 6-month production-cessation odds ×0.52–0.53, robust), but is a **NULL on growth rate** (15-mo growth b≈−0.02, CI spans 0). Reading: reliability keeps the venture alive rather than making it grow faster; cross-sectional size is the compounded residue of differential survival under winner-take-all (top size-decile captured ~62% of net new subscribers over 15 months).
+- Failure measured as production cessation (living-dead problem; channels go dormant, not deleted — 0% disappearance): 8.6%/5.2%/3.2%/1.4% at 3/6/9/12-month thresholds.
+
+**Candidate theoretical framings considered (NONE chosen):** new-venture survival / liability-of-newness (Yang & Aldrich 2017; Shepherd 2000); organizational reliability (Hannan & Freeman); winner-take-all / superstar / creator precarity (Vallas & Schor 2020; Rietveld 2020; Bhargava 2021); creator-economy entrepreneurship (Fisher et al. 2024) + the CEE working paper's synchronization proposition. The raw "consistency beats volume" empirical claim is partly PRE-EMPTED (Tafesse 2023 inverted-U; Song 2024 ManSci quality-over-quantity), so any future paper needs the survival/longitudinal wedge, not the bare correlation.
+
+**Artifacts (all under `papers/creator-trajectories/`):** scripts 01–06 (reproducible), exhibits, two prospective analyses, an exploratory v1 draft (`drafts/reliable_not_prolific_v1.*`) and framing memo — both flagged EXPLORATORY/UNLOCKED. Full lit review (~120–170 refs, like the gender-gap paper) was scoped but NOT built.
+
+**If picking back up:** re-decide the framing first (survival is the leading candidate but unlocked); then build the full lit review and rewrite; then pull fresh daily-panel data for a longer growth/survival horizon.
+
+---
+
 ## 2026-05-04 17:55 [Sunday May 3 Reboot Incident + Rogue Plist Cleanup]
 
 **Focus:** Sunday May 3 7:24 PM Mac Mini reboot reloaded 11 dormant plists. One — `daily-discovery-knowledge-economy` — burned 928,021 quota units Monday 7:15-8:41 AM, exhausting daily quota and breaking ai_census + KE video chunks.
@@ -1726,3 +1745,13 @@ youtube-longitudinal/
 ### Next
 - Monitor Monday's run (first 17h window). If quota 403 hits before 2 AM, that's the actual ceiling and we'll know throughput.
 - Resume Entry Cohorts when KE enumeration completes (~3 weeks at projected ~6K channels/day).
+
+## 2026-06-17 [QbQ-Auto paper: "The Gendering of a General-Purpose Technology"]
+- Ran the full QbQ-Auto question-by-question pipeline on the KE Census (Knowledge Economy) data to produce a complete ASQ draft on gendered AI adoption among knowledge-sector creators. Project: papers/gendering-ai-expertise/.
+- DATA ENGINEERING: AI flagger on the 45.9M-video KE inventory; built a measurement-CLEAN three-tier AI flag (unambiguous any-date; ambiguous brand tokens gated to launch; classical-ML field terms + homonyms era-gated to ChatGPT) that cut pre-2022 false-positive adopters from 51.6% to 7.0% (8,652 clean adopters). Coded perceived gender on the 43,546-channel analytic roster (FairFace/DeepFace vision + offline name-based; validated vs 9,760 hand-coded: 90.9% accuracy, 4.15pp differential FPR), completed roster coverage with the name-based component. 14,203 binary-gender channels.
+- FINDINGS (definitive, full gender): women adopt AI content less (logit OR 0.72, p<0.001; 12.0% vs 16.0%). The gap is TOOL-DEPENDENT: female x post x techiness = -0.0027 (p=0.009), x developer-origin = -0.0140 (p=0.006), pooled null; ChatGPT event-study pre-trends flat (p=0.117), placebo flat (p=0.892). The gap is at ENTRY, not in claiming: AI-expert bio claim null, women claim GENERIC authority MORE (+0.121, p=0.040), AI-title authority null (p=0.95). Audience-ratification INCONCLUSIVE (6-week panel).
+- THESIS REFRAME (data-driven): the original "who gets to call themselves an AI expert / legitimacy-conferral" framing did NOT survive full gender (no claiming gap in titles/bios). Headline reframed to a tool-techiness-moderated gender gap in AI ADOPTION: "the democratization of AI was itself gendered" (closed for mainstream tools, persisted at the technical/developer frontier). Mechanism = gendered status beliefs + gendered technology (Ridgeway & Correll, Wajcman, Hargittai); conferral/claims-making demoted to an inconclusive/measurement-bounded null. See qbq/WORKING.md GRAVEYARD.
+- IDENTIFICATION NOTE: tool launches are calendar-common shocks staggered across TOOLS not units, so Callaway-Sant'Anna/Sun-Abraham do NOT apply; used event-study + Cengiz stacked DiD + TWFE reference.
+- DELIVERABLES: manuscript drafts/Gendering_AI_Expertise_v1.pdf (11,116 words, 28 refs, 4 tables + 4 figures), QbQ artifacts (Dashboard, Working, framing-memo LOCKED, findings-ledger, contradiction-file), README + run_all_analysis.sh replication, self-brief deck (building). Gap built vs Locke&Golden-Biddle/Merton/Barney/Zuckerman/Davis; headline-novelty clear.
+- VERIFICATION: independent CoVe audit -> numerically faithful, no fabricated cites, no em dashes, all overclaiming guardrails respected. Method cites tagged [VERIFY] for a future /bibcheck.
+- NOT committed to git (awaiting Katie's OK; all files saved on Drive). DiD panel preliminary (~1,223 channels); future work = extend vision gender coverage, collect descriptions/transcripts, video-level audience data.

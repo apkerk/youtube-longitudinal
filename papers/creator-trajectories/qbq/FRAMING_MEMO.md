@@ -1,4 +1,10 @@
-# FRAMING MEMO — LOCKED 2026-06-13
+# FRAMING MEMO — EXPLORATORY, NOT LOCKED
+
+> Status (updated 2026-06-17, per Katie): this is a CANDIDATE direction from an open exploration of
+> what to do with the longitudinal data, NOT a committed framing. The reach-scaling framing below was
+> superseded mid-exploration by a survival-centered reading (see the exploration note in
+> `RESEARCH/YT LONGITUDINAL/PROGRESS_LOG.md`, 2026-06-17). Nothing here is locked. Revisit and
+> re-decide the framing when picking the project back up.
 
 ## §1 Phenomenon (canonical numbers + N)
 Solo creator-entrepreneurs are a large and growing organizational form (Goldman Sachs projects the creator economy near $480B by 2027). I study the full reconstructed production histories of **9,591 U.S. solo (individual-run) YouTube creators**, built from **11,576,217 dated video uploads** in a longitudinal inventory. The median creator is ~7.4 years old with 652 lifetime uploads and 16,400 subscribers. Analytic N = 9,583.
