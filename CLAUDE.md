@@ -1,65 +1,12 @@
 # YouTube Longitudinal — CLAUDE.md
 
-> **Level:** 4 (project workspace)
-> **Parent CLAUDE.md ancestor chain:** `~/.claude/CLAUDE.md` (Level 1 global) → `SECOND_BRAIN/CLAUDE.md` (Level 2 Second Brain) → `RESEARCH/CLAUDE.md` (Level 3 research execution) → THIS FILE
-> **Methodology type:** data-gathering-pipeline  (API collection, validation, longitudinal panel engineering — rules in RESEARCH/CLAUDE.md apply)
+> **Methodology type:** data-gathering-pipeline (API collection, validation, longitudinal panel engineering — methodology-type rules in `RESEARCH/CLAUDE.md` apply)
 > **Canonical Open Brain domain tag:** `YouTube Longitudinal`
 > **Decision domain tag:** `YouTube Longitudinal Decisions`
-> **Project charter:** `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md`
-> **Voice profile:** `SECOND_BRAIN/05-reference/KATIE_ACADEMIC_VOICE_PROFILE.md` (for any writing produced in this workspace)
-> **Authoritative project list:** `SECOND_BRAIN/USER/TELOS/PROJECTS.md`
+> **Project charter:** `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md` — read at session start for goals, milestones, and delegation boundaries.
 
-## Mandatory Session Startup (run before responding to first message)
-
-1. Verify `[SESSION CONTEXT — YouTube Longitudinal]` hook block appeared. If absent, run `search_thoughts` with query `"YouTube Longitudinal"`.
-2. Read `SECOND_BRAIN/USER/TELOS/TELOS_MAP.md` (skip on continuation sessions within past 24h per RESEARCH/CLAUDE.md fast-path rule).
-3. Read `SECOND_BRAIN/03-research/RESEARCH_PIPELINE.md` — current priority order.
-4. Read this project's charter: `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md`.
-5. Read `PROGRESS_LOG.md` in this workspace (limit 500 lines).
-6. `search_thoughts` query `"YouTube Longitudinal"` to pull relevant Open Brain context.
-
-## Recovery (if Level 4 context appears unloaded)
-
-If the session opened at RESEARCH/ root, read the Project Index in `RESEARCH/CLAUDE.md` to identify the active project. Log root-level sessions to `RESEARCH/PROGRESS_LOG.md`.
-
-(Project-specific content begins below this header block. Above this line is template-controlled.)
-
----
-
-## Global Context
-
-For identity, values, priorities, and working principles, read:
-- `/Users/katieapker/Library/CloudStorage/GoogleDrive-apker.katie@gmail.com/My Drive/SECOND_BRAIN/USER/TELOS/TELOS_MAP.md` — identity + active priorities (The Algorithm uses this at THINK phase)
-- `/Users/katieapker/Library/CloudStorage/GoogleDrive-apker.katie@gmail.com/My Drive/SECOND_BRAIN/USER/ETHOS.md` — universal working principles (applies to all agents)
-- Relevant project charter: `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md`
-
-> Charter: `SECOND_BRAIN/03-research/youtube-longitudinal/PROJECT_CHARTER.md`
-> Read at session start for goals, milestones, and delegation boundaries.
-
-## Outer Loop Criteria
-
-Binary-testable for this project:
-- Daily collection pipeline runs without errors and produces validated output → **YES/NO**
-- No quota overruns or unexpected API failures in the last 7 days → **YES/NO**
-- Current collection phase matches the milestone in PROJECT_CHARTER.md → **YES/NO**
-
----
-
-## When ALGORITHM Mode Applies
-
-Use ALGORITHM mode for:
-- Pipeline architecture decisions or sampling design changes
-- Sessions involving methodology decisions (cohort cutoff dates, stream definitions, filter criteria)
-- Any production collection run approval (>1000 channels requires Katie's explicit sign-off)
-- Multi-file coordination across src/ + data/ + documentation in one session
-
-Use NATIVE mode for:
-- Running --test mode validation
-- Generating diagnostic plots and descriptive statistics
-- Updating PROGRESS_LOG.md and PROJECT_MASTER_PLAN.md
-- Reading/analyzing existing data files
-
----
+Universal rules (safety, communication, approval boundaries) live in the global
+`~/.claude/CLAUDE.md` kernel. This file carries ONLY project-specific content.
 
 ## Project Identity
 
@@ -68,8 +15,6 @@ This project collects longitudinal YouTube data via the YouTube Data API v3 for 
 1. **New Creator Cohort** — Discovers and tracks new YouTube channels created in 2026 to study early-stage creator behavior. Uses a 5-stream sampling design (Intent, Non-Intent, Benchmark, Random, Casual).
 
 2. **Gender Gap Longitudinal Panel** — Daily video-level and channel-level statistics for 14,169 established channels from the Infludata/Bailey's dataset. Supports three research designs: AI Creator Census (gender dynamics in AI content creation), AI Adoption Diffusion Panel (staggered DiD), and Audience Response to AI Content (matching + DiD). The gender gap paper's analysis of *why* the gap exists lives in the dissertation CH2 directory; this repo owns the longitudinal data collection on those channels.
-
-**Methodology type:** Data gathering / pipeline (rules from RESEARCH/CLAUDE.md for this type apply)
 
 **Tech stack:** Python 3.14, YouTube Data API v3, pandas, pathlib
 
@@ -117,6 +62,8 @@ This project collects longitudinal YouTube data via the YouTube Data API v3 for 
 4. Read the last 3 entries of PROGRESS_LOG.md — understand recent work
 5. Check `git status` — ensure working tree is clean
 
+**Recovery:** If the session opened at RESEARCH/ root instead of this workspace, read the Project Index in `RESEARCH/CLAUDE.md` to identify the active project. Log root-level sessions to `RESEARCH/PROGRESS_LOG.md`.
+
 ### On Completion
 1. Append timestamped entry to PROGRESS_LOG.md (append-only, never overwrite)
 2. Update current status marker in PROJECT_MASTER_PLAN.md if phase changed
@@ -127,9 +74,14 @@ This project collects longitudinal YouTube data via the YouTube Data API v3 for 
    - Learning (if a technical insight emerged): content = "Learning: [insight]. Context: [trigger]", domain = "YouTube Longitudinal"
    Skip if session was purely mechanical (status check, minor config edit, no decisions made).
 
-## Safety Rules
+## Pipeline Health Checks
 
-Inherits all global safety rules from `~/.claude/CLAUDE.md`. Additional project-specific rules:
+Binary-testable at any check-in:
+- Daily collection pipeline runs without errors and produces validated output
+- No quota overruns or unexpected API failures in the last 7 days
+- Current collection phase matches the milestone in PROJECT_CHARTER.md
+
+## Safety Rules (project-specific; global rules apply on top)
 
 - **Always run `--test` mode first** before any production collection
 - **Never start a full collection run** (>1000 channels) without Katie's explicit approval
@@ -149,12 +101,11 @@ Inherits all global safety rules from `~/.claude/CLAUDE.md`. Additional project-
 - Run scripts as modules: `python -m src.collection.discover_intent [--test] [--limit N]`
 
 ## Require Katie's Approval For
-- Starting production collection runs
+- Starting production collection runs (any run >1000 channels)
 - Sample size or target changes
 - Adding or modifying stream definitions
 - Methodological decisions (filtering criteria, cohort cutoff dates)
 - Any operation that consumes >10,000 API quota units
-- Causal claims or analytical interpretations
 
 ## Allow Autonomous Execution For
 - Reading and analyzing existing data files
