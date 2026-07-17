@@ -123,13 +123,15 @@ def _load_known_video_ids_nul_safe(inventory_path: Path) -> Set[str]:
         return set()
 
     known = set()
-    with open(inventory_path, "rb") as f:
-        raw = f.read()
 
-    cleaned = raw.replace(b"\x00", b"")
-    text = cleaned.decode("utf-8", errors="replace")
-    reader = csv.DictReader(io.StringIO(text))
-    for row in reader:
+    def _lines():
+        # Streaming NUL-safe read: whole-file read of the multi-GB inventory
+        # OOM-killed this job on the 8 GB Mac Mini.
+        with open(inventory_path, "rb") as f:
+            for line in f:
+                yield line.replace(b"\x00", b"").decode("utf-8", errors="replace")
+
+    for row in csv.DictReader(_lines()):
         vid = row.get("video_id", "").strip()
         if vid:
             known.add(vid)

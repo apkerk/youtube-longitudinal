@@ -55,6 +55,19 @@ import config
 
 logger = logging.getLogger(__name__)
 
+
+def nul_safe_line_iter(path):
+    """Yield decoded lines with NUL bytes stripped, streaming line-by-line.
+
+    Memory-safe replacement for read-whole-file-then-replace: the 4.5-6.5 GB
+    inventories OOM-killed the process on the 8 GB Mac Mini when read whole.
+    csv readers accept any iterator of strings, and quoted multi-line fields
+    are handled by the csv module across yielded lines.
+    """
+    with open(path, 'rb') as f:
+        for line in f:
+            yield line.replace(b'\x00', b'').decode('utf-8', errors='replace')
+
 # Retry backoff schedule: 30s, 120s, 480s (per deployment plan A.0.2)
 _RETRY_BACKOFF = (30, 120, 480)
 
@@ -153,9 +166,7 @@ class DailyStatsCollector:
         video_ids = []
         channel_ids_set = set()
 
-        with open(self.inventory_path, 'rb') as f:
-            _raw = f.read().replace(b'\x00', b'').decode('utf-8', errors='replace')
-        reader = csv.DictReader(io.StringIO(_raw))
+        reader = csv.DictReader(nul_safe_line_iter(self.inventory_path))
         for row in reader:
             vid = row.get('video_id', '').strip()
             cid = row.get('channel_id', '').strip()
@@ -245,7 +256,8 @@ class DailyStatsCollector:
             limit: If set, only process first N video IDs
 
         Returns:
-            List of video stats dicts
+            Count of video stats rows written this run (file is written
+            incrementally to today's video_stats panel path)
         """
         if limit is not None:
             video_ids = video_ids[:limit]
@@ -254,45 +266,60 @@ class DailyStatsCollector:
         total_batches = len(batches)
         start_batch = checkpoint.get('video_batches_done', 0)
 
-        # If resuming, reload partial results from today's output file
-        all_stats: List[Dict] = []
-        if start_batch > 0:
-            partial_path = config.get_daily_panel_path('video_stats', self.today, panel_name=self.panel_name)
-            if partial_path.exists():
-                with open(partial_path, 'r', encoding='utf-8') as f:
-                    reader = csv.DictReader(f)
-                    for row in reader:
-                        all_stats.append(row)
-                logger.info(f"Loaded {len(all_stats)} partial results from {partial_path.name}")
+        out_path = config.get_daily_panel_path('video_stats', self.today, panel_name=self.panel_name)
+
+        # Resume requires the partial output file, since stats are appended as
+        # collected. If the checkpoint claims progress but the file is missing
+        # (e.g. a crash from the pre-incremental-write era), restart from batch
+        # 0 rather than produce a silently incomplete panel file.
+        if start_batch > 0 and not out_path.exists():
+            logger.warning(
+                "Checkpoint says %d batches done but %s is missing; restarting from batch 0",
+                start_batch, out_path.name,
+            )
+            start_batch = 0
+            checkpoint['video_batches_done'] = 0
+            self.save_checkpoint(checkpoint)
+
+        file_mode = 'a' if start_batch > 0 else 'w'
+        stats_written = 0
 
         logger.info(
             f"Collecting video stats: {total_batches} batches "
             f"(starting at batch {start_batch})"
         )
 
-        for batch_idx in range(start_batch, total_batches):
-            batch = batches[batch_idx]
-            try:
-                batch_stats = _call_with_retry(
-                    lambda b=batch: get_video_stats_batch(self.youtube, b),
-                    description="video stats batch {}/{}".format(batch_idx + 1, total_batches),
-                )
-                all_stats.extend(batch_stats)
-            except Exception as e:
-                logger.error(f"Error fetching video stats batch {batch_idx}: {e}")
+        with open(out_path, file_mode, newline='', encoding='utf-8') as out_f:
+            writer = csv.DictWriter(out_f, fieldnames=config.VIDEO_STATS_FIELDS)
+            if file_mode == 'w':
+                writer.writeheader()
 
-            # Update checkpoint after each batch
-            checkpoint['video_batches_done'] = batch_idx + 1
-            self.save_checkpoint(checkpoint)
+            for batch_idx in range(start_batch, total_batches):
+                batch = batches[batch_idx]
+                try:
+                    batch_stats = _call_with_retry(
+                        lambda b=batch: get_video_stats_batch(self.youtube, b),
+                        description="video stats batch {}/{}".format(batch_idx + 1, total_batches),
+                    )
+                    for s in batch_stats:
+                        writer.writerow({field: s.get(field) for field in config.VIDEO_STATS_FIELDS})
+                    stats_written += len(batch_stats)
+                except Exception as e:
+                    logger.error(f"Error fetching video stats batch {batch_idx}: {e}")
 
-            # Progress logging every 100 batches
-            if (batch_idx + 1) % 100 == 0 or (batch_idx + 1) == total_batches:
-                logger.info(
-                    f"Video stats progress: {batch_idx + 1}/{total_batches} batches "
-                    f"({len(all_stats)} stats collected)"
-                )
+                # Flush rows to disk BEFORE the checkpoint claims them
+                out_f.flush()
+                checkpoint['video_batches_done'] = batch_idx + 1
+                self.save_checkpoint(checkpoint)
 
-        return all_stats
+                # Progress logging every 100 batches
+                if (batch_idx + 1) % 100 == 0 or (batch_idx + 1) == total_batches:
+                    logger.info(
+                        f"Video stats progress: {batch_idx + 1}/{total_batches} batches "
+                        f"({stats_written} stats written this run)"
+                    )
+
+        return stats_written
 
     def collect_channel_stats(self, channel_ids: List[str]) -> List[Dict]:
         """
@@ -355,9 +382,7 @@ class DailyStatsCollector:
         # Load known video IDs from inventory for filtering
         known_video_ids: set = set()
         if self.inventory_path.exists():
-            with open(self.inventory_path, 'rb') as f:
-                _raw = f.read().replace(b'\x00', b'').decode('utf-8', errors='replace')
-            for row in csv.DictReader(io.StringIO(_raw)):
+            for row in csv.DictReader(nul_safe_line_iter(self.inventory_path)):
                 vid = row.get('video_id', '').strip()
                 if vid:
                     known_video_ids.add(vid)
@@ -497,11 +522,12 @@ class DailyStatsCollector:
         # Step 2: Load checkpoint
         checkpoint = self.load_checkpoint()
 
-        # Step 3: Collect video stats
-        video_stats = []
+        # Step 3: Collect video stats (written incrementally inside)
+        video_stats_written = 0
         video_path = None
         if collect_videos:
-            video_stats = self.collect_video_stats(video_ids, checkpoint, limit=limit)
+            video_stats_written = self.collect_video_stats(video_ids, checkpoint, limit=limit)
+            video_path = config.get_daily_panel_path('video_stats', self.today, panel_name=self.panel_name)
 
         # Step 4: Collect channel stats
         channel_stats = []
@@ -521,15 +547,8 @@ class DailyStatsCollector:
                     logger.info(f"Reloaded {len(channel_stats)} channel stats from {channel_stats_path.name}")
 
         # Step 5: Save panel files
-        if collect_videos and video_stats:
-            video_path = config.get_daily_panel_path('video_stats', self.today, panel_name=self.panel_name)
-            with open(video_path, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=config.VIDEO_STATS_FIELDS)
-                writer.writeheader()
-                for s in video_stats:
-                    row = {field: s.get(field) for field in config.VIDEO_STATS_FIELDS}
-                    writer.writerow(row)
-            logger.info(f"Saved {len(video_stats)} video stats to {video_path.name}")
+        if collect_videos and video_path is not None:
+            logger.info(f"Video stats written incrementally to {video_path.name} ({video_stats_written} rows this run)")
 
         if collect_channels and channel_stats:
             channel_path = config.get_daily_panel_path('channel_stats', self.today, panel_name=self.panel_name)
@@ -561,7 +580,7 @@ class DailyStatsCollector:
             'success': True,
             'date': self.today,
             'mode': mode,
-            'video_stats_collected': len(video_stats),
+            'video_stats_collected': video_stats_written,
             'channel_stats_collected': len(channel_stats),
             'new_videos_detected': len(new_videos),
             'video_stats_path': str(video_path) if video_path else None,

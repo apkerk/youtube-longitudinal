@@ -35,7 +35,7 @@ def main():
     issues = []
 
     # (a) + (b) Gender gap channel stats
-    gg_path = config.get_daily_panel_path('channel_stats', today)
+    gg_path = config.get_daily_panel_path('channel_stats', today, panel_name='gender_gap')
     if not gg_path.exists():
         issues.append("MISSING: gender gap channel stats ({})".format(gg_path.name))
     else:
