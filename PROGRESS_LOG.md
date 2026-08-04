@@ -39,6 +39,29 @@ cd /Users/katieapker/.youtube-longitudinal/repo && nohup python3 -m src.collecti
 
 ---
 
+## 2026-08-03 PM [Gendering-AI paper: findings ledger refreshed + manuscript/PPTX handoffs + refresh sweep running]
+
+- qbq/findings-ledger.md FULLY REFRESHED: current v3 numbers for F1-F9 incl. new findings (developer-identity content sorting; packaging two-layer; 2026 zoom lead; persistence), graveyard (degree over-claim, gap x size, "generic authority more" revised to the FORM split), and the gender-method note. This is now the number source for any manuscript update.
+- HANDOFF_manuscript_update.md written: number swaps (14,203->17,273; OR 0.72->0.71; DiD -0.0027->-0.0015 etc.), substantive changes (F3 form split replaces "generic authority more" everywhere; add persistence), coordination with the pending elite-lit splice (T1), hold points (tonight's May-Jul refresh; transcripts), verification gates.
+- HANDOFF_pptx_professor_deck.md written: professor-facing PPTX via /DeckCompile, 10-slide arc, numbers-to-file table, approved plain register (exemplar = drafts/gendered_uptake_deck.html), charts rebuilt from current JSONs (June figs superseded).
+- Video-list refresh sweep RUNNING on Mac Mini (v2 script with mega-uploader page cap after 3 clip farms with 20K videos each stalled v1); ~120 channels/min, ETA evening; auto-monitored, fold-in chain (26_flag_new_videos -> ke_ai_flagged_true_v2.csv -> first-video rebuild -> 2026 zoom with May-Jul) fires on completion.
+- Descriptions for 81,155/81,898 AI videos fetched (median 901 chars + tags); first-AI-video table built (ke_first_ai_video.csv). Research ideas register: RESEARCH_IDEAS.md. Git uncommitted (Katie's call).
+
+---
+
+## 2026-08-03 [Gendering-AI paper: v3 robust gender BUILT + core re-verified + content/language analyses + patterns deck]
+
+**Scope (papers/gendering-ai-expertise/):** Executed the re-gendering handoff in-session per Katie's delegation, added the content/"pinkification" analyses, and published the distilled-patterns HTML deck.
+
+- **v3 gender built (my methodological call, delegated by Katie):** Gemini visual gender + DeepFace face-count confidence tiers (T1-T3), names never assign. 17,273 binary (27.7% women). `src/05d_gender_consolidate_v3.py` -> `processed/ke_gender_v3.csv` + `output/gender_v3_report.json`. Truth-check honest but small (n=25 overlap: 96% acc, 4.4pp diff FPR vs v2's 22pp on the same overlap); robustness claim = triangulation across v1/v2/v3 + tiers.
+- **Headline re-verified on v3** (`src/18_did_v3.py`): fem x post x techiness -0.0015 (p=.036), dev-origin -0.0089 (p=.016), pooled null, pretrends flat (p=.75), placebo null; panel 3,240 channels / 1.20M stacked channel-months.
+- **Authority form on v3** (`src/20_authority_terms_v3.py`): certification OR 1.72 (p<.001), coach 1.92x, tech-title OR 0.41 (T3-only 0.33), degrees FLAT, credentials don't close the gap (6.9pp both). Degree over-claim + gap-x-size confirmed DEAD.
+- **NEW content analyses:** (a) tool sorting (`19_content_tools_v3.py`): developer identity, not techiness, genders adopter content: Claude Code 3.9% female vs Stable Diffusion 55%, techiness-femshare corr ~0; (b) title language (`21_title_language_v3.py`, titles extracted from the 45.9M-row KE inventory on the Mac Mini, NUL-safe): women's AI titles 2.65x more accessible-framed / 1.5x emoji at the MARKET level, but within-channel register shifts are gender-flat: selection + volume, not softened voice. Transcripts confirmed absent (0B) — top-value next data pull.
+- **Deck:** `drafts/gendered_uptake_deck.html` published as artifact (7 patterns, robustness badges, causal-ID assessment, 5-project map).
+- Logs updated (DASHBOARD + findings-ledger caveats flipped to v3 status). Still on v2 and queued: full survival battery, heterogeneity, cc_event, exhibits; draft prose still carries v1/v2 numbers until the splice. Framing remains PROVISIONAL. Git uncommitted (Katie's call).
+
+---
+
 ## 2026-06-17 [Gendering-AI-Expertise paper: lit foundation + EDA fold-in + re-gendering caveat written into logs]
 
 **Scope:** Management-first literature foundation + folding in the respawned EDA + writing the gender-coding caveat across the paper's tracking files. Did NOT splice prose, did NOT lock framing, did NOT commit git.
@@ -1849,3 +1872,31 @@ youtube-longitudinal/
 **Resolution (Katie approved Jul 31/Aug 1):** Verified staged 47 GB was strictly duplicates (spot-checked identical/older vs repo originals; sync script confirmed one-way repo→staging). Deleted staged data folder → 47 GB reclaimed (78% used). Unloaded + retired `com.youtube-longitudinal.sync-to-drive` (plist → .RETIRED; expected loaded YT services now 24). Archived Jul 24 sentinel flag. Kickstarted all 7 channel-stats services (Aug 1 snapshots salvaged same-day, collected ~4 PM instead of 3 AM — note time-of-day deviation for Aug 1). Relaunched Aug 1 video-stats chunks for ai_census + KE.
 **DATA GAPS (methods note):** Aug 1 channel snapshots collected ~13h late (same day). Jul 31 video-stats partial for ai_census/KE. Unrecoverable beyond that: none from this incident.
 **OPEN FLAG — BACKUP:** Panel data (32 GB daily_panels, growing) now exists ONLY on the Mac Mini. Cloud copy stale since ~Feb; sync path retired. Decide a real backup route (fix Drive client, scheduled rsync to laptop, or external SSD). Also: disk at 78% will keep growing ~0.5-1 GB/day — revisit within ~2 months regardless.
+
+## 2026-06-22 (Mon) — Interim findings re-run on Gemini visual gender (script 17)
+- Ran src/17_rerun_tiered_gemini.py: headline findings re-estimated on the TRUSTWORTHY Gemini thumbnail gender at all confidence floors (T1+ 17,273 / T2+ 15,538 / T3+ 10,723 channels). Outputs: output/rerun_tiered_gemini.json + _log.txt.
+- SURVIVED + STRENGTHEN at stricter floors: adoption gap (T3+ OR 0.65, men 25.4% vs women 17.2%, p<.001); one-and-done persistence gap (T3+ OR 1.47); coding-AI female share collapse (T3+ 3.6% vs 18.9% adopter base); technical-identity under-claim (engineer/scientist OR 0.33); formal-degree null (form-not-level pattern intact).
+- DID NOT REPLICATE: gender x size interaction (ns at every floor) — artifact of the old name-heavy coding. DROPPED from candidate contributions.
+- Read: the core story is robust to gender measurement and sharpens with confidence — retires the face-coding-artifact worry.
+- HANDOFF: Katie's next thread (gendered CONTENT of AI uptake — "pinkification" of Claude Code talk, transcript/content analysis, tool-drops-as-exogenous-shocks causal ID, multi-project pattern split, HTML deck) is with ANOTHER AGENT in a parallel session. This session only logs.
+- Still open: (A) 50-channel hand-code validation sheet; (C) 38GB Drive cache -> free disk -> resume re-enum (paused 4,002/17,296); rotate Gemini key. Daily stats verified healthy through 2026-06-22.
+> DATING NOTE (2026-08-03): the entry above covers the 2026-06-22 session (script 17 interim re-run) but was logged retroactively on Mon 2026-08-03 when that session resumed — hence it appears after the July disk-incident entries. Chronology of the work itself: Jun 22. "Daily stats healthy through 2026-06-22" and the open items reflect Jun-22 state; see the Jul 24–Aug 1 entries above for what changed since (disk incident, sync-to-drive retired, Aug 1 salvage, KE re-enumeration script).
+
+## 2026-08-04 06:00 [Gendering-AI-Expertise: manuscript updated to v3 findings + elite citation splice]
+- Rewrote drafts/gendering_ai_expertise_v1.md (now v1.1; pre-update copy preserved at drafts/_archive/gendering_ai_expertise_v1_pre-2026-08-03-update.md) per HANDOFF_manuscript_update.md and qbq/findings-ledger.md.
+- Number swaps executed and each verified against output/*.json source files: gendered sample 14,203 -> 17,273 (27.7% women); adoption 12.0/16.0 OR 0.72 -> 12.2/16.4 OR 0.71 (Cox HR 0.76, T3 tier OR 0.65); stacked-DiD techiness triple -0.0027 (p=.009) -> -0.0015 (p=.036); developer-origin -0.0140 (p=.006) -> -0.0089 (p=.016); panel 1,223 -> 3,240 channels (1,202,040 stacked event-channel-months); ChatGPT pre-trend p=.117 -> p=.748; placebo p=.892 -> p=.404 (pre-trend basis); pooled fem x post -0.0037 (p=.26) -> -0.0029 (p=.21); TWFE -0.0179 (p=.037) -> -0.0182 (p=.002); timing medians 392/324 -> 385/313 (adjusted n.s. p=.10).
+- SUBSTANTIVE: removed "women claim generic authority MORE (+0.121, p=.040)" everywhere (did not survive v3); replaced with the authority FORM split (certification OR 1.72, coach 1.9x, consultant 1.3x vs engineer 0.29x / scientist 0.33x / developer 0.41x; degrees + expert flat; credential does not close the gap, 6.9pp both sides; identical among adopters/non-adopters, so framed as a knowledge-economy pattern the AI shelf inherits). Added persistence finding (one-and-done 38.1% vs 31.9%, OR 1.32-1.47 across tiers). Deleted degree over-claiming and gap-by-channel-size (both dead on v3).
+- Methods gender-coding paragraph rewritten to the thumbnail-vision method (Gemini + DeepFace face-count tiers, names never assign; n=25 overlap 96% acc / 4.4pp diff error vs 22pp for old coding) with triangulation as the defensible claim (3 codings x all tiers).
+- Elite citation splice (DASHBOARD T1) executed in the same pass: dropped Exley & Kessler, Aldasoro, Peng, Faulkner; wove in the 8 reinstated elite cites + anchors (Campero 2020, Correll et al. 2020, Dupree 2024 re-pointed to the form split, Botelho & Abraham 2017, Correll/Benard/Paik 2007, Hsu 2006, Hsu/Hannan/Kocak 2009, Leung 2014, Kacperczyk & Younkin 2017, Lee/Koval/Lee, Eyal 2013, Greenberg & Mollick 2017, DiMaggio et al. 2004 anchor) + form-split credentialing set (Quadlin 2018, Castilla & Benard 2010, Campbell & Hahl 2022, O'Brien 2016, Kim et al. 2020); added Duffy 2017 to refs.
+- Citation corrections found via OpenAlex: Lee/Koval/Lee is AMJ 2023 66(4):1042-1070 (both stored records had wrong vol/pages); Dupree 2024 is ASQ 69(2):271-323; O'Brien 2016 is Social Currents 3(4):315-331 (stored 3(3):247-265 was wrong); Kim et al. 2020 author initials fixed.
+- Tables: Table 3 + new tier-robustness Table 4 carry full v3 numbers; Tables 1-2 v1 blocks removed (stale-number guard) with verified v3 headline quantities listed pending the 08_ exhibit re-run. No 2026-trend statements (held for tonight's video-list refresh; ke_ai_flagged_true_v2.csv not yet present).
+- PDF recompiled (pandoc/xelatex). NOT committed to git (Katie's call; folder is untracked).
+- Next: Katie's framing decision (supply-side "who explains AI" arc; F7 content sorting + F8 packaging two-layer flagged as optional adds); v3 exhibit re-run (08_); still-producing-2026 re-run before any continuation claim.
+
+## 2026-08-04 08:40 Professor-facing PPTX built ("Who Explains AI?")
+- Executed HANDOFF_pptx_professor_deck.md end to end. Deliverable: papers/gendering-ai-expertise/drafts/Who_Explains_AI_brief_2026-08.pptx (10 slides, 16:9, full brand-katie treatment; labeled working descriptive brief, video record through April 2026 since ke_ai_flagged_true_v2.csv is not yet present).
+- Pipeline: /DeckCompile Phase 0 architecture map (SLIDE_ARCHITECTURE_MAP.md) then BRIEF.md, both in drafts/who-explains-ai-deck/. Katie redirected mid-build: skip the Claude Design handoff, build the PPTX directly; built with python-pptx (build_pptx.py).
+- All six charts rebuilt from the v3 JSONs by make_charts.py (funnel, territory map, launch dot chart with both codings, one-and-done, authority ladder, packaging); June fig1-4.png not reused. Every slide number traced to a source JSON; two label-rounding mismatches vs raw floats resolved half-up to match the approved HTML deck (20.7%, 3.2%).
+- QA: all 10 slides rendered via LibreOffice and visually checked; one collision fixed (launch chart caption vs bullets).
+- Deck folder is inside papers/gendering-ai-expertise/ which stays untracked per Katie's earlier call; only this log is committed.
+- Next: Katie reviews the PPTX before it goes to anyone; if the video-list refresh lands, regenerate charts and re-date to "through July 2026".
