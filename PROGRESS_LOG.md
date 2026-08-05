@@ -39,6 +39,35 @@ cd /Users/katieapker/.youtube-longitudinal/repo && nohup python3 -m src.collecti
 
 ---
 
+## 2026-08-05 [Cross-reference: the Aug 3-4 work was CONTINUED in a second session; read its entries too]
+
+The handoffs below were EXECUTED in a parallel session whose entries sit further down this file
+(2026-08-04 06:00 manuscript + elite splice; 08:40 professor PPTX built; 13:30 full battery
+re-run on the refreshed record). Net state after both sessions:
+- Full analysis battery re-run on the through-Aug-3 record with v3 gender as the single frame
+  (scripts src/27_ through 35_; _v2 output JSONs). qbq/findings-ledger.md is CURRENT (refreshed
+  2026-08-04) and is the number source; key scale numbers: 92,208 measurement-clean AI videos,
+  9,620 adopter channels, ~46.9M uploads scanned.
+- ONE VERDICT MOVED: F4 timing is now "whether AND when" (women adopt later: median 457 vs 366
+  days after ChatGPT, +53 days adjusted, p=.003; the June "not when" was an underpowered
+  April-censored cell). No other finding changed direction; F1/F2/F5 strengthened slightly.
+- Claude Code cumulative female share is now 11.2% (was 3.9% on the April record): wave-phase
+  sensitive; use "4 percent during the launch wave, 11 percent after the 2026 catch-up."
+- Manuscript updated to v3 findings + elite citation splice DONE; HTML deck updated; first
+  professor PPTX exists (drafts/Who_Explains_AI_brief_2026-08.pptx) with a rebuild spec in
+  HANDOFF_pptx_professor_deck.md (numbers refreshed 2026-08-04).
+
+---
+
+## 2026-08-04 [Gendering-AI paper: video record refreshed through Aug 3 + 2026 zoom re-run with May-Jul]
+
+- Sweep COMPLETE (finished 6:05 PM Aug 3): 43,461 channels, 52,942 quota units, ~992K unique new videos since Apr 15, 541 clip-farm channels capped at 400 videos each.
+- Fold-in chain run: src/26_flag_new_videos.py (same keyword rule as 01; all new videos post-date every launch gate) -> 10,310 newly flagged AI videos (May 2,729 / Jun 3,041 / Jul 3,467, still accelerating), 968 brand-new adopter channels; combined file processed/ke_ai_flagged_true_v2.csv (132,396 rows; June original untouched); ai_titles_v2.csv; first-video table v2 (24b); 2026 zoom v2 (22b).
+- HEADLINE (F9 updated): coding-AI female share bottomed at 11.0% in March 2026 and PARTIALLY REBOUNDED May-Jul (21.5% / 15.2% / 17.4%); women's share of NEW adopters rose Apr-Jul (28-36% vs 16-23% Jan-Mar); overall AI-video female share drifted to its lowest full month in July (13.6%); within-creator gap mildly negative post-spike. Reads as frontier-surge-then-partial-catch-up inside a single tool wave, consistent with the paper's diffusion story. Suggestive, not confirmatory (monthly coding n 200-340).
+- DASHBOARD currency note + findings-ledger F9 updated. Monitor loop stopped. Git uncommitted (Katie's call).
+
+---
+
 ## 2026-08-03 PM [Gendering-AI paper: findings ledger refreshed + manuscript/PPTX handoffs + refresh sweep running]
 
 - qbq/findings-ledger.md FULLY REFRESHED: current v3 numbers for F1-F9 incl. new findings (developer-identity content sorting; packaging two-layer; 2026 zoom lead; persistence), graveyard (degree over-claim, gap x size, "generic authority more" revised to the FORM split), and the gender-method note. This is now the number source for any manuscript update.
@@ -1900,3 +1929,24 @@ youtube-longitudinal/
 - QA: all 10 slides rendered via LibreOffice and visually checked; one collision fixed (launch chart caption vs bullets).
 - Deck folder is inside papers/gendering-ai-expertise/ which stays untracked per Katie's earlier call; only this log is committed.
 - Next: Katie reviews the PPTX before it goes to anyone; if the video-list refresh lands, regenerate charts and re-date to "through July 2026".
+
+## 2026-08-04 13:30 [Gendering-AI paper: full battery re-run on the Aug-3 refreshed record + deck and manuscript updated]
+- Executed HANDOFF_update_slides_and_manuscript.md end to end. STEP 0: nine new numbered scripts (src/27_-35_, all _v2 data variants; June scripts and outputs untouched) rebuilt the adoption table from ke_ai_flagged_true_v2.csv (9,620 adopters = 8,652 June + 968 new; validation clean: zero first dates or launch assignments moved) and re-ran the tiered entry battery, survival/timing (now harmonized to v3 gender + Aug-3 censoring), persistence, the stacked launch DiD (panel through 2026-07), content tools, title language, style conditionals, and authority. Outputs carry _v2 suffixes in output/.
+- FRAME HARMONIZATION (my call, flagged for Katie): all headline gender contrasts now report on the single v3 frame (17,273 channels). The old 12.2/16.4 adoption rates were a v2-gender-frame artifact mixed with a v3 OR; the harmonized numbers are 15.1% vs 21.7%, OR 0.73 (T3 0.68); v2-frame cross-check 13.0/17.0, OR 0.75. Gap NARROWED slightly with the catch-up wave (0.71 -> 0.73).
+- VERDICT CHANGE (the loud flag): F4 "whether, not when" is DEAD. Women who adopt are significantly later (median 457 vs 366 days; +53 days adjusted, p=.003). Four-cell decomposition shows the June n.s. (p=.098) was an underpowered April-censored cell; direction was always positive. Manuscript, deck, and ledger now say "whether AND when," framed as the diffusion delay the theory predicts.
+- Other movement: DiD strengthened (techiness triple -0.0016 p=.021; dev-origin -0.0089 p=.011; panel 3,381 ch / 1.26M stacked); persistence strengthened (one-and-done 38.3 vs 29.9, tier ORs 1.36/1.38/1.49); still-producing-2026 finally REAL (39.7% vs 45.2%, OR 0.81 p=.018, caveat cleared); Claude Code content 3.9% -> 11.2% female cumulative (the rebound reached the tool table); authority form split byte-stable; credential gap now 6.6pp noncred vs 8.2pp cred (still "closes nothing", interaction p=.53).
+- STEP 1: drafts/gendered_uptake_deck.html fully re-numbered + 2026 section rewritten to the completed dip-and-rebound story + citations added (Aldasoro, Humlum & Vestergaard, Otis, Rogers, Chatterji); republished to the SAME artifact URL. HANDOFF_pptx_professor_deck.md number table updated to _v2 sources (PPTX rebuild pending, separate task).
+- STEP 2: manuscript v1.1 -> v1.2: all numbers swapped to _v2 outputs, timing verdict rewritten in theory + results, new Results subsection "The 2026 tool wave in real time" + Discussion paragraph (labeled suggestive), continuation measure added, tables 1-4 refreshed, scope/data sentences now "through August 3, 2026" / 46.9M uploads / 92,208 clean AI videos. PDF recompiled.
+- GATES: 86/86 scripted number checks vs source JSONs passed; independent forked claim-verifier confirmed 9/10 claim sets and caught one real error, which was fixed everywhere: July 2026 (13.6%) is the lowest full month OF 2026, not ever (series low Oct 2025, 13.0%) — this error was inherited from the Aug-3 ledger/handoff. findings-ledger fully refreshed with the correction.
+- NOT committed to git (per handoff; Katie reviews first). Nothing sent externally. Elite-citation splice (T1) was already executed in the 06:00 session; verified nothing remained.
+
+## 2026-08-05 [Gendering-AI paper: coordination note for the concurrent manuscript agent]
+- qbq/DASHBOARD.md now carries a "STATE FOR MANUSCRIPT AGENTS (2026-08-05)" banner at the top: what is already in draft v1.2 (all _v2 numbers, elite splice DONE, F4 timing verdict revised, 2026 wave section), which analyses are done but NOT yet in the manuscript (F7 content sorting, F8 packaging, active-last-6mo persistence variant), and what is still pending (08_ exhibit regeneration, 12_/11_ re-runs, descriptions/transcripts). qbq/findings-ledger.md remains the single number source.
+
+## 2026-08-05 [Gendering-AI-Expertise: Cech 2015 added per Katie]
+- Katie approved adding Cech 2015 ("Engineers and Engineeresses?", Sociological Perspectives 58(1):56-77, doi:10.1177/0731121414556543; details verified via OpenAlex + the journal corrigendum). Cited in the theory section's form-split paragraph (gendered self-conceptions filter technological leadership out of women's professional identities) and added to References. PDF recompiled.
+
+## 2026-08-05 [Gendering-AI: codebook added to patterns deck + public website page built (not yet deployed)]
+- CODEBOOK (Katie's ask): new section 11 in drafts/gendered_uptake_deck.html giving exact construction rules for every variable: date coverage table, sample funnel, the three AI-flag cleanup rules with removal counts (10,916 pre-era "machine learning" etc.), gender method with tier definitions (T1 = 1 face-bearing thumbnail, T2 = 2-3 agreeing, T3 = 4+ agreeing; 24/25 on the hand-coded check), the full 20-launch technicality table with dates and developer-built flags, verbatim title/bio word lists, and small definitions. Republished to the same artifact URL.
+- WEBSITE (Katie approved public, preliminary, descriptive-only, no theory framing): built site-v3/research/who-explains-ai/ in SECOND_BRAIN/04-professional/public-persona/ using the site's own design system; prose drafted by Codex per Katie's standing preference; charts (tool territory, authority ladder, title language, 2026 monthly coding share) as inline SVG in site palette; page ends with the full codebook. Three integration points per Katie's choices: homepage teaser box between the JMP spotlight and All Research (hook: "Who Gets to Be an Expert on AI?"), a button inside the Longitudinal Creator Panel entry, and a linked entry on themes/ai-and-work. sitemap.xml + llms.txt updated. NOT yet deployed; Katie reviews first.
+- Coordination: qbq/DASHBOARD.md "state for manuscript agents" banner from earlier today still current; no new analysis outputs since the _v2 battery (2026-08-04).
