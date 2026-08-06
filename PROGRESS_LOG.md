@@ -1966,3 +1966,7 @@ youtube-longitudinal/
 - F11 (women do not dumb down) survived all four robustness designs. Oaxaca: ~79% of the accessible-title gap is composition.
 - Corrections propagated: findings-ledger, site page (committed, NOT deployed), HTML artifact (republished same URL), PPTX slides 5-6 (rebuilt + QA rendered).
 - Cohort B Arm 1 PRODUCTION discovery launched (src/collection/discover_cohort_b.py, 72 queries, checkpointed, 120k-unit hard cap, target 6,500 eligible; pilot: 31 channels/call, 76.8% eligible at 3,628 units). Running in background at session end.
+
+## 2026-08-06 16:52 Cohort B Arm 1 discovery COMPLETE
+- Production discovery finished: 8,675 channels discovered across 4 query families (72 pre-treatment-window queries planned, stopped early on success), 6,547 Arm 1 eligible (75.5%; founded pre-2022-06-20, 50+ videos), 786 overlap the existing roster. Real quota spend ~33,000 units (a checkpoint accounting double-count made the first pass stop early at 22 queries claiming 122k; fixed, counter reset to true value, resumed to completion). Output: data/channels/cohort_b/arm1_discovery_20260806.csv + cohort_b_discovery_summary.json.
+- Next collection steps (not yet run): upload-playlist enumeration for the 6,547 eligible channels (reconstructs uploads-at-cutoff, ~15-25k units), then thumbnail gender coding (Gemini vision, external spend, needs Katie's dollar approval).

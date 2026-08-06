@@ -171,12 +171,13 @@ def run(test_mode: bool, limit: Optional[int]) -> Dict:
         "completed_queries": [], "channels": {}, "units_used": 0, "query_records": []}
     channels: Dict[str, Dict] = ck["channels"]
     stop_reason: Optional[str] = None
+    session_base = ck["units_used"]  # units from PRIOR sessions, fixed for this run
 
     def units_this_session() -> int:
         return get_quota_used() - quota_at_start
 
     def total_units() -> int:
-        return ck["units_used"] + units_this_session()
+        return session_base + units_this_session()
 
     all_queries = [(fam, q) for fam, qs in QUERY_FAMILIES.items() for q in qs]
     if test_mode:
@@ -250,7 +251,7 @@ def run(test_mode: bool, limit: Optional[int]) -> Dict:
             "new_channels_added": len(new_ids),
             "cumulative_units": total_units(),
         })
-        ck["units_used"] = total_units() - units_this_session() + units_this_session()
+        ck["units_used"] = total_units()
         save_checkpoint(ck)
         logger.info("QUOTA: %d units total | %d channels | %d eligible",
                     total_units(), len(channels), eligible_count(channels))
