@@ -1958,3 +1958,11 @@ youtube-longitudinal/
 - Deck artifact republished (same URL, dd5f9aa5) with new "Who adopts at all" section. Site page updated + committed to SECOND_BRAIN (auto-sync); still NOT deployed, Katie reviewing.
 - Katie's new chart rules recorded to project memory (feedback_viz_rules.md): pink/navy men-vs-women everywhere, shares on 0-100 scales, coefficient axes symmetric around zero.
 - Next: Katie's review of page + deck; sampling-expansion proposal (more pre-ChatGPT knowledge channels for coding counts + entry tracking) awaiting her decision.
+
+## 2026-08-06 16:50 Who Explains AI: execution fleet (9 agents), corrections, production sampling launched
+- Executed the robustness plan with a 9-agent fleet (scripts src/39-46 + verification agent; every claimed number cross-checked against output files). Katie's dormancy suspicion CONFIRMED: enumeration never ran on 17,296 of 43,546 channels; corrected active-since-ChatGPT share is ~56% (range 46-59), not 33%. Ledger F10 revised, F13 added (contemporary battery: all gaps survive restricting to 2025-26 posters; adoption 37.9% men vs 28.9% women, OR 0.74).
+- Stable Diffusion punchline DOWNGRADED: one channel (coded woman) produces ~75-81% of SD videos; channel-level SD female share 11.9%. GitHub org channel (coded woman) inflated GitHub Copilot. F12 downgraded pending hand-check of 5 flagged channels; territory claim now rests on Runway/Midjourney channel-level shares.
+- F2 REFRAMED: on tool-specific first-mention hazards the techiness dose is null (p=.40) but developer-built stays (OR 0.56, p=.023); women enter later/less on 10 of 11 tools (Runway the exception). Old-outcome inference battery: survives most regimes, randomization inference marginal (.076/.139). Placebo scare resolved (full-window diff p=.72); placebo developer-triple p=.028 is an honest wrinkle.
+- F11 (women do not dumb down) survived all four robustness designs. Oaxaca: ~79% of the accessible-title gap is composition.
+- Corrections propagated: findings-ledger, site page (committed, NOT deployed), HTML artifact (republished same URL), PPTX slides 5-6 (rebuilt + QA rendered).
+- Cohort B Arm 1 PRODUCTION discovery launched (src/collection/discover_cohort_b.py, 72 queries, checkpointed, 120k-unit hard cap, target 6,500 eligible; pilot: 31 channels/call, 76.8% eligible at 3,628 units). Running in background at session end.
