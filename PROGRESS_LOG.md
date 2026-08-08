@@ -1976,3 +1976,6 @@ youtube-longitudinal/
 - Exhibits document compiled: drafts/Who_Explains_AI_exhibits_2026-08-06.html + .pdf (5 tables + 13 figures incl. new hazard forest, 20-launch scatter, and 3 channel-grain figures).
 - Artifact rebuilt per Katie's direction: channel-level findings only, figures first, tables last, short Codex-drafted prose, sampling frame stated plainly. Old deck archived (drafts/_archive/gendered_uptake_deck_pre_channel_grain_20260806.html). Republished same URL.
 - Site page and professor PPTX intentionally NOT updated this pass (held for Katie's review of the channel-grain numbers).
+
+## 2026-08-06 17:55 Session close: handoff written
+- HANDOFF_channel_grain_continuation.md written in papers/gendering-ai-expertise/: next agent must interview Katie first (artifact propagation, Gemini spend, 5-channel hand-check, F2 headline choice, Cohort B enumeration go, artifact tweaks), then work the queue (enumeration, Gate B, Gate C on hazards, lexicon v3, sharp/soft convention, adoption-among-active reconciliation). Includes verifier corrections that must not reach artifacts and all standing rules.
