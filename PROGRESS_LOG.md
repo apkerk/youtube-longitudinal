@@ -1985,3 +1985,10 @@ youtube-longitudinal/
 - Disk stable: 53 GB free (75% used). No failure flags.
 - Aug 1 salvage confirmed fully complete: april_cohort 32M, both relaunched video chunks finished full-size same day.
 - OPEN (unchanged): backup decision — panel data only on Mac Mini. Options: fix Drive client / rsync to laptop / external SSD.
+
+## 2026-08-13 09:55 — Health sweep Aug 5-13: one network blip on Aug 11
+- Aug 5-10 + Aug 12-13: fully clean (health checks passed, all 7 channel panels daily, video-stats full-size daily).
+- **Aug 11 DNS outage on the Mini** ("Unable to find the server at youtube.googleapis.com", ~3:20-10:26 AM): tech_census and new_cohort channel stats failed that day — permanent 1-day gap for those two panels (methods note). All other panels and both video-stats chunks completed (network was back by their slots).
+- Archived the Aug 11 failure flag (was tripping health checks Aug 11-12); health check re-run PASSES for Aug 13.
+- Disk improved to 99 GB free (53%) — panel data verified intact (39G daily_panels, gender_gap at 140 daily files since Feb 17); extra space is likely expired APFS snapshots from the Aug 1 cleanup.
+- OPEN (unchanged): backup decision for Mac Mini panel data.
