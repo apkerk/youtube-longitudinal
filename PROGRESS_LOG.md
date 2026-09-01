@@ -1996,3 +1996,6 @@ youtube-longitudinal/
 ## 2026-09-01 Gendering AI Expertise: manuscript pipeline stood up (session in papers/, not committed)
 - The Who Explains AI paper now runs the full manuscript writing-execution pipeline (control tower, exhibit manifest, rule-out registry, decision log, prereg batch for Katie, ASQ scorer rubric). Exploration wave verified into the ledger (F14-F19, scripts src/49-51, zero quota). Lit backfill wave 1: 8 papers to full_pdf CoVe PASS in the KG vault. Full detail: papers/gendering-ai-expertise/PROGRESS_LOG.md (papers/ stays untracked per standing rule).
 - No API quota consumed this session; no collection changes.
+
+## 2026-09-01 (evening) Gendering AI Expertise: session close
+- Architecture locked (classic hypotheses, known-puzzle opening, per-tool exhibit gated on applied corrections); tool-table fixes run and verified (Copilot split; 5-channel hand-check: all five flagged "woman" channels are men or orgs); ledger F14-F21 all fleet-verified; 8 papers full-verified + 11 abstract stubs into the KG; Katie's 250-channel gender-verification Google Sheet emailed at her request. Handoff: papers/gendering-ai-expertise/HANDOFF_manuscript_pipeline_2026-09-01.md. No API quota consumed; papers/ stays untracked.
