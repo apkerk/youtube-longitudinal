@@ -1992,3 +1992,7 @@ youtube-longitudinal/
 - Archived the Aug 11 failure flag (was tripping health checks Aug 11-12); health check re-run PASSES for Aug 13.
 - Disk improved to 99 GB free (53%) — panel data verified intact (39G daily_panels, gender_gap at 140 daily files since Feb 17); extra space is likely expired APFS snapshots from the Aug 1 cleanup.
 - OPEN (unchanged): backup decision for Mac Mini panel data.
+
+## 2026-09-01 Gendering AI Expertise: manuscript pipeline stood up (session in papers/, not committed)
+- The Who Explains AI paper now runs the full manuscript writing-execution pipeline (control tower, exhibit manifest, rule-out registry, decision log, prereg batch for Katie, ASQ scorer rubric). Exploration wave verified into the ledger (F14-F19, scripts src/49-51, zero quota). Lit backfill wave 1: 8 papers to full_pdf CoVe PASS in the KG vault. Full detail: papers/gendering-ai-expertise/PROGRESS_LOG.md (papers/ stays untracked per standing rule).
+- No API quota consumed this session; no collection changes.
