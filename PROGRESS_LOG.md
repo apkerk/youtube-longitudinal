@@ -1999,3 +1999,8 @@ youtube-longitudinal/
 
 ## 2026-09-01 (evening) Gendering AI Expertise: session close
 - Architecture locked (classic hypotheses, known-puzzle opening, per-tool exhibit gated on applied corrections); tool-table fixes run and verified (Copilot split; 5-channel hand-check: all five flagged "woman" channels are men or orgs); ledger F14-F21 all fleet-verified; 8 papers full-verified + 11 abstract stubs into the KG; Katie's 250-channel gender-verification Google Sheet emailed at her request. Handoff: papers/gendering-ai-expertise/HANDOFF_manuscript_pipeline_2026-09-01.md. No API quota consumed; papers/ stays untracked.
+
+## 2026-09-01 (night) Gendering AI Expertise: gender corrections applied, per-tool table rebuilt
+- Applied the five hand-check gender corrections as an out-of-place patch (src/54; processed/ke_gender_v3.csv untouched) and rebuilt the per-tool table on the corrected codes with GitHub and Microsoft Copilot as separate tools (src/55). The rebuild reproduces every published per-tool number exactly when fed the old codes, so the deltas are the corrections and nothing else; cells were also recomputed from raw outside the script's code path.
+- Headline: at the channel grain Runway (30.8%) is the only tool leaning toward women; Stable Diffusion falls to 7.0% and the old 54.7% video-grain figure is dead. GitHub Copilot 8.3% vs Microsoft Copilot 16.6% is the paper's cleanest provenance contrast, two products sharing one brand name. The per-tool hold is lifted with channel-grain conditions attached.
+- Ledger (F22), exhibit manifest, rule-out registry, decision log (D23-D27) and control tower all updated. No API quota consumed; no collection changes; papers/ stays untracked.
