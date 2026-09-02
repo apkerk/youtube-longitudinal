@@ -2013,3 +2013,7 @@ youtube-longitudinal/
 - Pulled view, like and comment counts plus duration for 91,319 clean AI videos and 22,142 within-channel baseline videos (~4,000 quota units of a 1,010,000 daily allowance; a double-launch caused duplicate fetching, file deduplicated, no data harm).
 - F6 revised from INCONCLUSIVE to measured and essentially null: comparing each creator's AI videos with her own back catalogue, women's premium matches men's (p=.94, d=0.004); like and comment rates null. Power bound mandatory (smallest detectable d=0.18). One age-adjusted signal reported as fragile because it vanishes on an age-matched subsample. The supply-side story now has a direct negative control.
 - No collection changes; papers/ stays untracked.
+
+## 2026-09-02 (early) Gendering AI Expertise: argument outline delivered for lock
+- Whole-paper plain-language argument outline delivered as a Word doc in the paper's drafts folder and opened for Katie's markup, with tonight's corrected per-tool numbers and the audience null folded in. Seven open decisions flagged at the foot of it. Prose drafting waits on her lock.
+- Plain-language project status note written to SECOND_BRAIN/03-research/WHO_EXPLAINS_AI_STATUS.md so the project can be picked up cold. papers/ stays untracked.
