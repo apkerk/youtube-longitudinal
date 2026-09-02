@@ -2008,3 +2008,8 @@ youtube-longitudinal/
 ## 2026-09-01 (late) Gendering AI Expertise: analytic sample rule locked
 - Katie locked the sample rule: a channel leaves the frame when more than one person fronts it, or when the AI tool's own maker runs it; solo operators with brand-style names stay in as entrepreneurs. Implemented in src/56 with two evidence tiers, plus src/57 rebuilding the per-tool table under all four candidate frames.
 - The frame does not move the paper: raw entry odds ratio 0.60-0.63 across every frame, no marquee per-tool cell moving more than 5.5 points, and the exclusion is not gender-selective (women 5.3% dropped vs men 4.8%, p=.24). One open call for Katie on which evidence tier ships. No API quota consumed; papers/ stays untracked.
+
+## 2026-09-02 (early) Gendering AI Expertise: F6 measured for the first time
+- Pulled view, like and comment counts plus duration for 91,319 clean AI videos and 22,142 within-channel baseline videos (~4,000 quota units of a 1,010,000 daily allowance; a double-launch caused duplicate fetching, file deduplicated, no data harm).
+- F6 revised from INCONCLUSIVE to measured and essentially null: comparing each creator's AI videos with her own back catalogue, women's premium matches men's (p=.94, d=0.004); like and comment rates null. Power bound mandatory (smallest detectable d=0.18). One age-adjusted signal reported as fragile because it vanishes on an age-matched subsample. The supply-side story now has a direct negative control.
+- No collection changes; papers/ stays untracked.
