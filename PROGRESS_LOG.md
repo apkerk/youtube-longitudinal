@@ -2017,3 +2017,6 @@ youtube-longitudinal/
 ## 2026-09-02 (early) Gendering AI Expertise: argument outline delivered for lock
 - Whole-paper plain-language argument outline delivered as a Word doc in the paper's drafts folder and opened for Katie's markup, with tonight's corrected per-tool numbers and the audience null folded in. Seven open decisions flagged at the foot of it. Prose drafting waits on her lock.
 - Plain-language project status note written to SECOND_BRAIN/03-research/WHO_EXPLAINS_AI_STATUS.md so the project can be picked up cold. papers/ stays untracked.
+
+## 2026-09-02 (early) Gendering AI Expertise: bibliography built
+- 40-entry .bib built for the paper, 35 with DOIs, sourced from Katie's Zotero database and Crossref lookups rather than from memory. A verification pass against Zotero caught three wrong hand-typed fields and corrected them. Three planned citations could not be resolved and are flagged as not-found rather than invented; one Leung 2014 ambiguity needs Katie's call. Reference gap on the technology-as-gendered cluster is closed; the reading gap is not.
