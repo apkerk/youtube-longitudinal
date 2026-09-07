@@ -2020,3 +2020,9 @@ youtube-longitudinal/
 
 ## 2026-09-02 (early) Gendering AI Expertise: bibliography built
 - 40-entry .bib built for the paper, 35 with DOIs, sourced from Katie's Zotero database and Crossref lookups rather than from memory. A verification pass against Zotero caught three wrong hand-typed fields and corrected them. Three planned citations could not be resolved and are flagged as not-found rather than invented; one Leung 2014 ambiguity needs Katie's call. Reference gap on the technology-as-gendered cluster is closed; the reading gap is not.
+
+## 2026-09-07 10:35 — Pre-travel check (Katie out of country a few days)
+- All green: health checks PASSED through Sep 7, all 7 channel panels present today, video-stats full-size Sep 6 and mid-run on pace Sep 7.
+- Unattended resilience verified: autorestart-after-power-failure ON, sleep disabled (Amphetamine), 24 launchd services loaded (expected count), Tailscale up, uptime 52 days.
+- Disk 74 GB free (65% used) — months of headroom at ~1 GB/day growth.
+- OPEN (unchanged): backup decision for Mini panel data.
