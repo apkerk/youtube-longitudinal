@@ -2026,3 +2026,8 @@ youtube-longitudinal/
 - Unattended resilience verified: autorestart-after-power-failure ON, sleep disabled (Amphetamine), 24 launchd services loaded (expected count), Tailscale up, uptime 52 days.
 - Disk 74 GB free (65% used) — months of headroom at ~1 GB/day growth.
 - OPEN (unchanged): backup decision for Mini panel data.
+
+## 2026-10-07 09:20 — Remote access down: Mini's Tailscale key expired
+- SSH to the Mac Mini fails: Tailscale reports "peer's node key has expired" (keys expire after ~180 days; the Mini joined in March). No LAN path (laptop on campus network).
+- The Mini IS online per Tailscale's coordination server — it has power and internet, and collection does not depend on Tailscale, so the panels are almost certainly still writing. But health is UNVERIFIABLE until access is restored. Last verified-clean day: Sep 7 (all green, pre-travel check).
+- Fix: at the Mini, click the Tailscale menu-bar icon and re-authenticate (or run `tailscale up`). Then disable key expiry for both machines in the admin console so this never recurs. Admin-console-only fix (toggling key expiry on the expired device) MAY work; left the console sign-in tab open for Katie — signing in is hers to do.
