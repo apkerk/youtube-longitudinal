@@ -2031,3 +2031,8 @@ youtube-longitudinal/
 - SSH to the Mac Mini fails: Tailscale reports "peer's node key has expired" (keys expire after ~180 days; the Mini joined in March). No LAN path (laptop on campus network).
 - The Mini IS online per Tailscale's coordination server — it has power and internet, and collection does not depend on Tailscale, so the panels are almost certainly still writing. But health is UNVERIFIABLE until access is restored. Last verified-clean day: Sep 7 (all green, pre-travel check).
 - Fix: at the Mini, click the Tailscale menu-bar icon and re-authenticate (or run `tailscale up`). Then disable key expiry for both machines in the admin console so this never recurs. Admin-console-only fix (toggling key expiry on the expired device) MAY work; left the console sign-in tab open for Katie — signing in is hers to do.
+
+## 2026-10-08 12:05 — Access restored + full month verified clean
+- Katie signed into the Tailscale admin console; the Mini reconnected (key expiry now disabled on BOTH machines via console, so this failure mode is permanently closed). SSH works; Mini uptime 83 days.
+- FULL MONTH VERIFIED (Sep 7 - Oct 8): 32/32 health checks PASSED, all 7 channel panels complete every single day, all 3 video-stats panels (gender_gap, ai_census, knowledge_economy) zero missing and zero truncated days. No failure flags. The Tailscale outage never touched collection.
+- WATCH: disk at 46 GB free (79% used), burning ~0.9 GB/day → roughly 50 days to full (~late Nov). The backup + capacity decision is now time-bound, not optional: external SSD (or chosen alternative) needs to happen within ~6 weeks.
