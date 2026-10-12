@@ -2036,3 +2036,7 @@ youtube-longitudinal/
 - Katie signed into the Tailscale admin console; the Mini reconnected (key expiry now disabled on BOTH machines via console, so this failure mode is permanently closed). SSH works; Mini uptime 83 days.
 - FULL MONTH VERIFIED (Sep 7 - Oct 8): 32/32 health checks PASSED, all 7 channel panels complete every single day, all 3 video-stats panels (gender_gap, ai_census, knowledge_economy) zero missing and zero truncated days. No failure flags. The Tailscale outage never touched collection.
 - WATCH: disk at 46 GB free (79% used), burning ~0.9 GB/day → roughly 50 days to full (~late Nov). The backup + capacity decision is now time-bound, not optional: external SSD (or chosen alternative) needs to happen within ~6 weeks.
+
+## 2026-10-12 16:05 — Sweep Oct 8-12: all clean; disk deadline MOVED UP
+- Health checks passed Oct 9-12; all 7 channel panels complete daily; video-stats full-size (today's KE still finishing, on pace). No flags.
+- Disk: 35 GB free (83%) — 11 GB consumed in 4 days, faster than the ~0.9 GB/day estimate. Revised disk-full window: LATE OCT to MID NOV. External-SSD decision now ~2-4 weeks out, not 6.
