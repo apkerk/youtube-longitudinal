@@ -2040,3 +2040,11 @@ youtube-longitudinal/
 ## 2026-10-12 16:05 — Sweep Oct 8-12: all clean; disk deadline MOVED UP
 - Health checks passed Oct 9-12; all 7 channel panels complete daily; video-stats full-size (today's KE still finishing, on pace). No flags.
 - Disk: 35 GB free (83%) — 11 GB consumed in 4 days, faster than the ~0.9 GB/day estimate. Revised disk-full window: LATE OCT to MID NOV. External-SSD decision now ~2-4 weeks out, not 6.
+
+## 2026-10-13 11:15 — rclone cloud backup: test run SUCCEEDED
+- rclone v1.75.2 installed on Mini (~/.local/bin, direct binary — no brew) and laptop (brew).
+- OAuth done the clean way: rclone ran its own flow ON the Mini; Katie approved in her browser through an SSH port-forward; token written by rclone itself into ~/.config/rclone/rclone.conf (0600). Scope = drive.file ONLY (rclone can touch only files it uploads, never existing Drive content).
+- TEST PASSED: today's gender_gap channel panel uploaded to gdrive:YT-LONGITUDINAL-BACKUP/test-run/ and checksum-verified (rclone check: 0 differences). rclone sees the quota: 5 TiB total, 4.32 TiB free.
+- Throughput test with a ~200MB video-stats file running; early signs say Mini upload bandwidth is the constraint (fine for nightly ~1.5GB; initial 46GB backfill will take days, schedulable).
+- KNOWN TO-DO before production: rclone's shared Google client_id retires during 2026 — mint Katie's own client_id (10-min browser task) and swap it in.
+- NEXT (pending Katie go-ahead): nightly launchd job (upload yesterday's files + rclone check + report into daily health check), then staged 46GB backfill, then archive old local files to defuse the disk-full deadline.
