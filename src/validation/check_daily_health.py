@@ -58,9 +58,10 @@ def main():
             row_count = sum(1 for _ in csv.reader(f)) - 1
         logger.info("AI census OK: %d rows", row_count)
 
-    # (d) Failure sentinels
-    for flag in sorted(config.LOGS_DIR.glob("daily_stats_FAILED_*.flag")):
-        issues.append("SENTINEL: {}".format(flag.name))
+    # (d) Failure sentinels (collection + backup)
+    for pattern in ("daily_stats_FAILED_*.flag", "backup_FAILED_*.flag"):
+        for flag in sorted(config.LOGS_DIR.glob(pattern)):
+            issues.append("SENTINEL: {}".format(flag.name))
 
     if issues:
         report_path = config.LOGS_DIR / "health_check_{}.txt".format(today)
