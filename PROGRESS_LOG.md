@@ -2048,3 +2048,9 @@ youtube-longitudinal/
 - Throughput test with a ~200MB video-stats file running; early signs say Mini upload bandwidth is the constraint (fine for nightly ~1.5GB; initial 46GB backfill will take days, schedulable).
 - KNOWN TO-DO before production: rclone's shared Google client_id retires during 2026 — mint Katie's own client_id (10-min browser task) and swap it in.
 - NEXT (pending Katie go-ahead): nightly launchd job (upload yesterday's files + rclone check + report into daily health check), then staged 46GB backfill, then archive old local files to defuse the disk-full deadline.
+
+## 2026-10-13 12:20 — Google Drive backup system LIVE
+- Nightly job installed: com.youtube-longitudinal.rclone-backup fires 23:30 local (after the day's last collection finishes ~22:00). Copies daily_panels + channels + raw nightly, video_inventory Sundays; never deletes anything remote; checksum-verifies every tree; any failure writes a backup_FAILED flag that the 10:30 AM health check now surfaces (health check patched + passing). Code committed (ad02cf3).
+- 46 GB BACKFILL RUNNING now on the Mini: daily_panels uploading to gdrive:YT-LONGITUDINAL-BACKUP, capped 125 KB/s during the day (household internet protected), unlimited 22:30-08:00. ETA ~4-6 days. Nightly job auto-skips while backfill runs, then takes over.
+- Answer to "does it need to be overnight": no — scheduled 23:30 for data completeness (day's files done ~22:00) and to keep daytime upstream free; the backfill runs 24/7 with the daytime cap.
+- NEXT: (1) own Google client_id before rclone's shared one retires (10-min browser task with Katie); (2) once backfill verifies, begin archiving oldest local panel files to defuse the ~2-4-week disk-full deadline.
